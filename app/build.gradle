@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "net.wetfish.wetfish"
         minSdkVersion 19
@@ -33,6 +33,7 @@ dependencies {
     compile 'com.android.support:design:26.+'
     compile 'com.android.volley:volley:1.0.0'
     compile 'com.github.bumptech.glide:glide:4.2.0'
+    compile 'com.jakewharton:butterknife:8.7.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.2.0'
     testCompile 'junit:junit:4.12'
 }
