@@ -6,9 +6,10 @@
     android:layout_height="match_parent"
     android:layout_marginBottom="16dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="net.wetfish.wetfish.GalleryActivity"
+    tools:context="net.wetfish.wetfish.ui.GalleryActivity"
     tools:showIn="@layout/activity_gallery">
 
+    <!-- TODO: Turn into Recycler View if DB Feature is added -->
     <ImageView
         android:id="@+id/iv_gallery_image"
         android:layout_width="match_parent"

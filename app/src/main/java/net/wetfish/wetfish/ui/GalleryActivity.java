@@ -1,30 +1,26 @@
-package net.wetfish.wetfish;
+package net.wetfish.wetfish.ui;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import net.wetfish.wetfish.R;
 
 public class GalleryActivity extends AppCompatActivity {
 
-    private int PICK_IMAGE = 1;
+    // Logging Tag
+    private static final String LOG_TAG = GalleryActivity.class.getSimpleName();
 
-    //TODO: Either figure out ButterKnife or delete it.
-    //ButterKnife Binds
-//    @BindView(R.id.iv_gallery_image)
-      ImageView selectedImageView;
+    // Intent Constant
+    private int PICK_IMAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,21 +31,7 @@ public class GalleryActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Setup Image View for selected Gallery picture
-        selectedImageView = (ImageView) findViewById(R.id.iv_gallery_image);
-
-        // FAB for acquiring an image
-        //TODO: Image View & FAB: Create pop up Image View w/ FAB expanding Toolbar
-        //TODO: Generating Grid of scrollable uploaded images and then pop up with Toolbar overlay
-        //TODO: Review Potential Setups
-        // When FAB is pressed and image data is passed, populate an image view above the grid.
-        // Clicking on grid images will start up a new activity or popup w/ FAB Toolbar
-
-        // When FAB is pressed and image data is passed, start up a new activity with FAB toolbar.
-        // Clicking on grid images will do the same.
-
-        // When FAB is pressed and image data is passed, start up a popup with FAB toolbar.
-        // Clicking on grid images will do the same.
+        // FAB to start intent to select an image then pass the user to another activity
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,7 +90,7 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     /**
-     * Gather the result code from our
+     * Gather the result code from our intent result and start GalleryDetailActivity.class
      *
      * @param reqCode
      * @param resultCode    Determines the result of the request
@@ -118,21 +100,13 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
 
-
         if (resultCode == RESULT_OK) {
-            try {
-                //TODO: Integrate Glide
-                final Uri imageUri = data.getData();
-                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                selectedImageView.setImageBitmap(selectedImage);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                Snackbar.make(findViewById(android.R.id.content), "File not found! " + "\n" + e.toString(), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-
-        }else {
+                Uri contentUri = data.getData();
+                startActivity(new Intent(this, GalleryDetailActivity.class)
+                        .putExtra(getString(R.string.gallery_detail_uri_key), contentUri.toString()));
+        } else {
+            //TODO: Probably should remove snackbar later
+            Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
             Snackbar.make(findViewById(android.R.id.content), "Result Code Error!: " + resultCode, Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
         }

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.wetfish.wetfish">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".GalleryActivity"
+            android:name=".ui.GalleryActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -20,6 +20,24 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.GalleryViewPagerActivity"
+            android:label="@string/title_activity_gallery_view_pager"
+            android:parentActivityName=".ui.GalleryActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="net.wetfish.wetfish.ui.GalleryActivity" />
+        </activity>
+        <activity
+            android:name=".ui.GalleryDetailActivity"
+            android:label="@string/title_activity_gallery_detail"
+            android:parentActivityName=".ui.GalleryActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="net.wetfish.wetfish.ui.GalleryActivity" />
         </activity>
     </application>
 
