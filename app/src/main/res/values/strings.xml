@@ -12,4 +12,7 @@
     <!-- String Keys -->
     <string name="gallery_detail_uri_key">galleryDetailUriKey</string>
 
+    <!-- Links -->
+    <string name="wetfish_base_url">https://wiki.wetfish.net/</string>
+
 </resources>

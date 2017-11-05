@@ -102,6 +102,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         if (resultCode == RESULT_OK) {
                 Uri contentUri = data.getData();
+
                 startActivity(new Intent(this, GalleryDetailActivity.class)
                         .putExtra(getString(R.string.gallery_detail_uri_key), contentUri.toString()));
         } else {
