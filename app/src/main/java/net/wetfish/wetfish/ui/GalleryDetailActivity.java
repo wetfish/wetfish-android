@@ -1,5 +1,6 @@
 package net.wetfish.wetfish.ui;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -28,7 +29,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class GalleryDetailActivity extends AppCompatActivity{
+public class GalleryDetailActivity extends AppCompatActivity {
 
     // Logging Tag
     private static final String LOG_TAG = GalleryDetailActivity.class.getSimpleName();
@@ -50,12 +51,18 @@ public class GalleryDetailActivity extends AppCompatActivity{
         dataImageView = (ImageView) findViewById(R.id.iv_gallery_detail);
         dataImageView2 = (ImageView) findViewById(R.id.iv_gallery_detail_2);
 
-        // Gather Intent data
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null) {
-            // Gather Intent String Data & Parse to URI
-            String myUri = bundle.getString(getString(R.string.gallery_detail_uri_key));
-            dataUri = Uri.parse(myUri);
+        // Gather intent
+        Intent intent = getIntent();
+
+        // Check to see if the intent is of the correct mime type.
+        if (intent.getType().indexOf("image/") != -1) {
+            if (intent.getData() != null) {
+                // Handle intents with image data from Wetfish app explicit intent...
+                dataUri = getIntent().getData();
+            } else if (intent.getExtras().get(Intent.EXTRA_STREAM) != null) {
+                // Handle intents with image data from share smenu implicit intents...
+                dataUri = (Uri) intent.getExtras().get(Intent.EXTRA_STREAM);
+            }
 
             // Set view data
             if (dataUri != null) {
@@ -72,7 +79,7 @@ public class GalleryDetailActivity extends AppCompatActivity{
         } else {
             //TODO: Probably remove Snackbar use of this manner and keep to logs.
             Log.d(LOG_TAG, "Bundle returned null");
-            Snackbar.make(findViewById(android.R.id.content), "Bundle was Null", Snackbar.LENGTH_LONG)
+            Snackbar.make(findViewById(android.R.id.content), "Something went wrong during intents.", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
         }
 
@@ -95,7 +102,7 @@ public class GalleryDetailActivity extends AppCompatActivity{
     private void uploadFile(Uri fileUri) {
 
         // Create Retrofit Instance
-        Retrofit retrofit =  RetrofitClient.getClient(getString(R.string.wetfish_base_url));
+        Retrofit retrofit = RetrofitClient.getClient(getString(R.string.wetfish_base_url));
 
         // Create REST Interface
         RESTInterface restInterface = retrofit.create(RESTInterface.class);

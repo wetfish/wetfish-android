@@ -50,14 +50,15 @@ public class GalleryActivity extends AppCompatActivity {
     private void getImageFromGallery(View view) {
         // Attempt to open gallery
         try {
-            Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-            getIntent.setType("image/*");
+            //TODO: Commented out chooser options
+//            Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+//            getIntent.setType("image/*");
 
             Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             pickIntent.setType("image/*");
 
-            Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
-            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
+            Intent chooserIntent = Intent.createChooser(pickIntent, getString(R.string.chooser_title));
+//            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {getIntent});
 
             startActivityForResult(chooserIntent, PICK_IMAGE);
         } catch (Exception e) {
@@ -66,7 +67,6 @@ public class GalleryActivity extends AppCompatActivity {
         }
 
     }
-    // Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURE);
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -104,7 +104,7 @@ public class GalleryActivity extends AppCompatActivity {
                 Uri contentUri = data.getData();
 
                 startActivity(new Intent(this, GalleryDetailActivity.class)
-                        .putExtra(getString(R.string.gallery_detail_uri_key), contentUri.toString()));
+                        .setDataAndType(contentUri, getString(R.string.image_mime_type)));
         } else {
             //TODO: Probably should remove snackbar later
             Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
