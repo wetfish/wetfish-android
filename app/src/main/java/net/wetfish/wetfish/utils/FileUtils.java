@@ -1,4 +1,4 @@
-package net.wetfish.wetfish.utilities;
+package net.wetfish.wetfish.utils;
 
 import android.content.Context;
 import android.database.Cursor;

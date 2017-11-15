@@ -14,9 +14,10 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 
 import net.wetfish.wetfish.R;
-import net.wetfish.wetfish.utilities.FileUtils;
-import net.wetfish.wetfish.utilities.RESTInterface;
-import net.wetfish.wetfish.utilities.RetrofitClient;
+import net.wetfish.wetfish.retrofit.RESTInterface;
+import net.wetfish.wetfish.retrofit.RetrofitClient;
+import net.wetfish.wetfish.utils.FileUtils;
+import net.wetfish.wetfish.utils.UIUtils;
 
 import java.io.File;
 
@@ -38,18 +39,15 @@ public class GalleryDetailActivity extends AppCompatActivity {
     Uri dataUri;
 
     // View Variables
-    ImageView dataImageView;
-    ImageView dataImageView2;
+    ImageView intentDataView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery_detail);
 
-        //TODO: Definitely fix up the UI. Get rid of this button and implement the FAB
-        // Gather and set views
-        dataImageView = (ImageView) findViewById(R.id.iv_gallery_detail);
-        dataImageView2 = (ImageView) findViewById(R.id.iv_gallery_detail_2);
+        // Setup View
+        intentDataView = (ImageView) findViewById(R.id.iv_gallery_detail);
 
         // Gather intent
         Intent intent = getIntent();
@@ -66,21 +64,19 @@ public class GalleryDetailActivity extends AppCompatActivity {
 
             // Set view data
             if (dataUri != null) {
-                Log.d(LOG_TAG, "Image Data URI: " + dataUri.toString());
+                Log.d(LOG_TAG, "File Data URI: " + dataUri.toString());
                 Glide.with(this)
                         .load(dataUri)
-                        .into(dataImageView);
+                        .into(intentDataView);
             } else {
-                //TODO: Probably remove Snackbar use of this manner and keep to logs.
                 Log.d(LOG_TAG, "dataUri returned null");
-                Snackbar.make(findViewById(android.R.id.content), "dataUri returned Null", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
+                        "Unable to obtain file location", Snackbar.LENGTH_LONG);
             }
         } else {
-            //TODO: Probably remove Snackbar use of this manner and keep to logs.
             Log.d(LOG_TAG, "Bundle returned null");
-            Snackbar.make(findViewById(android.R.id.content), "Something went wrong during intents.", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
+            UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
+                    "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
         }
 
         //Setup Toolbar
@@ -92,7 +88,6 @@ public class GalleryDetailActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(LOG_TAG, "uploadFile FAB");
                 uploadFile(dataUri);
             }
         });
@@ -110,32 +105,26 @@ public class GalleryDetailActivity extends AppCompatActivity {
         // Create RequestBody instance from our chosen file
         File file = new File(FileUtils.getRealPathFromUri(this, fileUri));
 
+        //TODO: Remove later
         Log.d(LOG_TAG, "NAME OF THING: " + FileUtils.getRealPathFromUri(this, fileUri)
                 + "\n" + file.getName());
-        Glide.with(this)
-                .load(file)
-                .into(dataImageView2);
 
         // Create the RequestBody & multipart
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("Image", file.getName(), requestBody);
 
         // Execute request
-        //TODO: Update these Snackbars
         Call<ResponseBody> call = restInterface.postPhoto(body);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                //TODO: Use some sort of text parsing to gather the passed image URL response.
-                Snackbar.make(findViewById(android.R.id.content), "Image Uploaded!", Snackbar.LENGTH_SHORT)
-                        .setAction("Action", null).show();
-                Log.d(LOG_TAG, "onResponse Response: " + response);
+                UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
+                        "File Uploaded!", Snackbar.LENGTH_LONG);
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Snackbar.make(findViewById(android.R.id.content), "Image Upload Failed!", Snackbar.LENGTH_SHORT)
-                        .setAction("Action", null).show();
+                UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
+                        "File Upload Failed!", Snackbar.LENGTH_LONG);
                 Log.d(LOG_TAG, "onFailure Response: " + t);
             }
 

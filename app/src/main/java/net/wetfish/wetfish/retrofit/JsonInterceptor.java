@@ -1,10 +1,8 @@
-package net.wetfish.wetfish.utilities;
+package net.wetfish.wetfish.retrofit;
 
 /**
  * Created by ${Michael} on 11/4/2017.
  */
-
-import android.util.Log;
 
 import java.io.IOException;
 
@@ -28,8 +26,6 @@ public class JsonInterceptor implements Interceptor {
 
         Response response = chain.proceed(request);
         String rawJson = response.body().string();
-
-        Log.d(LOG_TAG, String.format("raw JSON response is: %s", rawJson));
 
         // Re-create the response before returning it because body can be read only once
         return response.newBuilder()

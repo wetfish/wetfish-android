@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.utils.UIUtils;
 
 public class GalleryActivity extends AppCompatActivity {
 
@@ -20,7 +21,7 @@ public class GalleryActivity extends AppCompatActivity {
     private static final String LOG_TAG = GalleryActivity.class.getSimpleName();
 
     // Intent Constant
-    private int PICK_IMAGE = 1;
+    private int PICK_FILE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,39 +32,37 @@ public class GalleryActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // FAB to start intent to select an image then pass the user to another activity
+        // FAB to start intent to select a file then pass the user to another activity
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getImageFromGallery(view);
+                getFile(view);
             }
         });
     }
 
     /**
-     * TODO: Potentially remove document intent addition.
      * This method will be invoked when the FAB is activated.
      *
      * @param view
      */
-    private void getImageFromGallery(View view) {
+    private void getFile(View view) {
         // Attempt to open gallery
         try {
-            //TODO: Commented out chooser options
-//            Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-//            getIntent.setType("image/*");
 
-            Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            pickIntent.setType("image/*");
+            //TODO: Reinsert picture intent when video uploading is supported
+            Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            pickFileIntent.setType("image/*");
 
-            Intent chooserIntent = Intent.createChooser(pickIntent, getString(R.string.chooser_title));
-//            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {getIntent});
+//            Intent useCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-            startActivityForResult(chooserIntent, PICK_IMAGE);
+            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.chooser_title));
+//            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {useCameraIntent});
+
+            startActivityForResult(chooserIntent, PICK_FILE);
         } catch (Exception e) {
-            Snackbar.make(view, "An Exception Occurred! " + "\n" + e.toString(), Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
+            Log.d(LOG_TAG, "An exception occurred!: " + e.toString());
         }
 
     }
@@ -107,9 +106,10 @@ public class GalleryActivity extends AppCompatActivity {
                         .setDataAndType(contentUri, getString(R.string.image_mime_type)));
         } else {
             //TODO: Probably should remove snackbar later
+            UIUtils.generateSnackbar(this, findViewById(android.R.id.content),
+                    "No file selected", Snackbar.LENGTH_SHORT);
             Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
-            Snackbar.make(findViewById(android.R.id.content), "Result Code Error!: " + resultCode, Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
+
         }
     }
 }

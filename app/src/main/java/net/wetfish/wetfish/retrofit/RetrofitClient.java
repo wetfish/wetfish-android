@@ -1,4 +1,4 @@
-package net.wetfish.wetfish.utilities;
+package net.wetfish.wetfish.retrofit;
 
 
 import okhttp3.OkHttpClient;
