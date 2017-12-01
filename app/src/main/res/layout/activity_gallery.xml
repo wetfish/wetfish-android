@@ -47,7 +47,7 @@
 
     <include layout="@layout/content_gallery" />
 
-    <!-- TODO: Change Icon -->
+    <!-- TODO: Implement scroll hiding -->
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"

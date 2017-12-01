@@ -6,15 +6,25 @@
     <string name="action_settings">Settings</string>
     <string name="toolbar_subheader">The Best Internet On the Internet</string>
     <string name="title_activity_gallery_view_pager">GalleryViewPagerActivity</string>
-    <string name="section_format">Hello World from section: %1$d</string>
     <string name="title_activity_gallery_detail">Wetfish File Sharing</string>
+    <string name="title_upload">Upload File</string>
+    <string name="title_edit_exif">Edit EXIF</string>
+    <string name="title_edit_file">Edit File</string>
+    <string name="under_construction">Feature Under Construction</string>
 
-    <!-- String Keys -->
+    <!-- Key Strings -->
     <string name="gallery_detail_uri_key">net.wetfish.wetfish</string>
 
     <!-- Links -->
     <string name="wetfish_base_url">https://wiki.wetfish.net/</string>
+    <string name="wetfish_base_uploader_url">https://wiki.wetfish.net/uploader/</string>
+    <string name="wetfish_base_upload_url">https://wiki.wetfish.net/upload/</string>
+
+    <!-- Intent Strings -->
     <string name="chooser_title">Pick Image</string>
-    <string name="image_mime_type">image/*</string>
+
+    <!-- Mime Type Strings -->
+    <string name="file_mime_type">image/*, video/*</string>
+
 
 </resources>

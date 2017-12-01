@@ -3,6 +3,7 @@ package net.wetfish.wetfish.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,8 @@ import android.view.View;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.utils.UIUtils;
+
+;
 
 public class GalleryActivity extends AppCompatActivity {
 
@@ -51,14 +54,14 @@ public class GalleryActivity extends AppCompatActivity {
         // Attempt to open gallery
         try {
 
-            //TODO: Reinsert picture intent when video uploading is supported
             Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            pickFileIntent.setType("image/*");
+            pickFileIntent.setType(getString(R.string.file_mime_type));
 
-//            Intent useCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            //TODO: Enable video recording
+            Intent useCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
             Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.chooser_title));
-//            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {useCameraIntent});
+            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{useCameraIntent});
 
             startActivityForResult(chooserIntent, PICK_FILE);
         } catch (Exception e) {
@@ -92,18 +95,18 @@ public class GalleryActivity extends AppCompatActivity {
      * Gather the result code from our intent result and start GalleryDetailActivity.class
      *
      * @param reqCode
-     * @param resultCode    Determines the result of the request
-     * @param data          Gathers data from the passed intent
+     * @param resultCode Determines the result of the request
+     * @param data       Gathers data from the passed intent
      */
     @Override
     protected void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-                Uri contentUri = data.getData();
+            Uri contentUri = data.getData();
 
-                startActivity(new Intent(this, GalleryDetailActivity.class)
-                        .setDataAndType(contentUri, getString(R.string.image_mime_type)));
+            startActivity(new Intent(this, GalleryDetailActivity.class)
+                    .setDataAndType(contentUri, getString(R.string.file_mime_type)));
         } else {
             //TODO: Probably should remove snackbar later
             UIUtils.generateSnackbar(this, findViewById(android.R.id.content),

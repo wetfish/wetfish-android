@@ -14,9 +14,8 @@ import retrofit2.http.Part;
  */
 
 public interface RESTInterface {
-
     // Multipart post method
     @Multipart
     @POST("/upload.php")
-    Call<ResponseBody> postPhoto(@Part MultipartBody.Part file);
+    Call<ResponseBody> postFile(@Part MultipartBody.Part file);
 }
