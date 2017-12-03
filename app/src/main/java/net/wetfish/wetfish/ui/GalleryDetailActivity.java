@@ -130,7 +130,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 getString(R.string.title_edit_file)};
 
         private int[] imageResId = {
-                R.drawable.ic_file_upload,
+                R.drawable.ic_upload_file,
                 R.drawable.ic_exif_edit,
                 R.drawable.ic_file_edit};
 

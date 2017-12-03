@@ -26,5 +26,11 @@
     <!-- Mime Type Strings -->
     <string name="file_mime_type">image/*, video/*</string>
 
+    <!-- FAB Strings -->
+    <string name="fab_file_upload">Upload File</string>
+    <string name="fab_copy_to_clipboard">Copy Upload Link</string>
+    <string name="fab_choose_file">Choose New File</string>
+    <string name="file_not_found">File Wasn\'t Found</string>
 
 </resources>
+

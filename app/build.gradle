@@ -41,6 +41,8 @@ dependencies {
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
     compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
+    compile 'com.github.clans:fab:1.6.2'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.2.0'
+
     testCompile 'junit:junit:4.12'
 }

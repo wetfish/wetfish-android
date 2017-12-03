@@ -18,4 +18,7 @@
     <color name="app_bar_dark">#212121</color>
     <color name="background_dark">#303030</color>
     <color name="card_dialog_dark">#424242</color>
+
+    <!-- FAB Shadow Color -->
+    <color name="fab_shadow">#030303</color>
 </resources>
