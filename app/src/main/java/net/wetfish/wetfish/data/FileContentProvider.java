@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import net.wetfish.wetfish.data.FileContract.Files;
 
@@ -77,6 +78,7 @@ public class FileContentProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             // Entire files database
             case FILES_DIRECTORY_CODE:
+                Log.d("Qlorp", "Shlorp drop Query Total");
                 returnCursor = db.query(Files.TABLE_NAME,
                         projection,
                         selection,
@@ -88,6 +90,8 @@ public class FileContentProvider extends ContentProvider {
 
             // Specific files database row
             case FILES_WITH_ID_DIRECTORY_CODE:
+                Log.d("Slorp", "Shlorp drop Query JUAN");
+
                 // Get id of provided uri
                 String filesID = uri.getLastPathSegment();
 
@@ -97,7 +101,7 @@ public class FileContentProvider extends ContentProvider {
                 // Query the database for the appropriate row with (id)
                 returnCursor = db.query(Files.TABLE_NAME,
                         projection,
-                        FileContract.FileColumns.COLUMN_FILE_ROW_ID + "=?",
+                        Files._ID+ "=?",
                         filesSelectionArguments,
                         null,
                         null,
@@ -146,6 +150,7 @@ public class FileContentProvider extends ContentProvider {
                 long filesID = db.insert(Files.TABLE_NAME, null, contentValues);
                 if (filesID > 0) {
                     returnUri = ContentUris.withAppendedId(Files.CONTENT_URI, filesID);
+                    Log.d("Yo!", "It worked");
                 } else {
                     throw new android.database.SQLException("Failed to insert row into: " + uri);
                 }

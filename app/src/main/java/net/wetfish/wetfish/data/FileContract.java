@@ -28,9 +28,6 @@ public class FileContract {
     }
 
     public static final class FileColumns implements BaseColumns {
-        // File row id
-        public static final String COLUMN_FILE_ROW_ID = "rowID";
-
         // File name
         public static final String COLUMN_FILE_TITLE = "title";
 
