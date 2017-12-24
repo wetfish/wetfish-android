@@ -1,12 +1,33 @@
 <resources>
 
-    <!-- Base application theme. -->
+    <!-- Base application theme -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:windowBackground">@color/background_dark</item>
+    </style>
+
+    <!-- Edit Text variation style -->
+    <style name="EditTextVariation">
+        <item name="android:textColorHint">@color/light_hint_text</item>
+        <item name="colorControlNormal">@color/primary_text</item>
+        <item name="colorControlActivated">@color/accent</item>
+        <item name="colorControlHighlight">@color/accent</item>
+        <item name="android:backgroundTint">@color/light_background_highlights</item>
+        <item name="android:textColor">@color/primary_text</item>
+        <item name="android:layout_marginEnd">72dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+    </style>
+
+    <!-- Text View variation style -->
+    <style name="TextViewVariation">
+        <item name="android:textColor">@color/primary_text</item>
+        <item name="android:layout_marginEnd">72dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:layout_marginStart">8dp</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -25,5 +46,6 @@
     <style name="MyCustomTextAppearance" parent="TextAppearance.Design.Tab">
         <item name="textAllCaps">false</item>
     </style>
+
 
 </resources>

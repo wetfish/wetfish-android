@@ -37,6 +37,7 @@
     <string name="et_tags_hint">Tags</string>
     <string name="et_title_hint">Title</string>
     <string name="not_implemented">N/A</string>
+    <string name="no_results">No Files Uploaded...</string>
 
 
 </resources>
