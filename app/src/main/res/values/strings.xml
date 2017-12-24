@@ -14,6 +14,7 @@
 
     <!-- Key Strings -->
     <string name="gallery_detail_uri_key">net.wetfish.wetfish</string>
+    <string name="file_details">fileDetailsKey</string>
 
     <!-- Links -->
     <string name="wetfish_base_url">https://wiki.wetfish.net/</string>
@@ -31,6 +32,12 @@
     <string name="fab_copy_to_clipboard">Copy Upload Link</string>
     <string name="fab_choose_file">Choose New File</string>
     <string name="file_not_found">File Wasn\'t Found</string>
+    <string name="btn_refresh">Refresh</string>
+    <string name="et_description_hint">Description</string>
+    <string name="et_tags_hint">Tags</string>
+    <string name="et_title_hint">Title</string>
+    <string name="not_implemented">N/A</string>
+
 
 </resources>
 

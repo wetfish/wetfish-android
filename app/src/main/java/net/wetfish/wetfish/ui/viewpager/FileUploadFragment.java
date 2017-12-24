@@ -11,10 +11,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.request.RequestOptions;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
@@ -26,6 +29,7 @@ import net.wetfish.wetfish.utils.UIUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,13 +66,17 @@ public class FileUploadFragment extends Fragment {
     private Uri fileUri;
 
     // Data
-    private String responseURL;
+    private String responseViewURL;
+    private String responseDeleteURL;
     private boolean responseURLAcquired;
     private boolean fileFound;
 
     // Views
     private TextView fileNotFoundView;
     private ImageView fileView;
+    private EditText fileEditTitleView;
+    private EditText fileEditTagsView;
+    private EditText fileEditDescriptionView;
     private FloatingActionMenu fam;
     private FloatingActionButton fabUploadFile;
     private FloatingActionButton fabCopyToClipboard;
@@ -114,20 +122,25 @@ public class FileUploadFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_file_upload_view_pager, container, false);
 
         // View to show passed data
-        fileView = (ImageView) rootView.findViewById(R.id.iv_fragment_file_upload);
+        fileView = rootView.findViewById(R.id.iv_fragment_file_upload);
+
+        // Views to edit uploaded file data
+        fileEditTitleView = rootView.findViewById(R.id.et_title);
+        fileEditTagsView = rootView.findViewById(R.id.et_tags);
+        fileEditDescriptionView = rootView.findViewById(R.id.et_description);
 
         // View to show if data wasn't accessible. Hidden/Shown depending on the result
-        fileNotFoundView = (TextView) rootView.findViewById(R.id.tv_file_not_found);
+        fileNotFoundView = rootView.findViewById(R.id.tv_file_not_found);
         if (fileFound) {
             fileNotFoundView.setVisibility(View.GONE);
         } else {
             fileNotFoundView.setVisibility(View.VISIBLE);
         }
         // Fam to hold relevant fab actions
-        fam = (FloatingActionMenu) rootView.findViewById(R.id.fam_gallery_detail);
+        fam = rootView.findViewById(R.id.fam_gallery_upload);
 
         // Fab to upload file to Wetfish server
-        fabUploadFile = (FloatingActionButton) rootView.findViewById(R.id.fab_upload_file);
+        fabUploadFile = rootView.findViewById(R.id.fab_upload_file);
         fabUploadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -137,12 +150,12 @@ public class FileUploadFragment extends Fragment {
 
         // TODO: Implement snackbar button to copy to clipboard in case someone moves away from the window!
         // Fab to copy file link to clipboard
-        fabCopyToClipboard = (FloatingActionButton) rootView.findViewById(R.id.fab_copy_to_clipboard);
+        fabCopyToClipboard = rootView.findViewById(R.id.fab_copy_to_clipboard);
         fabCopyToClipboard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(CLIPBOARD_SERVICE);
-                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", responseURL));
+                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", responseViewURL));
             }
         });
 
@@ -154,7 +167,7 @@ public class FileUploadFragment extends Fragment {
         }
 
         // Fab to select a different file to upload
-        fabChooseFile = (FloatingActionButton) rootView.findViewById(R.id.fab_choose_file);
+        fabChooseFile = rootView.findViewById(R.id.fab_choose_file);
         fabChooseFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -168,25 +181,22 @@ public class FileUploadFragment extends Fragment {
 
         // Find out if the file is null
         if (fileUri != null && !(fileUri.toString().isEmpty())) {
-            Log.d(LOG_TAG, "Image file");
             if (fileUri != null) {
                 // File was found
                 fileNotFoundView.setVisibility(View.GONE);
                 fileFound = true;
 
-                Log.d(LOG_TAG, "File Data URI: " + fileUri.toString());
-
                 // insert the photo
                 Glide.with(this)
                         .load(fileUri)
+                        .apply(RequestOptions.centerCropTransform())
+                        .transition(DrawableTransitionOptions.withCrossFade())
                         .into(fileView);
             } else {
-                Log.d(LOG_TAG, "fileUri returned null");
                 UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                         "File location was not found", Snackbar.LENGTH_LONG);
             }
         } else {
-            Log.d(LOG_TAG, "Bundle returned null");
             UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                     "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
 
@@ -210,9 +220,11 @@ public class FileUploadFragment extends Fragment {
         // Create RequestBody instance from our chosen file
         File file = new File(FileUtils.getRealPathFromUri(getContext(), fileUri));
 
-        //TODO: Remove later
-        Log.d(LOG_TAG, "NAME OF THING: " + FileUtils.getRealPathFromUri(getContext(), fileUri)
-                + "\n" + file.getName());
+        // Gather file extension from chosen file for database
+        final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), fileUri);
+
+        // Gather file URI from chosen file for database
+        final String filePath = FileUtils.getRealPathFromUri(getContext(), fileUri);
 
         // Create RequestBody & MultipartBody to create a Call.
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -226,8 +238,6 @@ public class FileUploadFragment extends Fragment {
                 UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                         "File Uploaded!", Snackbar.LENGTH_LONG);
                 try {
-                    Log.d(LOG_TAG, "Try block: ");
-
                     // Get response body as a string
                     String onResponseString = response.body().string();
                     Log.d(LOG_TAG, "onResponse: " + onResponseString);
@@ -237,12 +247,27 @@ public class FileUploadFragment extends Fragment {
                         Pattern pattern = Pattern.compile("url=(.*?)'>");
                         Matcher matcher = pattern.matcher(onResponseString);
                         if (matcher.find()) {
-                            responseURL = getString(R.string.wetfish_base_url) + matcher.group(1);
+                            // Obtain the link given in response to the image
+                            responseViewURL = getString(R.string.wetfish_base_url) + matcher.group(1);
                             fabCopyToClipboard.setVisibility(View.VISIBLE);
-                            Log.d(LOG_TAG, "onResponse: " + responseURL);
+
+                            responseDeleteURL = getContext().getString(R.string.not_implemented);
+
+                            // Add to database
+                            FileUtils.insertFileData(getContext(),
+                                    fileEditTitleView.getText().toString(),
+                                    fileEditDescriptionView.getText().toString(),
+                                    fileEditTagsView.getText().toString(),
+                                    Calendar.getInstance().getTimeInMillis(),
+                                    fileExtension,
+                                    filePath,
+                                    responseViewURL,
+                                    responseDeleteURL);
+
+                            Log.d(LOG_TAG, "onResponse: " + responseViewURL);
                         }
                     } else {
-                        responseURL = getString(R.string.wetfish_base_uploader_url);
+                        responseViewURL = getString(R.string.wetfish_base_uploader_url);
                         fabCopyToClipboard.setVisibility(View.VISIBLE);
                     }
                 } catch (IOException e) {
@@ -279,7 +304,7 @@ public class FileUploadFragment extends Fragment {
 
     /**
      * Called when the Fragment is visible to the user.  This is generally
-     * tied to {@link Activity#onStart() Activity.onStart} of the containing
+     * tied to {@link net.wetfish.wetfish.ui.GalleryUploadActivity#onStart() Activity.onStart} of the containing
      * Activity's lifecycle.
      */
     @Override
@@ -287,8 +312,6 @@ public class FileUploadFragment extends Fragment {
         super.onStart();
         responseURLAcquired = false;
     }
-
-    //TODO: Definitely look at this at somepoint.
 
     /**
      * This interface must be implemented by activities that contain this
@@ -301,7 +324,7 @@ public class FileUploadFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onUploadFragmentInteraction(Uri uri);
+        // TODO:
+        void onUploadFragmentInteraction(Uri uri);
     }
 }

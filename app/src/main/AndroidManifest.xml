@@ -44,10 +44,16 @@
                 <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
+
         <provider
-            android:name="net.wetfish.wetfish.data.FileContentProvider"
+            android:name=".data.FileContentProvider"
             android:authorities="net.wetfish.wetfish"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.GalleryDetailActivity"
+            android:label="@string/title_activity_gallery_detail"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
