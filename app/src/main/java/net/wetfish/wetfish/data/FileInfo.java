@@ -11,13 +11,15 @@ import org.parceler.Parcel;
  */
 @Parcel
 public class FileInfo {
-    private String fileTitle;
-    private String fileTags;
-    private String fileDescription;
-    private String fileUploadTime;
-    private String fileExtensionType;
-    private String fileDeviceStorageLink;
-    private String fileWetfishStorageLink;
+    public String fileTitle;
+    public String fileTags;
+    public String fileDescription;
+    public String fileUploadTime;
+    public String fileExtensionType;
+    public String fileDeviceStorageLink;
+    public String fileWetfishStorageLink;
+    public String fileWetfishDeletionLink;
+    public boolean fileInfoInitialized = false;
 
     /**
      * Default Constructor
@@ -34,6 +36,8 @@ public class FileInfo {
      * @param cursor of files database to a single position
      */
     public FileInfo(Cursor cursor) {
+        // Initialize file
+        fileInfoInitialized = true;
 
         // Move cursor to the available row
         cursor.moveToFirst();
@@ -81,6 +85,9 @@ public class FileInfo {
         return fileWetfishDeletionLink;
     }
 
-    private String fileWetfishDeletionLink;
+    public boolean getFileInfoInitialized() {
+        return fileInfoInitialized;
+    }
+
 
 }

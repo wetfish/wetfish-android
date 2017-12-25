@@ -22,11 +22,16 @@
         <item name="android:layout_marginStart">8dp</item>
     </style>
 
-    <!-- Text View variation style -->
-    <style name="TextViewVariation">
+    <!-- Text View variation style for Headers -->
+    <style name="TextViewHeader">
         <item name="android:textColor">@color/primary_text</item>
-        <item name="android:layout_marginEnd">72dp</item>
-        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <!-- Text View variation style for content body -->
+    <style name="TextViewBody">
+        <item name="android:textColor">@color/primary_text_body</item>
+        <item name="android:textSize">16sp</item>
         <item name="android:layout_marginStart">8dp</item>
     </style>
 

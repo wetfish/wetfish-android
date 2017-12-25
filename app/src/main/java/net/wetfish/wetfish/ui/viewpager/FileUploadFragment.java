@@ -256,8 +256,8 @@ public class FileUploadFragment extends Fragment {
                             // Add to database
                             FileUtils.insertFileData(getContext(),
                                     fileEditTitleView.getText().toString(),
-                                    fileEditDescriptionView.getText().toString(),
                                     fileEditTagsView.getText().toString(),
+                                    fileEditDescriptionView.getText().toString(),
                                     Calendar.getInstance().getTimeInMillis(),
                                     fileExtension,
                                     filePath,

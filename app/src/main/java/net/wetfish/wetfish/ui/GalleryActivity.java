@@ -35,28 +35,32 @@ public class GalleryActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>,
         FilesAdapter.FileAdapterOnClickHandler {
 
+    /* Constants */
     // Logging Tag
     private static final String LOG_TAG = GalleryActivity.class.getSimpleName();
-
     // Loader ID
     private static final int FILES_LOADER = 0;
-
+    // Key for saved instance state value
+    private static final String BUNDLE_KEY = "fileCursorKey";
     // Intent Constant
     private int PICK_FILE = 1;
+    // Content Provider Auto Increment Buffer
+    private int POSITION_BUFFER = 1;
 
-    // Layout Manager
+    /* Views */
+    // Progress bar utilized during loader
+    private ProgressBar mProgressBar;
+    // Text view for an empty gallery
+    private TextView mEmptyStateView;
+    // Recycler view to represent gallery
+    private RecyclerView mRecyclerView;
+    // Files adapter for Recycler View
+    private FilesAdapter mFilesAdapter;
+    // Layout Manager for recycler view
     private GridLayoutManager gridLayoutManager;
 
-    // Files adapter
-    private FilesAdapter mFilesAdapter;
-
-    // NetworkInfo to check network status
+    /* Data */
     private NetworkInfo networkInfo;
-
-    // Views
-    private ProgressBar mProgressBar;
-    private TextView mEmptyStateView;
-    private RecyclerView mRecyclerView;
 
 
     @Override
@@ -111,7 +115,6 @@ public class GalleryActivity extends AppCompatActivity implements
         return true;
     }
 
-    //TODO: Make this happen!
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -125,7 +128,6 @@ public class GalleryActivity extends AppCompatActivity implements
         }
         return super.onOptionsItemSelected(item);
     }
-
 
     /**
      * Gather the result code from our intent result and start GalleryUploadActivity.class
@@ -167,29 +169,30 @@ public class GalleryActivity extends AppCompatActivity implements
      */
     @Override
     public void onListItemClick(int id) {
-//        // Create file detail activity intent
-//        Intent fileDetails = new Intent(this, GalleryDetailActivity.class);
-//
-//        // Pass the Uri to the corresponding gallery item
-//        fileDetails.putExtra(getString(R.string.file_details), FileUtils.getFileData(this, id));
-//
-//        // Start GalleryDetailActivity
-//        startActivity(fileDetails);
+        // Create file detail activity intent
+        Intent fileDetails = new Intent(this, GalleryDetailActivity.class);
+
+        // Pass the Uri to the corresponding gallery item
+        fileDetails.putExtra(getString(R.string.file_details),
+                FileUtils.getFileData(this, id + POSITION_BUFFER));
+
+        // Start GalleryDetailActivity
+        startActivity(fileDetails);
     }
 
     private void updateFiles() {
         // TODO: Work out where the image will be loading from and options therein. Can incorporate network connection and more.
         // Get loader and see if it exists
-        LoaderManager loaderManager = this.getLoaderManager();
+        LoaderManager loaderManager = getLoaderManager();
         Loader<Cursor> fileLoader = loaderManager.getLoader(FILES_LOADER);
 
         // If loader doesn't exist
         if (fileLoader == null) {
             // Initialize loader
-            loaderManager.initLoader(FILES_LOADER, null, this);
+            loaderManager.initLoader(FILES_LOADER, null, this).forceLoad();
         } else {
             // Restart loader
-            loaderManager.restartLoader(FILES_LOADER, null, this);
+            loaderManager.restartLoader(FILES_LOADER, null, this).forceLoad();
         }
     }
 
@@ -203,11 +206,11 @@ public class GalleryActivity extends AppCompatActivity implements
             Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             pickFileIntent.setType(getString(R.string.file_mime_type));
 
-            //TODO: Allow the user to take videos instead of just photos
-            Intent useCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Intent useCameraIntentPicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            Intent useCameraIntentVideo = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 
             Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.chooser_title));
-            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{useCameraIntent});
+            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{useCameraIntentPicture, useCameraIntentVideo});
 
             startActivityForResult(chooserIntent, PICK_FILE);
         } catch (Exception e) {
@@ -220,43 +223,35 @@ public class GalleryActivity extends AppCompatActivity implements
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
         // Check for the loader
-        if (id == FILES_LOADER) {
-            return new AsyncTaskLoader<Cursor>(this) {
+        return new AsyncTaskLoader<Cursor>(this) {
 
-                public void onStartLoading() {
-                    // TODO: Make and show progress bar
-                    forceLoad();
-                }
 
-                @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-                @Override
-                public Cursor loadInBackground() {
-                    return FileUtils.getFilesData(getContext());
-                }
-            };
-        } else {
-            return null;
-        }
+            public void onStartLoading() {
+                // TODO: Make and show progress bar
+            }
 
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public Cursor loadInBackground() {
+                return FileUtils.getFilesData(getContext());
+            }
+        };
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         // TODO: Make and Hide progress bar
 
-        switch (loader.getId()) {
-            case 0: // Files Loader
-                if (cursor != null && cursor.moveToFirst()) {
-                    // If the cursor has data
-                    mFilesAdapter.swapCursor(cursor);
-                    mEmptyStateView.setVisibility(View.GONE);
-                } else {
-                    // If the cursor has no data
-                    mEmptyStateView.setVisibility(View.VISIBLE);
-                }
-                break;
-            default:
-                break;
+        if (cursor != null && cursor.moveToFirst()) {
+            // If the cursor has data
+            mFilesAdapter.swapCursor(cursor);
+            mEmptyStateView.setVisibility(View.GONE);
+        } else if (cursor != null && !(cursor.moveToFirst())){
+            // If the cursor has no data
+            mEmptyStateView.setVisibility(View.VISIBLE);
+        } else {
+            mEmptyStateView.setText(getString(R.string.error_loading_db));
+            mEmptyStateView.setVisibility(View.VISIBLE);
         }
 
     }

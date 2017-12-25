@@ -11,9 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -31,7 +29,7 @@ import org.parceler.Parcels;
 public class GalleryDetailActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
-    //Constants
+    /* Constants */
     // Logging Tag
     private static final String LOG_TAG = GalleryDetailActivity.class.getSimpleName();
     // Loader ID
@@ -39,7 +37,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     // Bundle key to save instance state
     private static final String BUNDLE_KEY = "fileInfoKey";
 
-    // FAM & FABs
+    /* FAM & FABs */
     // Display FABs
     private FloatingActionMenu fileFAM;
     // Visit file URL
@@ -51,7 +49,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     // Copy visit delete file URL
     private FloatingActionButton copyFileDeleteURLFAB;
 
-    // Views
+    /* Views */
     // File image view TODO: Impelemnt exoplayer later if video playback is desired
     private ImageView fileImageView;
     // File name text view
@@ -61,11 +59,11 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     // File description text view
     private TextView fileDescriptionTextView;
 
-    // Data
+    /* Data */
     // Uri for the sent cursor
     private Uri mUri;
     // FileInfo object that holds all data
-    private FileInfo fileInfo;
+    private FileInfo mFiileInfo;
 
 
     @Override
@@ -97,7 +95,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 Intent webIntent = new Intent(Intent.ACTION_VIEW);
 
                 // Link data
-                webIntent.setData(Uri.parse(fileInfo.getFileWetfishStorageLink()));
+                webIntent.setData(Uri.parse(mFiileInfo.getFileWetfishStorageLink()));
 
                 // Start intent
                 startActivity(webIntent);
@@ -110,7 +108,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
                 // Allow the link to be copied to the clipboard
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", fileInfo.getFileWetfishStorageLink()));
+                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFiileInfo.getFileWetfishStorageLink()));
             }
         });
 
@@ -122,13 +120,12 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 Intent webIntent = new Intent(Intent.ACTION_VIEW);
 
                 // Link data
-                webIntent.setData(Uri.parse(fileInfo.getFileWetfishDeletionLink()));
+                webIntent.setData(Uri.parse(mFiileInfo.getFileWetfishDeletionLink()));
 
                 // Start intent
                 startActivity(webIntent);
             }
         });
-
 
         copyFileDeleteURLFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -136,7 +133,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
                 // Allow link to be copied to the clipboard
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", fileInfo.getFileWetfishDeletionLink()));
+                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFiileInfo.getFileWetfishDeletionLink()));
             }
         });
 
@@ -148,19 +145,14 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         fileTagsTextView = includeLayout.findViewById(R.id.tv_tags);
         fileDescriptionTextView = includeLayout.findViewById(R.id.tv_description);
 
-        Button button = includeLayout.findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                displayFileDetails(fileInfo);
-                Log.d(LOG_TAG, "BOOM: " + fileInfo.getFileDeviceStorageLink() +
-                        fileInfo.getFileUploadTime() + "\n\n" + fileInfo.getFileWetfishStorageLink());
-            }
-        });
-
         // Get intent data
         Bundle bundle = getIntent().getExtras();
         mUri = (Uri) bundle.get(getString(R.string.file_details));
+
+        // Setup FileInfo
+        if (mFiileInfo == null) {
+            mFiileInfo = new FileInfo();
+        }
 
         getLoaderManager().initLoader(FILES_DETAIL_LOADER, null, this);
     }
@@ -168,7 +160,9 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
         super.onStop();
-        getIntent().putExtra(BUNDLE_KEY, Parcels.wrap(fileInfo));
+        if (mFiileInfo != null && mFiileInfo.getFileInfoInitialized()) {
+            getIntent().putExtra(BUNDLE_KEY, Parcels.wrap(mFiileInfo));
+        }
     }
 
     /**
@@ -183,14 +177,12 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null) {
-            FileInfo fileInfo = Parcels.unwrap(bundle.getParcelable(BUNDLE_KEY));
-            if (fileInfo != null) {
-                this.fileInfo = fileInfo;
-                displayFileDetails(this.fileInfo);
+            FileInfo fileInfo = Parcels.unwrap(getIntent().getParcelableExtra(BUNDLE_KEY));
+            if (fileInfo != null && fileInfo.getFileInfoInitialized()) {
+                mFiileInfo = fileInfo;
+                displayFileDetails(mFiileInfo);
             }
-        }
+
     }
 
     public void displayFileDetails(FileInfo fileInfo) {
@@ -248,8 +240,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
         // Check cursor integrity
         if (data != null) {
-            fileInfo = new FileInfo(data);
-            displayFileDetails(fileInfo);
+            mFiileInfo = new FileInfo(data);
+            displayFileDetails(mFiileInfo);
         } else {
             //TODO: Make error page?
         }
