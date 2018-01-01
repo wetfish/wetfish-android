@@ -94,7 +94,7 @@ public class GalleryActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(mFilesAdapter);
 
         // FAB to start intent to select a file then pass the user to another activity
-        FloatingActionButton fab = findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab_select_file);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -189,6 +189,7 @@ public class GalleryActivity extends AppCompatActivity implements
         // If loader doesn't exist
         if (fileLoader == null) {
             // Initialize loader
+            Log.d(LOG_TAG, "Initialize Loader");
             loaderManager.initLoader(FILES_LOADER, null, this).forceLoad();
         } else {
             // Restart loader

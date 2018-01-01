@@ -47,11 +47,11 @@
 
     <include
         android:id="@+id/include_layout_gallery"
-        layout="@layout/content_gallery" />
+        layout="@layout/content_gallery"/>
 
     <!-- TODO: Implement scroll hiding -->
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fab_select_file"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"

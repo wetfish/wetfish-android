@@ -2,9 +2,11 @@ package net.wetfish.wetfish.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -29,39 +31,29 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         EditFileFragment.OnFragmentInteractionListener,
         EditExifFragment.OnFragmentInteractionListener {
 
-    // Logging Tag
-    private static final String LOG_TAG = GalleryUploadActivity.class.getSimpleName();
+    /**
+     * Callback for the result from requesting permissions. This method
+     * is invoked for every call on {@link #requestPermissions(String[], int)}.
+     * <p>
+     * <strong>Note:</strong> It is possible that the permissions request interaction
+     * with the user is interrupted. In this case you will receive empty permissions
+     * and results arrays which should be treated as a cancellation.
+     * </p>
+     *
+     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions  The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *                     which is either {@link PackageManager#PERMISSION_GRANTED}
+     *                     or {@link PackageManager#PERMISSION_DENIED}. Never null.
+     * @see #requestPermissions(String[], int)
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 
-    // View Variables
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
-
-    // Data Variables
-    private Uri fileUri;
     //TODO: Possibly remove
 //    private boolean imageFile;
-//    private boolean videoFile;
-
-    // ViewPager Variables
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-
-    //TODO: Implement all this
-    @Override
-    public void onUploadFragmentInteraction(Uri uri) {
-
-    }
-
-    @Override
-    public void onEditFileFragmentInteraction(Uri uri) {
-
-    }
-
-    @Override
-    public void onEditExifFragmentInteraction(Uri uri) {
-
-    }
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +97,37 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+    }
+
+    // Logging Tag
+    private static final String LOG_TAG = GalleryUploadActivity.class.getSimpleName();
+    // View Variables
+    private TabLayout tabLayout;
+
+    private ViewPager viewPager;
+    // Data Variables
+    private Uri fileUri;
+
+//    private boolean videoFile;
+
+    // ViewPager Variables
+    private SectionsPagerAdapter mSectionsPagerAdapter;
+
+    //TODO: Implement all this
+    @Override
+    public void onUploadFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onEditFileFragmentInteraction(Uri uri) {
+
+    }
+
+
+    @Override
+    public void onEditExifFragmentInteraction(Uri uri) {
 
     }
 

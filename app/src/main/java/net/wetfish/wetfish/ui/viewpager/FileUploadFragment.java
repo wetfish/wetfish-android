@@ -1,12 +1,14 @@
 package net.wetfish.wetfish.ui.viewpager;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +20,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
-import com.github.clans.fab.FloatingActionButton;
-import com.github.clans.fab.FloatingActionMenu;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.retrofit.RESTInterface;
@@ -42,8 +42,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -60,9 +58,12 @@ public class FileUploadFragment extends Fragment {
     // Fragment initialization parameter keys
     private static final String ARG_SECTION_NUMBER = "section_number";
     private static final String ARG_FILE_URI = "file_uri";
+    private static final int REQUEST_STORAGE = 0;
+    private static final String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     // Fragment initialization parameter variables
-    private Integer sectionNumber;
+    private int sectionNumber;
     private Uri fileUri;
 
     // Data
@@ -77,10 +78,9 @@ public class FileUploadFragment extends Fragment {
     private EditText fileEditTitleView;
     private EditText fileEditTagsView;
     private EditText fileEditDescriptionView;
-    private FloatingActionMenu fam;
     private FloatingActionButton fabUploadFile;
-    private FloatingActionButton fabCopyToClipboard;
     private FloatingActionButton fabChooseFile;
+    private View mRootLayout;
 
     //TODO: Potentially remove.
     private OnFragmentInteractionListener mListener;
@@ -118,65 +118,63 @@ public class FileUploadFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_file_upload_view_pager, container, false);
+        mRootLayout = inflater.inflate(R.layout.fragment_file_upload_view_pager, container, false);
 
         // View to show passed data
-        fileView = rootView.findViewById(R.id.iv_fragment_file_upload);
+        fileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
 
         // Views to edit uploaded file data
-        fileEditTitleView = rootView.findViewById(R.id.et_title);
-        fileEditTagsView = rootView.findViewById(R.id.et_tags);
-        fileEditDescriptionView = rootView.findViewById(R.id.et_description);
+        fileEditTitleView = mRootLayout.findViewById(R.id.et_title);
+        fileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
+        fileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
 
         // View to show if data wasn't accessible. Hidden/Shown depending on the result
-        fileNotFoundView = rootView.findViewById(R.id.tv_file_not_found);
+        fileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
         if (fileFound) {
             fileNotFoundView.setVisibility(View.GONE);
         } else {
             fileNotFoundView.setVisibility(View.VISIBLE);
         }
-        // Fam to hold relevant fab actions
-        fam = rootView.findViewById(R.id.fam_gallery_upload);
 
         // Fab to upload file to Wetfish server
-        fabUploadFile = rootView.findViewById(R.id.fab_upload_file);
+        fabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
         fabUploadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uploadFile(fileUri);
+                // Verify that the permissions necessary to complete this action have been granted
+                if (ContextCompat.checkSelfPermission(getContext(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED
+                        || ContextCompat.checkSelfPermission(getContext(),
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    // Permissions have not been granted, inform the user and ask again
+                    requestStoragePermission();
+
+                } else {
+
+                    // Contact permissions granted!
+                    uploadFile(fileUri);
+                }
+
             }
         });
 
-        // TODO: Implement snackbar button to copy to clipboard in case someone moves away from the window!
-        // Fab to copy file link to clipboard
-        fabCopyToClipboard = rootView.findViewById(R.id.fab_copy_to_clipboard);
-        fabCopyToClipboard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(CLIPBOARD_SERVICE);
-                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", responseViewURL));
-            }
-        });
-
-        // Hide copy file link till a file is uploaded
-        if (!(responseURLAcquired)) {
-            fabCopyToClipboard.setVisibility(View.GONE);
-        } else {
-            fabCopyToClipboard.setVisibility(View.VISIBLE);
-        }
-
-        // Fab to select a different file to upload
-        fabChooseFile = rootView.findViewById(R.id.fab_choose_file);
-        fabChooseFile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // TODO: To be implemented!
-            }
-        });
+        //TODO: To be Implemented!
+//        // Fab to select a different file to upload
+//        fabChooseFile = mRootLayout.findViewById(R.id.fab_choose_file);
+//        fabChooseFile.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//            }
+//        });
 
         // Hidden till further notice
-        fabChooseFile.setVisibility(View.GONE);
+//        fabChooseFile.setVisibility(View.GONE);
 
 
         // Find out if the file is null
@@ -206,7 +204,65 @@ public class FileUploadFragment extends Fragment {
 
         }
 
-        return rootView;
+        return mRootLayout;
+    }
+
+    private void requestStoragePermission() {
+        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+            // If the user has previously denied granting the permission, offer the rationale
+            Snackbar.make(mRootLayout, R.string.permission_storage_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
+                        }
+                    }).show();
+        } else {
+            // No explanation needed, request permission
+            requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
+        }
+    }
+
+    /**
+     * Callback for the result from requesting permissions. This method
+     * is invoked for every call on {@link #requestPermissions(String[], int)}.
+     * <p>
+     * <strong>Note:</strong> It is possible that the permissions request interaction
+     * with the user is interrupted. In this case you will receive empty permissions
+     * and results arrays which should be treated as a cancellation.
+     * </p>
+     *
+     * @param requestCode  The request code passed in {@link #requestPermissions(String[], int)}.
+     * @param permissions  The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *                     which is either {@link PackageManager#PERMISSION_GRANTED}
+     *                     or {@link PackageManager#PERMISSION_DENIED}. Never null.
+     * @see #requestPermissions(String[], int)
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_STORAGE: {
+                if (requestCode == REQUEST_STORAGE) {
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        // Storage permissions were granted. Upload file.
+                        uploadFile(fileUri);
+                    } else {
+                        // Storage Permissions were not granted
+                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                                R.string.permission_not_granted_storage,
+                                Snackbar.LENGTH_LONG).show();
+                    }
+                }
+            }
+
+            default: {
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
+            }
+        }
     }
 
     private void uploadFile(Uri fileUri) {
@@ -249,7 +305,6 @@ public class FileUploadFragment extends Fragment {
                         if (matcher.find()) {
                             // Obtain the link given in response to the image
                             responseViewURL = getString(R.string.wetfish_base_url) + matcher.group(1);
-                            fabCopyToClipboard.setVisibility(View.VISIBLE);
 
                             responseDeleteURL = getContext().getString(R.string.not_implemented);
 
@@ -268,7 +323,6 @@ public class FileUploadFragment extends Fragment {
                         }
                     } else {
                         responseViewURL = getString(R.string.wetfish_base_uploader_url);
-                        fabCopyToClipboard.setVisibility(View.VISIBLE);
                     }
                 } catch (IOException e) {
                     Log.d(LOG_TAG, "onFailure Catch: ");

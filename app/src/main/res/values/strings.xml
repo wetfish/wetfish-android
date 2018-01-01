@@ -17,6 +17,14 @@
     <string name="tv_description">Description </string>
     <string name="error_loading_db">Error Loading Database</string>
     <string name="no_results">No Files Uploaded...</string>
+    <string name="et_description_hint">Description</string>
+    <string name="et_tags_hint">Tags</string>
+    <string name="et_title_hint">Title</string>
+
+    <!-- Snackbar Strings -->
+    <string name="permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
+    <string name="permission_not_granted_storage">Uploading to Wetfish requires Storage permissions.</string>
+    <string name="ok">OK</string>
 
     <!-- Database Strings -->
     <string name="not_implemented">N/A</string>
@@ -42,9 +50,6 @@
     <string name="fab_choose_file">Choose New File</string>
     <string name="file_not_found">File Wasn\'t Found</string>
     <string name="btn_refresh">Refresh</string>
-    <string name="et_description_hint">Description</string>
-    <string name="et_tags_hint">Tags</string>
-    <string name="et_title_hint">Title</string>
     <string name="fab_visit_upload_link">Visit Upload Link</string>
     <string name="fab_copy_upload_link">Copy Upload Link</string>
     <string name="fab_visit_deletion_link">Visit Deletion Link</string>
