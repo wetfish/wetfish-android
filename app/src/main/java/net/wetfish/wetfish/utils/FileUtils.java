@@ -62,7 +62,7 @@ public class FileUtils {
         return Files.CONTENT_URI.buildUpon().appendPath(Integer.toString(id)).build();
     }
 
-    public static void insertFileData(Context context, String fileTitle, String fileTags,
+    public static int insertFileData(Context context, String fileTitle, String fileTags,
                                       String fileDescription, long fileUploadDate, String fileExtension,
                                       String fileDeviceUri, String fileWetfishLocationUrl,
                                       String fileWetfishDeletionUrl) {
@@ -89,7 +89,7 @@ public class FileUtils {
         cv.put(FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK, fileWetfishLocationUrl);
         cv.put(FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK, fileWetfishDeletionUrl);
 
-        // Insert the content values into the database
-        Uri returnUri = context.getContentResolver().insert(Files.CONTENT_URI, cv);
+        // Insert the content values into the database and get the position
+        return Integer.valueOf(((context.getContentResolver().insert(Files.CONTENT_URI, cv)).getLastPathSegment()).toString());
     }
 }

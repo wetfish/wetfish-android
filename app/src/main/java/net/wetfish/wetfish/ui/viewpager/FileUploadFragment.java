@@ -2,6 +2,7 @@ package net.wetfish.wetfish.ui.viewpager;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +25,8 @@ import com.bumptech.glide.request.RequestOptions;
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.retrofit.RESTInterface;
 import net.wetfish.wetfish.retrofit.RetrofitClient;
+import net.wetfish.wetfish.ui.GalleryActivity;
+import net.wetfish.wetfish.ui.GalleryDetailActivity;
 import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
 
@@ -58,9 +61,12 @@ public class FileUploadFragment extends Fragment {
     // Fragment initialization parameter keys
     private static final String ARG_SECTION_NUMBER = "section_number";
     private static final String ARG_FILE_URI = "file_uri";
+
+    // Constants
     private static final int REQUEST_STORAGE = 0;
     private static final String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private static final int POSITION_BUFFER = 1;
 
     // Fragment initialization parameter variables
     private int sectionNumber;
@@ -157,7 +163,7 @@ public class FileUploadFragment extends Fragment {
 
                 } else {
 
-                    // Contact permissions granted!
+                    // Storage permissions granted!
                     uploadFile(fileUri);
                 }
 
@@ -309,7 +315,7 @@ public class FileUploadFragment extends Fragment {
                             responseDeleteURL = getContext().getString(R.string.not_implemented);
 
                             // Add to database
-                            FileUtils.insertFileData(getContext(),
+                            int id = FileUtils.insertFileData(getContext(),
                                     fileEditTitleView.getText().toString(),
                                     fileEditTagsView.getText().toString(),
                                     fileEditDescriptionView.getText().toString(),
@@ -320,6 +326,19 @@ public class FileUploadFragment extends Fragment {
                                     responseDeleteURL);
 
                             Log.d(LOG_TAG, "onResponse: " + responseViewURL);
+                            Log.d(LOG_TAG, "id: " + id);
+
+                            // Create file detail activity intent
+                            Intent fileDetails = new Intent(getContext(), GalleryDetailActivity.class);
+                            Intent backStackIntent = new Intent(getContext(), GalleryActivity.class);
+                            Intent[] intents = {backStackIntent, fileDetails};
+
+                            // Pass the Uri to the corresponding gallery item
+                            fileDetails.putExtra(getString(R.string.file_details),
+                                    FileUtils.getFileData(getContext(), id));
+
+                            // Start GalleryDetailActivity with an artificial back stack
+                            getContext().startActivities(intents);
                         }
                     } else {
                         responseViewURL = getString(R.string.wetfish_base_uploader_url);
