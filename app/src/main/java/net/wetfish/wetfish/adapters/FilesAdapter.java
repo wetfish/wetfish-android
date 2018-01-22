@@ -184,6 +184,8 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                 //TODO: Acquire placeholder images
 //                                .error(Glide.with(mContext)
 //                                    .load(// TODO: Create No image found in file system/Network))
+                                .apply(RequestOptions.centerCropTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(fileImageView);
                     } else {
 //                        Glide.with(mContext)

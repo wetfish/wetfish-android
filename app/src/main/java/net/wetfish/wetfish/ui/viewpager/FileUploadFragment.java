@@ -1,19 +1,28 @@
 package net.wetfish.wetfish.ui.viewpager;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -55,38 +64,40 @@ import retrofit2.Retrofit;
  */
 public class FileUploadFragment extends Fragment {
 
-    // Logging Tag
-    private static final String LOG_TAG = FileUploadFragment.class.getSimpleName();
+    /* Fragment initialization parameter variables */
+    private int sectionNumber;
+    private Uri fileUri;
 
-    // Fragment initialization parameter keys
+    /* Fragment initialization parameter keys */
     private static final String ARG_SECTION_NUMBER = "section_number";
     private static final String ARG_FILE_URI = "file_uri";
 
-    // Constants
+    /* Constants */
+    private static final String LOG_TAG = FileUploadFragment.class.getSimpleName();
     private static final int REQUEST_STORAGE = 0;
     private static final String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static final int POSITION_BUFFER = 1;
 
-    // Fragment initialization parameter variables
-    private int sectionNumber;
-    private Uri fileUri;
-
-    // Data
+    /* Data */
     private String responseViewURL;
     private String responseDeleteURL;
     private boolean responseURLAcquired;
     private boolean fileFound;
 
-    // Views
+    /* Views */
     private TextView fileNotFoundView;
     private ImageView fileView;
     private EditText fileEditTitleView;
     private EditText fileEditTagsView;
     private EditText fileEditDescriptionView;
     private FloatingActionButton fabUploadFile;
-    private FloatingActionButton fabChooseFile;
     private View mRootLayout;
+    private View fileUploadContent;
+
+    /* Animator Variables */
+    private Animator mCurrentAnimator;
+    private int mShortAnimationDuration;
 
     //TODO: Potentially remove.
     private OnFragmentInteractionListener mListener;
@@ -121,6 +132,7 @@ public class FileUploadFragment extends Fragment {
         }
     }
 
+    //TODO: Later on when Video Playback is possible with exoplayer the focus feature will only be for images
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -129,13 +141,25 @@ public class FileUploadFragment extends Fragment {
         // Inflate the layout for this fragment
         mRootLayout = inflater.inflate(R.layout.fragment_file_upload_view_pager, container, false);
 
-        // View to show passed data
-        fileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
+        // Reference to file upload layout content
+        fileUploadContent = mRootLayout.findViewById(R.id.file_upload_content_container);
 
-        // Views to edit uploaded file data
+        // Views
+        fileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
         fileEditTitleView = mRootLayout.findViewById(R.id.et_title);
         fileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
         fileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
+
+        // Setup Animator
+        fileView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                magnifyImage(fileView, fileView.getDrawable());
+            }
+        });
+
+        // Set animation duration to the system's short animation time
+        mShortAnimationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         // View to show if data wasn't accessible. Hidden/Shown depending on the result
         fileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
@@ -170,19 +194,6 @@ public class FileUploadFragment extends Fragment {
             }
         });
 
-        //TODO: To be Implemented!
-//        // Fab to select a different file to upload
-//        fabChooseFile = mRootLayout.findViewById(R.id.fab_choose_file);
-//        fabChooseFile.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//            }
-//        });
-
-        // Hidden till further notice
-//        fabChooseFile.setVisibility(View.GONE);
-
-
         // Find out if the file is null
         if (fileUri != null && !(fileUri.toString().isEmpty())) {
             if (fileUri != null) {
@@ -193,7 +204,7 @@ public class FileUploadFragment extends Fragment {
                 // insert the photo
                 Glide.with(this)
                         .load(fileUri)
-                        .apply(RequestOptions.centerCropTransform())
+                        .apply(RequestOptions.fitCenterTransform())
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(fileView);
             } else {
@@ -213,6 +224,7 @@ public class FileUploadFragment extends Fragment {
         return mRootLayout;
     }
 
+    //TODO: Potentially Remove Permission Questioning here, or keep just in case
     private void requestStoragePermission() {
         if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
@@ -229,6 +241,146 @@ public class FileUploadFragment extends Fragment {
             // No explanation needed, request permission
             requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
         }
+    }
+
+    /**
+     * Method to magnify the image if clicked
+     *
+     * @param fileImageView the smaller image view
+     * @param drawable the image within the view
+     */
+    private void magnifyImage(final View fileImageView, Drawable drawable) {
+        // If an animation is in progress cancel it an proceed with the new one
+        if (mCurrentAnimator != null) {
+            mCurrentAnimator.cancel();
+        }
+
+        // Load high-res image
+        final ImageView focusedFileImageView = (ImageView) mRootLayout.findViewById(R.id.expanded_image);
+        focusedFileImageView.setImageDrawable(drawable);
+
+        // Calculate start and end bounds for the image.
+        final Rect startBounds = new Rect();
+        final Rect finalBounds = new Rect();
+        final Point globalOffset = new Point();
+
+        // Start bounds are the visible rectangle of the thumbnail whlie the final bounds
+        // are the visible rectangle of the container view. We set the container view's offset as
+        // the origin for the bounds since that's the origin for the positioning animation properties.
+        // (X, Y).
+        fileImageView.getGlobalVisibleRect(startBounds);
+        mRootLayout.findViewById(R.id.file_upload_content_container).getGlobalVisibleRect(finalBounds, globalOffset);
+        startBounds.offset(-globalOffset.x, -globalOffset.y);
+        finalBounds.offset(-globalOffset.x, -globalOffset.y);
+
+        // Adjust start bounds to be the same aspect ratio as the final bounds with center crop.
+        // Stretching prevents stretching during the animation. Calculate the start scaling factor.
+        float startScale;
+        if ((float) finalBounds.width() / finalBounds.height()
+                > (float) startBounds.width() / startBounds.height()) {
+
+            // Extend start bounds horizontally off the start scale
+            startScale = (float) startBounds.height() / finalBounds.height();
+            float startWidth = startScale * finalBounds.width();
+            float deltaWidth = (startWidth - startBounds.width()) / 2;
+            startBounds.left -= deltaWidth;
+            startBounds.right += deltaWidth;
+        } else {
+            // Extend start bounds vertically off the start scale
+            startScale = (float) startBounds.width() / finalBounds.width();
+            float startHeight = startScale * finalBounds.height();
+            float deltaHeight = (startHeight - startBounds.height()) / 2;
+            startBounds.top -= deltaHeight;
+            startBounds.bottom += deltaHeight;
+        }
+
+        // Hide the thumbnail view and show the focused view. When the animation begins it will
+        // position the focused view in place of the thumbnail.
+        fileImageView.setAlpha(0f);
+        focusedFileImageView.setVisibility(View.VISIBLE);
+
+        // Turn off clicking for the smaller view of the file to allow proper focusing of the image
+        // and dim the background
+        fileImageView.setClickable(false);
+
+        // Pivot point of the SCALE_X and SCALE_Y transformations are set to the top-left corner
+        // of the focused view instead of the center (default).
+        focusedFileImageView.setPivotX(0f);
+        focusedFileImageView.setPivotY(0f);
+
+        // Construct and run the parallel animation of the four translation and scale properties
+        // (X, Y, SCALE_X, and SCALE_Y).
+        AnimatorSet set = new AnimatorSet();
+        set.play(ObjectAnimator.ofFloat(focusedFileImageView, View.X, startBounds.left, finalBounds.left))
+                .with(ObjectAnimator.ofFloat(focusedFileImageView, View.Y, startBounds.top, finalBounds.top))
+                .with(ObjectAnimator.ofFloat(focusedFileImageView, View.SCALE_X, startScale, 1f))
+                .with(ObjectAnimator.ofFloat(focusedFileImageView, View.SCALE_Y, startScale, 1f));
+        set.setDuration(mShortAnimationDuration);
+        set.setInterpolator(new DecelerateInterpolator());
+        set.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                ViewCompat.setTranslationZ(focusedFileImageView, 5);
+                fileUploadContent.setAlpha(.5f);
+                fileImageView.setAlpha(0f);
+                mCurrentAnimator = null;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                ViewCompat.setTranslationZ(focusedFileImageView, 5);
+                fileUploadContent.setAlpha(.5f);
+                fileImageView.setAlpha(0f);
+                mCurrentAnimator = null;
+            }
+        });
+        set.start();
+        mCurrentAnimator = set;
+
+        // Upon clicking the focused image, it should zoom back down to the original bounds,
+        // revealing the smaller image.
+        final float startScaleFinal = startScale;
+        focusedFileImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mCurrentAnimator != null) {
+                    mCurrentAnimator.cancel();
+                }
+
+                //Animate the four positioning/sizing properties in parallel back to their original values
+                AnimatorSet set = new AnimatorSet();
+                set.play(ObjectAnimator.ofFloat(focusedFileImageView, View.X, startBounds.left))
+                        .with(ObjectAnimator.ofFloat(focusedFileImageView, View.Y, startBounds.top))
+                        .with(ObjectAnimator.ofFloat(focusedFileImageView, View.SCALE_X, startScaleFinal))
+                        .with(ObjectAnimator.ofFloat(focusedFileImageView, View.SCALE_Y, startScaleFinal));
+                set.setDuration(mShortAnimationDuration);
+                set.setInterpolator(new DecelerateInterpolator());
+                set.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        ViewCompat.setTranslationZ(focusedFileImageView, 5);
+                        fileUploadContent.setAlpha(1f);
+                        fileImageView.setAlpha(1f);
+                        fileImageView.setClickable(true);
+                        focusedFileImageView.setVisibility(View.GONE);
+                        mCurrentAnimator = null;
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+                        ViewCompat.setTranslationZ(focusedFileImageView, 5);
+                        fileUploadContent.setAlpha(1f);
+                        fileImageView.setAlpha(1f);
+                        fileImageView.setClickable(true);
+                        focusedFileImageView.setVisibility(View.GONE);
+                        mCurrentAnimator = null;
+                    }
+                });
+
+                set.start();
+                mCurrentAnimator = set;
+            }
+        });
     }
 
     /**
