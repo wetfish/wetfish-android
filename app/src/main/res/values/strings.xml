@@ -62,6 +62,7 @@
     <string name="no_app_available">No app installed can interact with this file.</string>
     <string name="unable_to_obtain_file">Unable to obtain chosen file.</string>
     <string name="no_file_selected">No file selected.</string>
+    <string name="cloud_upload_complete">Upload Complete!</string>
 
 
 </resources>

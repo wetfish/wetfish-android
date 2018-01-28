@@ -24,6 +24,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.github.clans.fab.FloatingActionButton;
+import com.github.jorgecastilloprz.FABProgressCircle;
+import com.github.jorgecastilloprz.listeners.FABProgressListener;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.retrofit.RESTInterface;
@@ -56,7 +58,7 @@ import retrofit2.Retrofit;
  * Use the {@link FileUploadFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class FileUploadFragment extends Fragment {
+public class FileUploadFragment extends Fragment implements FABProgressListener {
 
     /* Fragment initialization parameter variables */
     private int sectionNumber;
@@ -80,6 +82,7 @@ public class FileUploadFragment extends Fragment {
     private EditText fileEditTagsView;
     private EditText fileEditDescriptionView;
     private FloatingActionButton fabUploadFile;
+    private FABProgressCircle fabProgressCircle;
     private View mRootLayout;
     private View fileUploadContent;
 
@@ -88,6 +91,7 @@ public class FileUploadFragment extends Fragment {
     private String responseDeleteURL;
     private boolean responseURLAcquired;
     private boolean fileFound;
+    private int uploadID;
     //TODO: Potentially remove.
     private OnFragmentInteractionListener mListener;
 
@@ -139,6 +143,10 @@ public class FileUploadFragment extends Fragment {
         fileEditTitleView = mRootLayout.findViewById(R.id.et_title);
         fileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
         fileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
+        fabProgressCircle = mRootLayout.findViewById(R.id.fab_progress_circle);
+
+        // Setup listener for progress bar
+        fabProgressCircle.attachListener(this);
 
         // Setup file interaction
         fileView.setOnClickListener(new View.OnClickListener() {
@@ -168,13 +176,8 @@ public class FileUploadFragment extends Fragment {
                     selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 }
 
-                // Check to see if an app can open this file. If so, do so, if not, inform the user
-                PackageManager packageManager = getContext().getPackageManager();
-                if (selectViewingApp.resolveActivity(packageManager) != null) {
-                    startActivity(selectViewingApp);
-                } else {
-                    Snackbar.make(mRootLayout, R.string.no_app_available, Snackbar.LENGTH_LONG).show();
-                }
+                Log.d(LOG_TAG, "Quack: " + fileProviderUri.toString());
+                startActivity(selectViewingApp);
             }
         });
 
@@ -206,6 +209,8 @@ public class FileUploadFragment extends Fragment {
                 } else {
 
                     // Storage permissions granted!
+                    fabProgressCircle.show();
+                    fabUploadFile.setClickable(false);
                     uploadFile(fileUri);
                 }
 
@@ -248,6 +253,25 @@ public class FileUploadFragment extends Fragment {
 
         return mRootLayout;
     }
+
+    @Override
+    public void onFABProgressAnimationEnd() {
+        Snackbar.make(fabProgressCircle, getContext().getString(R.string.cloud_upload_complete), Snackbar.LENGTH_SHORT)
+                .show();
+        // Create file detail activity intent
+        Intent fileDetails = new Intent(getContext(), GalleryDetailActivity.class);
+        Intent backStackIntent = new Intent(getContext(), GalleryActivity.class);
+        Intent[] intents = {backStackIntent, fileDetails};
+
+        // Pass the Uri to the corresponding gallery item
+        fileDetails.putExtra(getString(R.string.file_details),
+                FileUtils.getFileData(getContext(), uploadID));
+
+        // Start GalleryDetailActivity with an artificial back stack
+        getContext().startActivities(intents);
+    }
+
+
 
     //TODO: Potentially Remove Permission Questioning here, or keep just in case
     private void requestStoragePermission() {
@@ -334,8 +358,6 @@ public class FileUploadFragment extends Fragment {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-                        "File Uploaded!", Snackbar.LENGTH_LONG);
                 try {
                     // Get response body as a string
                     String onResponseString = response.body().string();
@@ -352,7 +374,7 @@ public class FileUploadFragment extends Fragment {
                             responseDeleteURL = getContext().getString(R.string.not_implemented);
 
                             // Add to database
-                            int id = FileUtils.insertFileData(getContext(),
+                            uploadID = FileUtils.insertFileData(getContext(),
                                     fileEditTitleView.getText().toString(),
                                     fileEditTagsView.getText().toString(),
                                     fileEditDescriptionView.getText().toString(),
@@ -363,22 +385,56 @@ public class FileUploadFragment extends Fragment {
                                     responseDeleteURL);
 
                             Log.d(LOG_TAG, "onResponse: " + responseViewURL);
-                            Log.d(LOG_TAG, "id: " + id);
+                            Log.d(LOG_TAG, "id: " + uploadID);
 
-                            // Create file detail activity intent
-                            Intent fileDetails = new Intent(getContext(), GalleryDetailActivity.class);
-                            Intent backStackIntent = new Intent(getContext(), GalleryActivity.class);
-                            Intent[] intents = {backStackIntent, fileDetails};
+//                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+//                                    "File Uploaded!", Snackbar.LENGTH_LONG);
+                            fabProgressCircle.beginFinalAnimation();
+                        } else {
+                            responseViewURL = getString(R.string.wetfish_base_uploader_url);
 
-                            // Pass the Uri to the corresponding gallery item
-                            fileDetails.putExtra(getString(R.string.file_details),
-                                    FileUtils.getFileData(getContext(), id));
+                            responseDeleteURL = getContext().getString(R.string.not_implemented);
 
-                            // Start GalleryDetailActivity with an artificial back stack
-                            getContext().startActivities(intents);
+                            // Add to database
+                            uploadID = FileUtils.insertFileData(getContext(),
+                                    fileEditTitleView.getText().toString(),
+                                    fileEditTagsView.getText().toString(),
+                                    fileEditDescriptionView.getText().toString(),
+                                    Calendar.getInstance().getTimeInMillis(),
+                                    fileExtension,
+                                    filePath,
+                                    responseViewURL,
+                                    responseDeleteURL);
+
+                            Log.d(LOG_TAG, "onResponse: " + responseViewURL);
+                            Log.d(LOG_TAG, "id: " + uploadID);
+
+//                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+//                                    "File Uploaded!", Snackbar.LENGTH_LONG);
+                            fabProgressCircle.beginFinalAnimation();
                         }
                     } else {
                         responseViewURL = getString(R.string.wetfish_base_uploader_url);
+
+                        responseDeleteURL = getContext().getString(R.string.not_implemented);
+
+                        // Add to database
+                        uploadID = FileUtils.insertFileData(getContext(),
+                                fileEditTitleView.getText().toString(),
+                                fileEditTagsView.getText().toString(),
+                                fileEditDescriptionView.getText().toString(),
+                                Calendar.getInstance().getTimeInMillis(),
+                                fileExtension,
+                                filePath,
+                                responseViewURL,
+                                responseDeleteURL);
+
+                        Log.d(LOG_TAG, "onResponse: " + responseViewURL);
+                        Log.d(LOG_TAG, "id: " + uploadID);
+
+//                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+//                                "File Uploaded!", Snackbar.LENGTH_LONG);
+                        fabProgressCircle.beginFinalAnimation();
                     }
                 } catch (IOException e) {
                     Log.d(LOG_TAG, "onFailure Catch: ");
@@ -388,6 +444,8 @@ public class FileUploadFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                fabUploadFile.setClickable(true);
+                fabProgressCircle.hide();
                 UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                         "File Upload Failed!", Snackbar.LENGTH_LONG);
                 Log.d(LOG_TAG, "onFailure Response: " + t);

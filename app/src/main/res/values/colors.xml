@@ -25,4 +25,7 @@
 
     <!-- FAB Shadow Color -->
     <color name="fab_shadow">#030303</color>
+
+    <!-- FAB Progress Color -->
+    <color name="fab_arc_color">#00BCD4</color>
 </resources>

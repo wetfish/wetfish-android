@@ -79,20 +79,30 @@
         </android.support.constraint.ConstraintLayout>
     </android.support.v4.widget.NestedScrollView>
 
-    <com.github.clans.fab.FloatingActionButton
-        android:id="@+id/fab_upload_file"
+    <com.github.jorgecastilloprz.FABProgressCircle
+        android:id="@+id/fab_progress_circle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="@dimen/fab_margin"
         android:layout_marginEnd="@dimen/fab_margin"
-        android:src="@drawable/ic_upload_file"
+        app:arcColor="@color/fab_arc_color"
+        app:arcWidth="4dp"
+        app:finalIcon="@drawable/ic_done"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        fab:fab_colorNormal="@color/accent"
-        fab:fab_colorPressed="@color/accent_dark"
-        fab:fab_colorRipple="@color/accent_light"
-        fab:fab_size="normal" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_upload_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_upload_file"
+            fab:fab_colorNormal="@color/accent"
+            fab:fab_colorPressed="@color/accent_dark"
+            fab:fab_colorRipple="@color/accent_light"
+            fab:fab_size="normal" />
+
+    </com.github.jorgecastilloprz.FABProgressCircle>
 
 
     <TextView
