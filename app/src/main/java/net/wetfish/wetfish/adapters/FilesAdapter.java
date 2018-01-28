@@ -2,6 +2,8 @@ package net.wetfish.wetfish.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +19,7 @@ import com.bumptech.glide.request.RequestOptions;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileContract;
+import net.wetfish.wetfish.utils.FileUtils;
 
 import java.io.File;
 
@@ -145,7 +148,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
 
         // File image view
         //TODO: Impelemnt exoplayer later if video playback is desired
-        public ImageView fileImageView;
+        public ImageView fileView;
 
         /**
          * Constructor for FileViewHolder. Obtain a reference to the layout.
@@ -156,7 +159,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
             super(itemView);
 
             // Gallery item view
-            fileImageView = (ImageView) itemView.findViewById(R.id.iv_gallery_item);
+            fileView = (ImageView) itemView.findViewById(R.id.iv_gallery_item);
             itemView.setOnClickListener(this);
         }
 
@@ -174,23 +177,43 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                             //TODO: Potentially change image loading logic
                             .apply(RequestOptions.centerCropTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
-                            .into(fileImageView);
+                            .into(fileView);
                 } else {
                     ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
                     NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+
                     if(networkInfo != null && networkInfo.isConnected()){
-                        Glide.with(mContext)
-                                .load(fileWetfishPath)
-                                //TODO: Acquire placeholder images
-//                                .error(Glide.with(mContext)
-//                                    .load(// TODO: Create No image found in file system/Network))
-                                .apply(RequestOptions.centerCropTransform())
-                                .transition(DrawableTransitionOptions.withCrossFade())
-                                .into(fileImageView);
+                        // If network is connected search the device for the stored image on the device
+                        // then wetfish if not found.
+                        if (FileUtils.representableByGlide(fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_TYPE_EXTENSION)))) {
+                            Glide.with(mContext)
+                                    .load(fileDevicePath)
+                                    .error(Glide.with(mContext).load(fileWetfishPath))
+                                    .error(Glide.with(mContext).load(new ColorDrawable(Color.BLACK)))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.fitCenterTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
+                        } else {
+                            Glide.with(mContext)
+                                    .load(null)
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
+                                    .apply(RequestOptions.fitCenterTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
+                        }
+
                     } else {
-//                        Glide.with(mContext)
-//                                .load(// TODO: No network connection & no file found in file system))
-//                                .into()
+                        // If network is not connected search the device for the stored file on the
+                        // device then show a black image if not found.
+                        //TODO: Figure out a good method for this later. In the meantime, storage or black image.
+                        Glide.with(mContext)
+                                .load(fileDevicePath)
+                                .error(Glide.with(mContext).load(new ColorDrawable(Color.BLACK)))
+                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.fitCenterTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(fileView);
                     }
                 }
 

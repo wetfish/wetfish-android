@@ -72,8 +72,10 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             Log.d(LOG_TAG, "File Data URI: " + fileUri.toString());
         } else {
             Log.d(LOG_TAG, "Bundle returned null");
-            UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
-                    "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
+            Snackbar.make(findViewById(android.R.id.content), R.string.unable_to_obtain_file, Snackbar.LENGTH_LONG).show();
+
+//            UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
+//                    "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
         }
         // Set view data
         if (fileUri != null) {

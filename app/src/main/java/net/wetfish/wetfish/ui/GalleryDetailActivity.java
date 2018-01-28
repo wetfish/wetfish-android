@@ -1,26 +1,27 @@
 package net.wetfish.wetfish.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.LoaderManager;
 import android.content.AsyncTaskLoader;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.view.ViewCompat;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,8 +33,11 @@ import com.github.clans.fab.FloatingActionMenu;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileInfo;
+import net.wetfish.wetfish.utils.FileUtils;
 
 import org.parceler.Parcels;
+
+import java.io.File;
 
 public class GalleryDetailActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
@@ -69,19 +73,16 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     private TextView fileDescriptionTextView;
     // Layout include reference
     private View includeLayout;
-    // Layout include content reference
-    private View galleryDetailContent;
 
     /* Data */
     // Uri for the sent cursor
     private Uri mUri;
     // FileInfo object that holds all data
     private FileInfo mFiileInfo;
-
-    /* Animator Variables */
-    private Animator mCurrentAnimator;
-    private int mShortAnimationDuration;
-
+    // FileInfo string that holds file location
+    private String fileStorageLink;
+    // FileType string that holds the file extension type
+    private String fileType;
 
     //TODO: Later on when Video Playback is possible with exoplayer the focus feature will only be for images
     @Override
@@ -92,25 +93,55 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         // Reference included layout
         includeLayout = findViewById(R.id.include_layout_gallery_detail);
 
-        // Reference Gallery Detail include layout content
-        galleryDetailContent = includeLayout.findViewById(R.id.gallery_detail_content_container);
-
         // Views
+        // TODO: Support Video Views soon. (Glide/VideoView/Exoplayer)
         fileView = includeLayout.findViewById(R.id.iv_gallery_item_detail);
         fileTitleTextView = includeLayout.findViewById(R.id.tv_title);
         fileTagsTextView = includeLayout.findViewById(R.id.tv_tags);
         fileDescriptionTextView = includeLayout.findViewById(R.id.tv_description);
 
-        // Setup Animator
+        // Setup file interaction
         fileView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                magnifyImage(fileView, fileView.getDrawable());
+                // Intent to find proper app to open file
+                Intent selectViewingApp = new Intent();
+                selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                selectViewingApp.setAction(Intent.ACTION_VIEW);
+
+                // Uri path to the file
+                Uri fileProviderUri;
+
+                // Use FileProvider to get an appropriate URI compatible with version Nougat+
+                Log.d(LOG_TAG, "File Storage Link: " + fileStorageLink);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                     fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
+                            getString(R.string.file_provider_authority),
+                            new File(fileStorageLink));
+                } else {
+                    fileProviderUri = Uri.parse(fileStorageLink);
+                }
+
+                // Setup the data and type
+                // Appropriately determine mime type for the file
+                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.determineMimeType(GalleryDetailActivity.this, fileType));
+
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                    selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
+                    selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+
+                Log.d(LOG_TAG, "Quack: " + fileProviderUri.toString());
+
+                // Check to see if an app can open this file. If so, do so, if not, inform the user
+                PackageManager packageManager = getPackageManager();
+                if (selectViewingApp.resolveActivity(packageManager) != null) {
+                    startActivity(selectViewingApp);
+                } else {
+                    Snackbar.make(includeLayout, R.string.no_app_available, Snackbar.LENGTH_LONG).show();
+                }
             }
         });
-
-        // Set animation duration to the system's short animation time
-        mShortAnimationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         // Setup Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -184,146 +215,6 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         getLoaderManager().initLoader(FILES_DETAIL_LOADER, null, this);
     }
 
-    /**
-     * Method to magnify the image if clicked
-     *
-     * @param fileImageView the smaller image view
-     * @param drawable the image within the view
-     */
-    private void magnifyImage(final View fileImageView, Drawable drawable) {
-        // If an animation is in progress cancel it an proceed with the new one
-        if (mCurrentAnimator != null) {
-            mCurrentAnimator.cancel();
-        }
-
-        // Load high-res image
-        final ImageView focusedFileImageView = (ImageView) includeLayout.findViewById(R.id.expanded_image);
-        focusedFileImageView.setImageDrawable(drawable);
-
-        // Calculate start and end bounds for the image.
-        final Rect startBounds = new Rect();
-        final Rect finalBounds = new Rect();
-        final Point globalOffset = new Point();
-
-        // Start bounds are the visible rectangle of the thumbnail whlie the final bounds
-        // are the visible rectangle of the container view. We set the container view's offset as
-        // the origin for the bounds since that's the origin for the positioning animation properties.
-        // (X, Y).
-        fileImageView.getGlobalVisibleRect(startBounds);
-        findViewById(R.id.gallery_detail_container).getGlobalVisibleRect(finalBounds, globalOffset);
-        startBounds.offset(-globalOffset.x, -globalOffset.y);
-        finalBounds.offset(-globalOffset.x, -globalOffset.y);
-
-        // Adjust start bounds to be the same aspect ratio as the final bounds with center crop.
-        // Stretching prevents stretching during the animation. Calculate the start scaling factor.
-        float startScale;
-        if ((float) finalBounds.width() / finalBounds.height()
-                > (float) startBounds.width() / startBounds.height()) {
-
-            // Extend start bounds horizontally off the start scale
-            startScale = (float) startBounds.height() / finalBounds.height();
-            float startWidth = startScale * finalBounds.width();
-            float deltaWidth = (startWidth - startBounds.width()) / 2;
-            startBounds.left -= deltaWidth;
-            startBounds.right += deltaWidth;
-        } else {
-            // Extend start bounds vertically off the start scale
-            startScale = (float) startBounds.width() / finalBounds.width();
-            float startHeight = startScale * finalBounds.height();
-            float deltaHeight = (startHeight - startBounds.height()) / 2;
-            startBounds.top -= deltaHeight;
-            startBounds.bottom += deltaHeight;
-        }
-
-        // Hide the thumbnail view and show the focused view. When the animation begins it will
-        // position the focused view in place of the thumbnail.
-        fileImageView.setAlpha(0f);
-        focusedFileImageView.setVisibility(View.VISIBLE);
-
-        // Turn off clicking for the smaller view of the file to allow proper focusing of the image
-        // and dim the background
-        fileImageView.setClickable(false);
-
-        // Pivot point of the SCALE_X and SCALE_Y transformations are set to the top-left corner
-        // of the focused view instead of the center (default).
-        focusedFileImageView.setPivotX(0f);
-        focusedFileImageView.setPivotY(0f);
-
-        // Construct and run the parallel animation of the four translation and scale properties
-        // (X, Y, SCALE_X, and SCALE_Y).
-        AnimatorSet set = new AnimatorSet();
-        set.play(ObjectAnimator.ofFloat(focusedFileImageView, View.X, startBounds.left, finalBounds.left))
-                .with(ObjectAnimator.ofFloat(focusedFileImageView, View.Y, startBounds.top, finalBounds.top))
-                .with(ObjectAnimator.ofFloat(focusedFileImageView, View.SCALE_X, startScale, 1f))
-                .with(ObjectAnimator.ofFloat(focusedFileImageView, View.SCALE_Y, startScale, 1f));
-        set.setDuration(mShortAnimationDuration);
-        set.setInterpolator(new DecelerateInterpolator());
-        set.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                ViewCompat.setTranslationZ(focusedFileImageView, 5);
-                galleryDetailContent.setAlpha(.5f);
-                fileImageView.setAlpha(0f);
-                mCurrentAnimator = null;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                ViewCompat.setTranslationZ(focusedFileImageView, 5);
-                galleryDetailContent.setAlpha(.5f);
-                fileImageView.setAlpha(0f);
-                mCurrentAnimator = null;
-            }
-        });
-        set.start();
-        mCurrentAnimator = set;
-
-        // Upon clicking the focused image, it should zoom back down to the original bounds,
-        // revealing the smaller image.
-        final float startScaleFinal = startScale;
-        focusedFileImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mCurrentAnimator != null) {
-                    mCurrentAnimator.cancel();
-                }
-
-                //Animate the four positioning/sizing properties in parallel back to their original values
-                AnimatorSet set = new AnimatorSet();
-                set.play(ObjectAnimator.ofFloat(focusedFileImageView, View.X, startBounds.left))
-                        .with(ObjectAnimator.ofFloat(focusedFileImageView, View.Y, startBounds.top))
-                        .with(ObjectAnimator.ofFloat(focusedFileImageView, View.SCALE_X, startScaleFinal))
-                        .with(ObjectAnimator.ofFloat(focusedFileImageView, View.SCALE_Y, startScaleFinal));
-                set.setDuration(mShortAnimationDuration);
-                set.setInterpolator(new DecelerateInterpolator());
-                set.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        ViewCompat.setTranslationZ(focusedFileImageView, 5);
-                        galleryDetailContent.setAlpha(1f);
-                        fileImageView.setAlpha(1f);
-                        fileImageView.setClickable(true);
-                        focusedFileImageView.setVisibility(View.GONE);
-                        mCurrentAnimator = null;
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-                        ViewCompat.setTranslationZ(focusedFileImageView, 5);
-                        galleryDetailContent.setAlpha(1f);
-                        fileImageView.setAlpha(1f);
-                        fileImageView.setClickable(true);
-                        focusedFileImageView.setVisibility(View.GONE);
-                        mCurrentAnimator = null;
-                    }
-                });
-
-                set.start();
-                mCurrentAnimator = set;
-            }
-        });
-    }
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -360,17 +251,57 @@ public class GalleryDetailActivity extends AppCompatActivity implements
             copyFileDeleteURLFAB.setVisibility(View.GONE);
         }
 
+        fileType = fileInfo.getFileExtensionType();
+
         // Setup view data
+        // Check to see if the view is representable by glide
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            // If network is connected search the device for the stored image on the device
+            // then wetfish if not found.if (FileUtils.representableByGlide(fileType)) {
+            if (FileUtils.representableByGlide(fileType)) {
+                Glide.with(this)
+                        .load(fileInfo.getFileWetfishStorageLink()) //TODO: Do file storage first
+                        .error(Glide.with(this).load(fileInfo.getFileWetfishStorageLink()))
+                        .error(Glide.with(this).load(new ColorDrawable(Color.BLACK)))
+                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                        .apply(RequestOptions.fitCenterTransform())
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(fileView);
+            } else {
+                // If not, let the user know
+                //TODO: Figure out a good method for this later. In the meantime, black image.
+                Glide.with(this)
+                        .load(null)
+                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
+                        .apply(RequestOptions.fitCenterTransform())
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(fileView);
+            }
+        } else {
+        // If network is not connected search the device for the stored file on the
+        // device then show a black image if not found.
+        //TODO: Figure out a good method for this later. In the meantime, storage or black image.
         Glide.with(this)
-                .load(fileInfo.getFileWetfishStorageLink()) //TODO: Do file storage first
-                .apply(RequestOptions.fitCenterTransform())
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .into(fileView);
+                    .load(fileInfo.getFileDeviceStorageLink())
+                    .error(Glide.with(this).load(new ColorDrawable(Color.BLACK)))
+                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                    .apply(RequestOptions.fitCenterTransform())
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .into(fileView);
+        }
+
 
         fileTitleTextView.setText(fileInfo.getFileTitle());
         fileTagsTextView.setText(fileInfo.getFileTags());
         fileDescriptionTextView.setText(fileInfo.getFileDescription());
 
+        // File storage link to be used as a passed value for the intent when the file is clicked
+        //TODO: Must check how this will work when file is not downloaded on device
+        fileStorageLink = fileInfo.getFileDeviceStorageLink();
+
+        // File extension type to check the appropriate mime type
     }
 
     /**

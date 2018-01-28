@@ -43,6 +43,8 @@
 
     <!-- Mime Type Strings -->
     <string name="file_mime_type">image/*, video/*</string>
+    <string name="image_mime_type">image/*</string>
+    <string name="video_mime_type">video/*</string>
 
     <!-- FAB Strings -->
     <string name="fab_file_upload">Upload File</string>
@@ -54,6 +56,12 @@
     <string name="fab_copy_upload_link">Copy Upload Link</string>
     <string name="fab_visit_deletion_link">Visit Deletion Link</string>
     <string name="fab_copy_deletion_link">Copy Deletion Link</string>
+
+    <!-- File Provider strings -->
+    <string name="file_provider_authority">net.wetfish.wetfish.fileprovide</string>
+    <string name="no_app_available">No app installed can interact with this file.</string>
+    <string name="unable_to_obtain_file">Unable to obtain chosen file.</string>
+    <string name="no_file_selected">No file selected.</string>
 
 
 </resources>

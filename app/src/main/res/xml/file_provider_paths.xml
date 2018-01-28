@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Internal App Storage, Context#getFilesDir() -->
+    <files-path
+        name="files"
+        path="." />
+
+    <!-- Internal App Cache Storage, Context#getCacheDir() -->
+    <cache-path
+        name="cache"
+        path="." />
+
+    <!-- Public External Storage, Environment.getExternalStorageDirectory() -->
+    <external-path
+        name="external_files"
+        path="." />
+
+    <!-- External App Cache Storage, Context#getExternalCacheDir() -->
+    <external-cache-path
+        name="external_files_cache"
+        path="." />
+
+    <!-- External App Storage, Context#getExternalFilesDir(null) -->
+    <external-files-path
+        name="external_files"
+        path="." />
+
+    <!-- What -->
+    <root-path
+        name="external_sd_files"
+        path="/storage/external_SD/" />
+
+    <!-- What -->
+    <root-path
+        name="external_sd_files"
+        path="/storage/emulated/" />
+
+    <!-- Internal App Storage, Context#getFilesDir() -->
+
+    <!--<external-path-->
+    <!--name="external_files_two"-->
+    <!--path="media/" />-->
+    <!--<external-path-->
+    <!--name="external_files_two_five"-->
+    <!--path="/storage/external_SD/DCIM/Camera/" />-->
+    <!--<external-files-path-->
+    <!--name="external_files_three"-->
+    <!--path="." />-->
+    <!--<external-files-path-->
+    <!--name="external_files_four"-->
+    <!--path="." />-->
+</paths>

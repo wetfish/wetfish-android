@@ -5,9 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
+import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileContract.FileColumns;
 import net.wetfish.wetfish.data.FileContract.Files;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ${Michael} on 11/4/2017.
@@ -19,10 +24,12 @@ public class FileUtils {
     public static String getRealPathFromUri(Context context, Uri contentUri) {
         Cursor cursor = null;
         try {
+            Log.d("Ehyo", contentUri.toString());
             String[] proj = {MediaStore.Images.Media.DATA};
             cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
+            Log.d("Ehyo", cursor.getString(column_index));
             return cursor.getString(column_index);
         } finally {
             if (cursor != null) {
@@ -34,6 +41,17 @@ public class FileUtils {
     //TODO:
     public static String getFileExtensionFromUri(Context context, Uri contentUri) {
         Cursor cursor = null;
+
+        // RegEx Matcher to see if the file came from downloads and has a full file contentUri
+        String patternString = "(?:/Download/)";
+        Pattern pattern = Pattern.compile(patternString);
+        Matcher matcher = pattern.matcher(contentUri.toString());
+        if (matcher.matches()) {
+            String[] tokens = contentUri.toString().split("\\.(?=[^\\.]+$)");
+            return "." + tokens;
+        }
+
+        // Try a RegEx matcher for files within MediaStore.Images.Media.Data
         try {
             String[] proj = {MediaStore.Images.Media.DATA};
             cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
@@ -63,9 +81,9 @@ public class FileUtils {
     }
 
     public static int insertFileData(Context context, String fileTitle, String fileTags,
-                                      String fileDescription, long fileUploadDate, String fileExtension,
-                                      String fileDeviceUri, String fileWetfishLocationUrl,
-                                      String fileWetfishDeletionUrl) {
+                                     String fileDescription, long fileUploadDate, String fileExtension,
+                                     String fileDeviceUri, String fileWetfishLocationUrl,
+                                     String fileWetfishDeletionUrl) {
 
         //TODO: Potential for adding error checking
 //        String selection = FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK + "=?" +
@@ -91,5 +109,44 @@ public class FileUtils {
 
         // Insert the content values into the database and get the position
         return Integer.valueOf(((context.getContentResolver().insert(Files.CONTENT_URI, cv)).getLastPathSegment()).toString());
+    }
+
+
+    /**
+     * Method to determine what the mime type is for the provided file extension
+     *
+     * @param fileType
+     * @return
+     */
+    public static String determineMimeType(Context context, String fileType) {
+        Log.d("Ehyooo", "CHECK IT: " + fileType);
+        if (fileType.matches(".jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg")) {
+            Log.d("Ehyo", "image/*");
+            return context.getString(R.string.image_mime_type);
+        } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
+                "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
+                "|.flv|.mkv|.webm|.mp3|.mp4")) {
+            Log.d("Ehyo", "video/*");
+            return context.getString(R.string.video_mime_type);
+        } else {
+            Log.d("Ehyo", "image/*, video/*");
+            return context.getString(R.string.file_mime_type);
+        }
+    }
+
+    public static boolean representableByGlide(String fileType) {
+        Log.d("Ehyooo", "CHECK IT: " + fileType);
+        if (fileType.matches(".jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg")) {
+            Log.d("Ehyo", "image/*");
+            return true;
+        } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
+                "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
+                "|.flv|.mkv|.webm|.mp3|.mp4")) {
+            Log.d("Ehyo", "video/*");
+            return true;
+        } else {
+            Log.d("Ehyo", "What");
+            return false;
+        }
     }
 }
