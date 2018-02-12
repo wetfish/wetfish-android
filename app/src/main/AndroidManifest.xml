@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.wetfish.wetfish">
 
+    <!-- Feature -->
+    <uses-feature android:name = "android.hardware.camera" android:required="false"/>
     <!-- Normal Permission-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Normal Permission -->

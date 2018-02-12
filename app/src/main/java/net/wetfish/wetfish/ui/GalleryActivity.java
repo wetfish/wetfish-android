@@ -5,15 +5,18 @@ import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,6 +34,11 @@ import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.adapters.FilesAdapter;
 import net.wetfish.wetfish.utils.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class GalleryActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>,
         FilesAdapter.FileAdapterOnClickHandler {
@@ -42,8 +50,10 @@ public class GalleryActivity extends AppCompatActivity implements
     private static final int FILES_LOADER = 0;
     // Key for saved instance state value
     private static final String BUNDLE_KEY = "fileCursorKey";
-    // Intent Constant
-    private int PICK_FILE = 1;
+    // Intent Request Codes
+    private static final int REQUEST_PICK_FILE = 1;
+    private static final int REQUEST_CAPTURE_IMAGE = 2;
+    private static final int REQUEST_CAPTURE_VIDEO = 3;
     // Content Provider Auto Increment Buffer
     private int POSITION_BUFFER = 1;
 
@@ -57,10 +67,25 @@ public class GalleryActivity extends AppCompatActivity implements
     // Files adapter for Recycler View
     private FilesAdapter mFilesAdapter;
     // Layout Manager for recycler view
-    private GridLayoutManager gridLayoutManager;
+    private GridLayoutManager mGridLayoutManager;
+    // FAB menu view
+    private View mFileFam;
+    // FAM menu option FABs
+    private FloatingActionButton mTakePictureFAB;
+    private FloatingActionButton mTakeVideoFAB;
+    private FloatingActionButton mSelectFileFab;
 
     /* Data */
-    private NetworkInfo networkInfo;
+    // Network information
+    private NetworkInfo mNetworkInfo;
+    // FileProvider Uri for the image file
+    private Uri mCurrentImageUri;
+    // File path for the image file
+    private String mCurrentImagePath;
+    // FileProvider Uri for the video file
+    private Uri mCurrentVideoUri;
+    // File path for the video file
+    private String mCurrentVideoPath;
 
 
     @Override
@@ -86,16 +111,36 @@ public class GalleryActivity extends AppCompatActivity implements
         mRecyclerView.setHasFixedSize(true);
 
         // Setup layout for the Recycler View
-        gridLayoutManager = new GridLayoutManager(this, 3);
-        mRecyclerView.setLayoutManager(gridLayoutManager);
+        mGridLayoutManager = new GridLayoutManager(this, 3);
+        mRecyclerView.setLayoutManager(mGridLayoutManager);
 
         // Setup adapter for Recycler View
         mFilesAdapter = new FilesAdapter(this, this);
         mRecyclerView.setAdapter(mFilesAdapter);
 
+        // FAM
+        mFileFam = findViewById(R.id.fam_gallery);
+
         // FAB to start intent to select a file then pass the user to another activity
-        FloatingActionButton fab = findViewById(R.id.fab_select_file);
-        fab.setOnClickListener(new View.OnClickListener() {
+         mTakePictureFAB = findViewById(R.id.fab_take_picture);
+         mTakeVideoFAB = findViewById(R.id.fab_take_video);
+         mSelectFileFab = findViewById(R.id.fab_select_file);
+
+        mTakePictureFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                captureImageToUpload();
+            }
+        });
+
+        mTakeVideoFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                captureVideoToUpload();
+            }
+        });
+
+        mSelectFileFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 selectFileToUpload();
@@ -105,7 +150,7 @@ public class GalleryActivity extends AppCompatActivity implements
         // Acquire a connectivity manager to see network status
         ConnectivityManager connectivityManager = (ConnectivityManager)
                 this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        networkInfo = connectivityManager.getActiveNetworkInfo();
+        mNetworkInfo = connectivityManager.getActiveNetworkInfo();
     }
 
     @Override
@@ -115,6 +160,7 @@ public class GalleryActivity extends AppCompatActivity implements
         return true;
     }
 
+    //Here's a comment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -137,12 +183,13 @@ public class GalleryActivity extends AppCompatActivity implements
     }
 
     /**
-     * This method will be invoked when the FAB is activated.
+     * Select an image or video to upload
+     * //TODO: Is ready to also select more than video/* and image/*
      */
     private void selectFileToUpload() {
         // Attempt to open gallery
         try {
-              // TODO: This chunk of code allows for files to be picked from the file system and allow for other file types to be added.
+            // TODO: This chunk of code allows for files to be picked from the file system and allow for other file types to be added.
 //            Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 //            Intent pickFileIntentTwo = new Intent(Intent.ACTION_GET_CONTENT, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 //            pickFileIntent.setType(getString(R.string.file_mime_type));
@@ -157,17 +204,123 @@ public class GalleryActivity extends AppCompatActivity implements
             Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             pickFileIntent.setType(getString(R.string.file_mime_type));
 
-            Intent useCameraIntentPicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            Intent useCameraIntentVideo = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.select_upload_file));
+            //TODO: Implement this and the above should more file uploads be desired apart from image/* & video/*
+            //            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{useCameraIntentPicture, useCameraIntentVideo});
 
-            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.chooser_title));
-            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{useCameraIntentPicture, useCameraIntentVideo});
-
-            startActivityForResult(chooserIntent, PICK_FILE);
+            startActivityForResult(chooserIntent, REQUEST_PICK_FILE);
         } catch (Exception e) {
             Log.d(LOG_TAG, "An exception occurred!: " + e.toString());
         }
 
+    }
+
+    /**
+     * Capture an image or video to upload
+     */
+    private void captureImageToUpload() {
+        // Setup intent
+        Intent cameraImageIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        // Check to see if an application is available to open the intent and a camera is available
+        if (cameraImageIntent.resolveActivity(getPackageManager()) != null &&
+                getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
+
+            // Create the file that the result will populate
+            File imageFile = null;
+            try {
+                imageFile = createImageFile();
+            } catch (IOException e) {
+                Log.d(LOG_TAG, "Error occurred while creating the file: " + e);
+                e.printStackTrace();
+            }
+
+            if (imageFile != null) {
+                // Get a shareable content:// uri
+                Uri imageUri = FileProvider.getUriForFile(this,
+                        getString(R.string.file_provider_authority),
+                        imageFile);
+
+                // Set member variable to that uri to pass to the next activity
+                mCurrentImageUri = imageUri;
+
+                cameraImageIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(cameraImageIntent, REQUEST_CAPTURE_IMAGE);
+            }
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create a unique image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = getString(R.string.image_file_start) + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,
+                getString(R.string.image_file_extension),
+                storageDir
+        );
+
+        // File path
+        mCurrentImagePath = image.getAbsolutePath();
+
+        return image;
+    }
+
+    /**
+     * Capture an image or video to upload
+     */
+    private void captureVideoToUpload() {
+        // Setup intent
+        Intent cameraVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
+        // Check to see if an application is available to open the intent and a camera is available
+        if (cameraVideoIntent.resolveActivity(getPackageManager()) != null &&
+                getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
+
+            // Create teh file that the result will populate
+            File videoFile = null;
+            try {
+                videoFile = createVideoFile();
+            } catch (IOException e) {
+                Log.d(LOG_TAG, "Error occurred while creating the file: " + e);
+                e.printStackTrace();
+            }
+
+            if (videoFile != null) {
+                // Get a shareable content:// uri
+                Uri imageUri = FileProvider.getUriForFile(this,
+                        getString(R.string.file_provider_authority),
+                        videoFile);
+
+                // Set member variable to that uri to pass to the next activity
+                mCurrentVideoUri = imageUri;
+
+                cameraVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(cameraVideoIntent, REQUEST_CAPTURE_VIDEO);
+            }  else {
+                Log.d(LOG_TAG, "Video file was null");
+            }
+        } else {
+            Log.d(LOG_TAG, "Nothing exists to take a video?");
+        }
+    }
+
+    private File createVideoFile() throws IOException {
+        // Create a unique image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String videoFileName = getString(R.string.image_file_start) + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File video = File.createTempFile(
+                videoFileName,
+                getString(R.string.video_file_extension),
+                storageDir
+        );
+
+        //File path
+        mCurrentVideoPath = video.getAbsolutePath();
+
+        return video;
     }
 
     /**
@@ -181,18 +334,43 @@ public class GalleryActivity extends AppCompatActivity implements
     protected void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK && reqCode == REQUEST_PICK_FILE) {
+            // User decided to select an already existing file.
             Uri contentUri = data.getData();
 
             Log.d(LOG_TAG, contentUri.toString());
+            contentUri = Uri.parse(FileUtils.getRealPathFromUri(this, contentUri));
+
+            Log.d(LOG_TAG, contentUri.toString());
+
             startActivity(new Intent(this, GalleryUploadActivity.class)
                     .setDataAndType(contentUri, getString(R.string.file_mime_type)));
+        } else if (resultCode == RESULT_OK && reqCode == REQUEST_CAPTURE_IMAGE) {
+            // User decided to capture an image
+            // Inform media  scanner so that is immediately available
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            File f = new File(mCurrentImagePath);
+            Uri contentUri = Uri.fromFile(f);
+            mediaScanIntent.setData(contentUri);
+            this.sendBroadcast(mediaScanIntent);
+
+            startActivity(new Intent(this, GalleryUploadActivity.class)
+                    .setDataAndType(Uri.parse(mCurrentImagePath), getString(R.string.image_mime_type)));
+        } else if (resultCode == RESULT_OK && reqCode == REQUEST_CAPTURE_VIDEO) {
+            // User decided to capture a video
+            // Inform media  scanner so that is immediately available
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            File f = new File(mCurrentVideoPath);
+            Uri contentUri = Uri.fromFile(f);
+            mediaScanIntent.setData(contentUri);
+            this.sendBroadcast(mediaScanIntent);
+
+            startActivity(new Intent(this, GalleryUploadActivity.class)
+                    .setDataAndType(Uri.parse(mCurrentVideoPath), getString(R.string.video_mime_type)));
         } else {
             //TODO: Probably should remove snackbar later
             Snackbar.make(findViewById(android.R.id.content), R.string.no_file_selected, Snackbar.LENGTH_LONG).show();
 
-//            UIUtils.generateSnackbar(this, findViewById(android.R.id.content),
-//                    "No file selected", Snackbar.LENGTH_SHORT);
             Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
 
         }
@@ -261,7 +439,7 @@ public class GalleryActivity extends AppCompatActivity implements
             // If the cursor has data
             mFilesAdapter.swapCursor(cursor);
             mEmptyStateView.setVisibility(View.GONE);
-        } else if (cursor != null && !(cursor.moveToFirst())){
+        } else if (cursor != null && !(cursor.moveToFirst())) {
             // If the cursor has no data
             mEmptyStateView.setVisibility(View.VISIBLE);
         } else {

@@ -228,12 +228,15 @@ public class FileUploadFragment extends Fragment implements FABProgressListener 
                 // Check to see if the view is representable by glide
                 if (FileUtils.representableByGlide(FileUtils.getFileExtensionFromUri(getContext(), fileUri))) {
                     Glide.with(this)
-                            .load(fileUri)
+                            .load(FileProvider.getUriForFile(getContext(),
+                                    getString(R.string.file_provider_authority),
+                                    new File(fileUri.toString())))
                             .apply(RequestOptions.fitCenterTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(fileView);
                 } else {
                     // If not, let the user know
+                    Log.d(LOG_TAG, "Welp, something still went wrong!");
 
                 }
 

@@ -21,34 +21,59 @@ import java.util.regex.Pattern;
  */
 
 public class FileUtils {
+    // TODO: Might want to rename this
     public static String getRealPathFromUri(Context context, Uri contentUri) {
-        Cursor cursor = null;
-        try {
-            Log.d("Ehyo", contentUri.toString());
-            String[] proj = {MediaStore.Images.Media.DATA};
-            cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            Log.d("Ehyo", cursor.getString(column_index));
-            return cursor.getString(column_index);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
+        String fileProviderString = "(/net.wetfish.wetfish/)";
+        String capturedFileString = "(CAPTURED_FILE_)";
+        String storageString  = "(/storage/)";
+        Pattern fileProviderPattern = Pattern.compile(capturedFileString);
+        Pattern capturedFilePattern = Pattern.compile(fileProviderString);
+        Pattern storagePattern = Pattern.compile(storageString);
+        Matcher fileProviderMatcher = fileProviderPattern.matcher(contentUri.toString());
+        Matcher capturedFileMatcher = capturedFilePattern.matcher(contentUri.toString());
+        Matcher storageStringMatcher = storagePattern.matcher(contentUri.toString());
+
+        if (fileProviderMatcher.find() || capturedFileMatcher.find() || storageStringMatcher.find())
+        {
+            // provided uri is already the file path
+            return contentUri.toString();
+        } else {
+            Cursor cursor = null;
+            try {
+                Log.d("FileUtils[gRPFU]: ", contentUri.toString());
+                String[] proj = {MediaStore.Images.Media.DATA};
+                cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                cursor.moveToFirst();
+                Log.d("FileUtils[gRPFU]: ", cursor.getString(column_index));
+                return cursor.getString(column_index);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
         }
     }
-
-    //TODO:
+    
     public static String getFileExtensionFromUri(Context context, Uri contentUri) {
         Cursor cursor = null;
 
         // RegEx Matcher to see if the file came from downloads and has a full file contentUri
-        String patternString = "(?:/Download/)";
+        Log.d("FileUtils[gFEFU]: ", "contentUri: " + contentUri.toString());
+        String patternString = "(?:/storage/)";
+        String patternStringTwo = "(content:)";
         Pattern pattern = Pattern.compile(patternString);
-        Matcher matcher = pattern.matcher(contentUri.toString());
-        if (matcher.matches()) {
+        Pattern patternTwo = Pattern.compile(patternStringTwo);
+        Matcher storageMatcher = pattern.matcher(contentUri.toString());
+        Matcher contentMatcher = patternTwo.matcher(contentUri.toString());
+        if (storageMatcher.find()) {
             String[] tokens = contentUri.toString().split("\\.(?=[^\\.]+$)");
-            return "." + tokens;
+            return "." + tokens[tokens.length-1];
+        }
+
+        if (contentMatcher.find()) {
+            String[] tokens = contentUri.toString().split("\\.(?=[^\\.]+$)");
+            return "." + tokens[tokens.length-1];
         }
 
         // Try a RegEx matcher for files within MediaStore.Images.Media.Data
@@ -57,6 +82,8 @@ public class FileUtils {
             cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
             int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
+
+            Log.d("FileUtils[gFEFU]: ", "Cursor try lewppp");
 
             String[] tokens = cursor.getString(column_index).split("\\.(?=[^\\.]+$)");
             return "." + tokens[1];
@@ -119,33 +146,33 @@ public class FileUtils {
      * @return
      */
     public static String determineMimeType(Context context, String fileType) {
-        Log.d("Ehyooo", "CHECK IT: " + fileType);
+        Log.d("FileUtils[dMT]: ", "CHECK IT: " + fileType);
         if (fileType.matches(".jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg")) {
             Log.d("Ehyo", "image/*");
             return context.getString(R.string.image_mime_type);
         } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
                 "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
                 "|.flv|.mkv|.webm|.mp3|.mp4")) {
-            Log.d("Ehyo", "video/*");
+            Log.d("FileUtils[dMT]: ", "video/*");
             return context.getString(R.string.video_mime_type);
         } else {
-            Log.d("Ehyo", "image/*, video/*");
+            Log.d("FileUtils[dMT]", "image/*, video/*");
             return context.getString(R.string.file_mime_type);
         }
     }
 
     public static boolean representableByGlide(String fileType) {
-        Log.d("Ehyooo", "CHECK IT: " + fileType);
+        Log.d("FileUtils[rBG]: ", "CHECK IT: " + fileType);
         if (fileType.matches(".jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg")) {
-            Log.d("Ehyo", "image/*");
+            Log.d("FileUtils[rBG]: ", "image/*");
             return true;
         } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
                 "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
                 "|.flv|.mkv|.webm|.mp3|.mp4")) {
-            Log.d("Ehyo", "video/*");
+            Log.d("FileUtils[rBG]", "video/*");
             return true;
         } else {
-            Log.d("Ehyo", "What");
+            Log.d("FileUtils[rBG]: ", "What");
             return false;
         }
     }

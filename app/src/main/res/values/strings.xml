@@ -39,7 +39,13 @@
     <string name="wetfish_base_upload_url">https://wiki.wetfish.net/upload/</string>
 
     <!-- Intent Strings -->
-    <string name="chooser_title">Pick Image</string>
+    <string name="select_upload_file">Select File</string>
+    <string name="capture_upload_file">Capture File</string>
+
+    <!-- Intent Data Strings -->
+    <string name="image_file_start">CAPTURED_FILE_</string>
+    <string name="image_file_extension">.jpg</string>
+    <string name="video_file_extension">.mp4</string>
 
     <!-- Mime Type Strings -->
     <string name="file_mime_type">image/*, video/*</string>
@@ -58,11 +64,14 @@
     <string name="fab_copy_deletion_link">Copy Deletion Link</string>
 
     <!-- File Provider strings -->
-    <string name="file_provider_authority">net.wetfish.wetfish.fileprovide</string>
+    <string name="file_provider_authority">net.wetfish.wetfish.fileprovider</string>
     <string name="no_app_available">No app installed can interact with this file.</string>
     <string name="unable_to_obtain_file">Unable to obtain chosen file.</string>
     <string name="no_file_selected">No file selected.</string>
     <string name="cloud_upload_complete">Upload Complete!</string>
+    <string name="fab_select_file">Select File</string>
+    <string name="fab_take_video">Capture Video</string>
+    <string name="fab_take_picture">Capture Image</string>
 
 
 </resources>
