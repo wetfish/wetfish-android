@@ -54,7 +54,7 @@ public class FileUtils {
             }
         }
     }
-    
+
     public static String getFileExtensionFromUri(Context context, Uri contentUri) {
         Cursor cursor = null;
 
