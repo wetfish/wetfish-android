@@ -114,13 +114,9 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
                 // Use FileProvider to get an appropriate URI compatible with version Nougat+
                 Log.d(LOG_TAG, "File Storage Link: " + mFileStorageLink);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                      fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
                             getString(R.string.file_provider_authority),
                             new File(mFileStorageLink));
-                } else {
-                    fileProviderUri = Uri.parse(mFileStorageLink);
-                }
 
                 // Setup the data and type
                 // Appropriately determine mime type for the file
