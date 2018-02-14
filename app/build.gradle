@@ -7,7 +7,6 @@ android {
         applicationId "net.wetfish.wetfish"
         minSdkVersion 19
         targetSdkVersion 27
-//      Return this to 5
         versionCode 7
         versionName "1.2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

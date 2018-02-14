@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/gallery_detail_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/gallery_detail_container"
+    android:fillViewport="true"
     tools:context="net.wetfish.wetfish.ui.GalleryDetailActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -25,7 +26,7 @@
 
     <include
         android:id="@+id/include_layout_gallery_detail"
-        layout="@layout/content_gallery_detail"/>
+        layout="@layout/content_gallery_detail" />
 
     <com.github.clans.fab.FloatingActionMenu
         android:id="@+id/fam_gallery_detail"

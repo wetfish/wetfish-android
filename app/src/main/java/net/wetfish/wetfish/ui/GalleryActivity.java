@@ -1,5 +1,6 @@
 package net.wetfish.wetfish.ui;
 
+import android.Manifest;
 import android.app.LoaderManager;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
@@ -16,6 +17,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -56,6 +58,9 @@ public class GalleryActivity extends AppCompatActivity implements
     private static final int REQUEST_CAPTURE_VIDEO = 3;
     // Content Provider Auto Increment Buffer
     private int POSITION_BUFFER = 1;
+    private static final int REQUEST_STORAGE = 0;
+    private static final String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     /* Views */
     // Progress bar utilized during loader
@@ -129,14 +134,53 @@ public class GalleryActivity extends AppCompatActivity implements
         mTakePictureFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                captureImageToUpload();
+                // Ask for storage permission if @ or above Android version 23
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED
+                            || ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                        // Permissions have not been granted, inform the user and ask again
+                        requestStoragePermission();
+
+                    } else {
+
+                        // Storage permissions granted!
+                        captureImageToUpload();
+                    }
+                } else {
+                    captureImageToUpload();
+                }
             }
         });
 
         mTakeVideoFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                captureVideoToUpload();
+                // Ask for storage permission if @ or above Android version 23
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED
+                            || ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                        // Permissions have not been granted, inform the user and ask again
+                        requestStoragePermission();
+
+                    } else {
+
+                        // Storage permissions granted!
+                        captureVideoToUpload();
+                    }
+                } else {
+                    captureVideoToUpload();
+
+                }
             }
         });
 
@@ -151,6 +195,28 @@ public class GalleryActivity extends AppCompatActivity implements
         ConnectivityManager connectivityManager = (ConnectivityManager)
                 this.getSystemService(Context.CONNECTIVITY_SERVICE);
         mNetworkInfo = connectivityManager.getActiveNetworkInfo();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void requestStoragePermission() {
+        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+            // If the user has previously denied granting the permission, offer the rationale
+            Snackbar.make(findViewById(android.R.id.content), R.string.permission_storage_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.ok, new View.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.M)
+                        @Override
+                        public void onClick(View view) {
+                            requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
+                        }
+                    }).show();
+        } else {
+            // No explanation needed, request permission
+            {
+                requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
+            }
+        }
     }
 
     @Override

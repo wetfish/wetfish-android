@@ -114,7 +114,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
                 // Use FileProvider to get an appropriate URI compatible with version Nougat+
                 Log.d(LOG_TAG, "File Storage Link: " + mFileStorageLink);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                      fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
                             getString(R.string.file_provider_authority),
                             new File(mFileStorageLink));
@@ -261,6 +261,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
             // If network is connected search the device for the stored image on the device
             // then wetfish if not found.if (FileUtils.representableByGlide(mFileType)) {
             if (FileUtils.representableByGlide(mFileType)) {
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
                 Glide.with(this)
                         .load(fileInfo.getFileWetfishStorageLink()) //TODO: Do file storage first
                         .error(Glide.with(this).load(fileInfo.getFileWetfishStorageLink()))

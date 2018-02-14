@@ -173,7 +173,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                 File file = new File(fileDevicePath);
                 if (file.exists()) {
                     Glide.with(mContext)
-                            .load(file)
+                            .load(fileDevicePath)
                             //TODO: Potentially change image loading logic
                             .apply(RequestOptions.centerCropTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
@@ -188,17 +188,19 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                         if (FileUtils.representableByGlide(fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_TYPE_EXTENSION)))) {
                             Glide.with(mContext)
                                     .load(fileDevicePath)
-                                    .error(Glide.with(mContext).load(fileWetfishPath))
-                                    .error(Glide.with(mContext).load(new ColorDrawable(Color.BLACK)))
+                                    .error(Glide.with(mContext)
+                                            .load(fileWetfishPath)
+                                            .apply(RequestOptions.centerCropTransform()))
+//                                    .error(Glide.with(mContext).load(new ColorDrawable(Color.BLACK)))
                                     .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                    .apply(RequestOptions.fitCenterTransform())
+                                    .apply(RequestOptions.centerCropTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
                         } else {
                             Glide.with(mContext)
                                     .load(null)
                                     .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
-                                    .apply(RequestOptions.fitCenterTransform())
+                                    .apply(RequestOptions.centerCropTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
                         }
@@ -209,7 +211,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                         //TODO: Figure out a good method for this later. In the meantime, storage or black image.
                         Glide.with(mContext)
                                 .load(fileDevicePath)
-                                .error(Glide.with(mContext).load(new ColorDrawable(Color.BLACK)))
+                                .error(Glide.with(mContext)
+                                        .load(new ColorDrawable(Color.BLACK))
+                                        .apply(RequestOptions.fitCenterTransform()))
                                 .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
                                 .apply(RequestOptions.fitCenterTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
