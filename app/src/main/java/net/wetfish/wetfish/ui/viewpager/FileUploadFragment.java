@@ -60,21 +60,18 @@ import retrofit2.Retrofit;
  */
 public class FileUploadFragment extends Fragment implements FABProgressListener {
 
-    /* Fragment initialization parameter variables */
-    private int sectionNumber;
-    private Uri fileUri;
-
     /* Fragment initialization parameter keys */
     private static final String ARG_SECTION_NUMBER = "section_number";
     private static final String ARG_FILE_URI = "file_uri";
-
     /* Constants */
     private static final String LOG_TAG = FileUploadFragment.class.getSimpleName();
     private static final int REQUEST_STORAGE = 0;
     private static final String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static final int POSITION_BUFFER = 1;
-
+    /* Fragment initialization parameter variables */
+    private int sectionNumber;
+    private Uri fileUri;
     /* Views */
     private TextView fileNotFoundView;
     private ImageView fileView;
@@ -145,6 +142,29 @@ public class FileUploadFragment extends Fragment implements FABProgressListener 
         fileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
         fabProgressCircle = mRootLayout.findViewById(R.id.fab_progress_circle);
 
+        // Set a focus change listener to allow for focus to dictate the appearance of the keyboard
+        View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
+            /**
+             * Called when the focus state of a view has changed.
+             *
+             * @param v        The view whose state has changed.
+             * @param hasFocus The new focus state of v.
+             */
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus){
+                    fileView.setClickable(false);
+                } else if (!hasFocus) {
+                    fileView.setClickable(true);
+                    UIUtils.hideKeyboard(v, getContext());
+                }
+            }
+        };
+
+        fileEditTitleView.setOnFocusChangeListener(focusChangeListener);
+        fileEditTagsView.setOnFocusChangeListener(focusChangeListener);
+        fileEditDescriptionView.setOnFocusChangeListener(focusChangeListener);
+
         // Setup listener for progress bar
         fabProgressCircle.attachListener(this);
 
@@ -173,7 +193,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener 
 
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
                     selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
-                    selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 }
 
                 Log.d(LOG_TAG, "Quack: " + fileProviderUri.toString());
@@ -273,7 +293,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener 
         // Start GalleryDetailActivity with an artificial back stack
         getContext().startActivities(intents);
     }
-
 
 
     //TODO: Potentially Remove Permission Questioning here, or keep just in case

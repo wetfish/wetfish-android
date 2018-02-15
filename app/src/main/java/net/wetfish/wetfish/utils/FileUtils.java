@@ -58,7 +58,7 @@ public class FileUtils {
     public static String getFileExtensionFromUri(Context context, Uri contentUri) {
         Cursor cursor = null;
 
-        // RegEx Matcher to see if the file came from downloads and has a full file contentUri
+        // RegEx Matcher to see where the file came from and determine the means to get the file extension
         Log.d("FileUtils[gFEFU]: ", "contentUri: " + contentUri.toString());
         String patternString = "(?:/storage/)";
         String patternStringTwo = "(content:)";

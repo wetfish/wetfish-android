@@ -44,7 +44,7 @@
             <TextView
                 android:id="@+id/tv_title"
                 style="@style/TextViewBody"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="56dp"
                 android:layout_marginTop="8dp"
@@ -59,7 +59,7 @@
                 android:layout_height="240dp"
                 android:layout_marginEnd="48dp"
                 android:layout_marginStart="48dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -80,7 +80,7 @@
             <TextView
                 android:id="@+id/tv_tags"
                 style="@style/TextViewBody"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="56dp"
                 android:layout_marginTop="8dp"
@@ -102,7 +102,7 @@
             <TextView
                 android:id="@+id/tv_description"
                 style="@style/TextViewBody"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="56dp"
                 android:layout_marginTop="8dp"
