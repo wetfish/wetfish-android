@@ -52,7 +52,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
     /* FAM & FABs */
     // Display FABs
-    private FloatingActionMenu mFileFAM;
+    private FloatingActionMenu mFAM;
     // Visit file URL
     private FloatingActionButton mVisitFileFAB;
     // Copy visit file URL
@@ -78,7 +78,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     // Uri for the sent cursor
     private Uri mUri;
     // FileInfo object that holds all data
-    private FileInfo mFiileInfo;
+    private FileInfo mFileInfo;
     // FileInfo string that holds file location
     private String mFileStorageLink;
     // FileType string that holds the file extension type
@@ -114,13 +114,9 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
                 // Use FileProvider to get an appropriate URI compatible with version Nougat+
                 Log.d(LOG_TAG, "File Storage Link: " + mFileStorageLink);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                      fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
                             getString(R.string.file_provider_authority),
                             new File(mFileStorageLink));
-                } else {
-                    fileProviderUri = Uri.parse(mFileStorageLink);
-                }
 
                 // Setup the data and type
                 // Appropriately determine mime type for the file
@@ -148,7 +144,10 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
 
         // FAM
-        mFileFAM = findViewById(R.id.fam_gallery_detail);
+        mFAM = findViewById(R.id.fam_gallery_detail);
+
+        // Close FAM if clicking outside of a button.
+        mFAM.setClosedOnTouchOutside(true);
 
         // FABs
         //TODO: Add an upload FAB!
@@ -160,11 +159,14 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mVisitFileFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM.
+                mFAM.close(true);
+
                 // Intent to visit webpage
                 Intent webIntent = new Intent(Intent.ACTION_VIEW);
 
                 // Link data
-                webIntent.setData(Uri.parse(mFiileInfo.getFileWetfishStorageLink()));
+                webIntent.setData(Uri.parse(mFileInfo.getFileWetfishStorageLink()));
 
                 // Start intent
                 startActivity(webIntent);
@@ -174,20 +176,41 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mCopyFileURLFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM.
+                mFAM.close(true);
+
                 // Allow the link to be copied to the clipboard
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFiileInfo.getFileWetfishStorageLink()));
+                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishStorageLink()));
+
+                // Split the string to obtain the link
+                String tokens[] = clipboard.getPrimaryClip().toString().split("\\{T:");
+                String tokensTwo[] = tokens[1].split("\\}");
+                String clipboardClipData = tokensTwo[0];
+
+                // Check to see if the clipboard data link equals the database stored link
+                if(clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
+                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_success,
+                            Snackbar.LENGTH_SHORT).show();
+                } else {
+                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_failure,
+                            Snackbar.LENGTH_SHORT).show();
+                }
+
             }
         });
 
         mVisitFileDeleteFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM.
+                mFAM.close(true);
+
                 // Intent to visit webpage
                 Intent webIntent = new Intent(Intent.ACTION_VIEW);
 
                 // Link data
-                webIntent.setData(Uri.parse(mFiileInfo.getFileWetfishDeletionLink()));
+                webIntent.setData(Uri.parse(mFileInfo.getFileWetfishDeletionLink()));
 
                 // Start intent
                 startActivity(webIntent);
@@ -197,9 +220,17 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mCopyFileDeleteURLFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM.
+                mFAM.close(true);
+
                 // Allow link to be copied to the clipboard
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFiileInfo.getFileWetfishDeletionLink()));
+                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishDeletionLink()));
+
+                if(clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
+                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_success,
+                            Snackbar.LENGTH_LONG);
+                }
             }
         });
 
@@ -208,8 +239,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mUri = (Uri) bundle.get(getString(R.string.file_details));
 
         // Setup FileInfo
-        if (mFiileInfo == null) {
-            mFiileInfo = new FileInfo();
+        if (mFileInfo == null) {
+            mFileInfo = new FileInfo();
         }
 
         getLoaderManager().initLoader(FILES_DETAIL_LOADER, null, this);
@@ -218,8 +249,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
         super.onStop();
-        if (mFiileInfo != null && mFiileInfo.getFileInfoInitialized()) {
-            getIntent().putExtra(BUNDLE_KEY, Parcels.wrap(mFiileInfo));
+        if (mFileInfo != null && mFileInfo.getFileInfoInitialized()) {
+            getIntent().putExtra(BUNDLE_KEY, Parcels.wrap(mFileInfo));
         }
     }
 
@@ -237,8 +268,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         super.onResume();
         FileInfo fileInfo = Parcels.unwrap(getIntent().getParcelableExtra(BUNDLE_KEY));
         if (fileInfo != null && fileInfo.getFileInfoInitialized()) {
-            mFiileInfo = fileInfo;
-            displayFileDetails(mFiileInfo);
+            mFileInfo = fileInfo;
+            displayFileDetails(mFileInfo);
         }
 
     }
@@ -261,6 +292,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
             // If network is connected search the device for the stored image on the device
             // then wetfish if not found.if (FileUtils.representableByGlide(mFileType)) {
             if (FileUtils.representableByGlide(mFileType)) {
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
                 Glide.with(this)
                         .load(fileInfo.getFileWetfishStorageLink()) //TODO: Do file storage first
                         .error(Glide.with(this).load(fileInfo.getFileWetfishStorageLink()))
@@ -338,8 +371,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
         // Check cursor integrity
         if (data != null) {
-            mFiileInfo = new FileInfo(data);
-            displayFileDetails(mFiileInfo);
+            mFileInfo = new FileInfo(data);
+            displayFileDetails(mFileInfo);
         } else {
             //TODO: Make error page?
         }

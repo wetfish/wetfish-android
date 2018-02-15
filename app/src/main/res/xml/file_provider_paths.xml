@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <!-- Internal App Storage, Context#getFilesDir() -->
+    <!--TODO: Definitely clean this upb-->
+    <!--Internal App Storage, Context#getFilesDir()-->
     <files-path
         name="files"
         path="." />
 
-    <!-- Internal App Cache Storage, Context#getCacheDir() -->
+    <!--Internal App Cache Storage, Context#getCacheDir()-->
     <cache-path
         name="cache"
         path="." />
@@ -32,8 +33,16 @@
 
     <!-- What -->
     <root-path
-        name="external_sd_files"
-        path="/storage/emulated/" />
+        name="sd_files"
+        path="/storage/sdcard0/" />
+
+    <root-path
+        name="sd_files"
+        path="/storage/sdcard/" />
+
+    <root-path
+        name="global_access"
+        path="." />
 
     <!-- Internal App Storage, Context#getFilesDir() -->
 

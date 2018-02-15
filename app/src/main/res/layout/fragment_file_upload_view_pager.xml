@@ -18,7 +18,11 @@
             android:layout_marginBottom="24dp"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="16dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true">
+
 
             <!-- Focused Image View -->
             <ImageView
@@ -37,6 +41,8 @@
                     style="@style/EditTextVariation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:hint="@string/et_title_hint"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -61,6 +67,8 @@
                     style="@style/EditTextVariation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:hint="@string/et_tags_hint"
                     app:layout_constraintBottom_toTopOf="@+id/et_description"
                     app:layout_constraintStart_toStartOf="parent" />
@@ -70,6 +78,8 @@
                     style="@style/EditTextVariation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:hint="@string/et_description_hint"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
