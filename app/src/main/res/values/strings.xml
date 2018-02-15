@@ -72,6 +72,8 @@
     <string name="fab_select_file">Select File</string>
     <string name="fab_take_video">Capture Video</string>
     <string name="fab_take_picture">Capture Image</string>
+    <string name="url_clipboard_success">URL successfully copied to clipboard</string>
+    <string name="url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
 
 
 </resources>

@@ -126,6 +126,9 @@ public class GalleryActivity extends AppCompatActivity implements
         // FAM
         mFAM = findViewById(R.id.fam_gallery);
 
+        // Close FAM if clicking outside of a button
+        mFAM.setClosedOnTouchOutside(true);
+
         // FAB to start intent to select a file then pass the user to another activity
         mTakePictureFAB = findViewById(R.id.fab_take_picture);
         mTakeVideoFAB = findViewById(R.id.fab_take_video);
