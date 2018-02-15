@@ -52,7 +52,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
     /* FAM & FABs */
     // Display FABs
-    private FloatingActionMenu mFileFAM;
+    private FloatingActionMenu mFAM;
     // Visit file URL
     private FloatingActionButton mVisitFileFAB;
     // Copy visit file URL
@@ -144,7 +144,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
 
         // FAM
-        mFileFAM = findViewById(R.id.fam_gallery_detail);
+        mFAM = findViewById(R.id.fam_gallery_detail);
 
         // FABs
         //TODO: Add an upload FAB!
@@ -156,6 +156,9 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mVisitFileFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM.
+                mFAM.close(true);
+
                 // Intent to visit webpage
                 Intent webIntent = new Intent(Intent.ACTION_VIEW);
 
@@ -170,6 +173,9 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mCopyFileURLFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM.
+                mFAM.close(true);
+
                 // Allow the link to be copied to the clipboard
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFiileInfo.getFileWetfishStorageLink()));
@@ -179,6 +185,9 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mVisitFileDeleteFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM.
+                mFAM.close(true);
+
                 // Intent to visit webpage
                 Intent webIntent = new Intent(Intent.ACTION_VIEW);
 
@@ -193,6 +202,9 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mCopyFileDeleteURLFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM.
+                mFAM.close(true);
+
                 // Allow link to be copied to the clipboard
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFiileInfo.getFileWetfishDeletionLink()));
