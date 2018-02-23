@@ -24,6 +24,7 @@ import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.ui.viewpager.EditExifFragment;
 import net.wetfish.wetfish.ui.viewpager.EditFileFragment;
 import net.wetfish.wetfish.ui.viewpager.FileUploadFragment;
+import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
 
 public class GalleryUploadActivity extends AppCompatActivity implements
@@ -69,6 +70,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         } else if (intent.getExtras().get(Intent.EXTRA_STREAM) != null) {
             // Handle intents with image data from share smenu implicit intents...
             fileUri = (Uri) intent.getExtras().get(Intent.EXTRA_STREAM);
+            fileUri = Uri.parse(FileUtils.getRealPathFromUri(this, fileUri));
             Log.d(LOG_TAG, "File Data URI: " + fileUri.toString());
         } else {
             Log.d(LOG_TAG, "Bundle returned null");
@@ -87,16 +89,16 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         }
 
         // Setup ViewPager & ViewPager's adapter
-        viewPager = (ViewPager) findViewById(R.id.vp_gallery_detail);
+        viewPager = findViewById(R.id.vp_gallery_detail);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), fileUri, this);
         viewPager.setAdapter(mSectionsPagerAdapter);
 
         // Setup TabLayout to interact with ViewPager
-        tabLayout = (TabLayout) findViewById(R.id.tl_gallery_detail);
+        tabLayout = findViewById(R.id.tl_gallery_detail);
         tabLayout.setupWithViewPager(viewPager);
 
         //Setup Toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -165,7 +167,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         }
 
         // Custom constructor
-        public SectionsPagerAdapter(FragmentManager fm, Uri uri, Context context) {
+        SectionsPagerAdapter(FragmentManager fm, Uri uri, Context context) {
             super(fm);
             fileUri = uri;
             mContext = context;
@@ -175,7 +177,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
          * When clicking upon tabs within TabLayout generate the appropriate fragment
          *
          * @param position Position of the clicked tab
-         * @return
+         * @return given case fragment
          */
         @Override
         public Fragment getItem(int position) {
