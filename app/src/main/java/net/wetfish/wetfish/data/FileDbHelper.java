@@ -8,6 +8,8 @@ import static net.wetfish.wetfish.data.FileContract.FileColumns;
 import static net.wetfish.wetfish.data.FileContract.Files;
 
 /**
+ * DB Helper for Wetfish DB
+ *
  * Created by ${Michael} on 12/9/2017.
  */
 
@@ -17,7 +19,10 @@ public class FileDbHelper extends SQLiteOpenHelper{
     public static final String DATABASE_NAME = "file.db";
 
     // Current version of the database schema
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
+
+    // Database upgrade nummber
+    public static final int DATABASE_VERSION_2 = 2;
 
     /**
      * Called when the database is created for the first time. This is where the
@@ -74,7 +79,11 @@ public class FileDbHelper extends SQLiteOpenHelper{
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + Files.TABLE_NAME);
-        onCreate(db);
+        if (oldVersion < DATABASE_VERSION_2) {
+            String upgradeQuery = "ALTER TABLE " + Files.TABLE_NAME + " ADD COLUMN " +
+                    FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK + " TEXT NOT NULL";
+            db.execSQL(upgradeQuery);
+        }
+
     }
 }
