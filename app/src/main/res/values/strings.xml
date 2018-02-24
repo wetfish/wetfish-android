@@ -20,6 +20,8 @@
     <string name="et_description_hint">Description</string>
     <string name="et_tags_hint">Tags</string>
     <string name="et_title_hint">Title</string>
+    <string name="tv_image_resolution">%dX%d</string>
+    <string name="tv_image_size_mb">%d mb</string>
 
     <!-- Snackbar Strings -->
     <string name="permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
@@ -82,6 +84,7 @@
         <item>Resolution: [Medium 50%]</item>
         <item>Resolution: [Small 25%]</item>
     </string-array>
+
 
     // Resolution: [Original (1920x1080) (3.2 MB) ]
     // Resolution: [Large (1440x810) (3.2 MB) ]

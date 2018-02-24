@@ -43,16 +43,48 @@
                     android:id="@+id/iv_fragment_file_upload"
                     android:layout_width="0dp"
                     android:layout_height="240dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="8dp"
                     android:layout_marginEnd="48dp"
                     android:layout_marginStart="48dp"
                     android:layout_marginTop="16dp"
                     android:adjustViewBounds="true"
                     android:scaleType="fitCenter"
-                    app:layout_constraintBottom_toTopOf="@+id/spinner_fragment_file_upload"
+                    app:layout_constraintBottom_toTopOf="@+id/ll_image_details"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/et_title" />
+
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:id="@+id/ll_image_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="48dp"
+                    android:layout_marginStart="48dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toTopOf="@+id/spinner_fragment_file_upload"
+                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload">
+
+                    <android.support.v7.widget.AppCompatTextView
+                        android:id="@+id/tv_image_resolution"
+                        style="@style/TextViewBody"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="start"
+                        android:text="Quack Quack" />
+
+                    <android.support.v7.widget.AppCompatTextView
+                        android:id="@+id/tv_image_size"
+                        style="@style/TextViewBody"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:paddingEnd="8dp"
+                        android:gravity="end"
+                        android:text="Quack Quack" />
+
+                </android.support.v7.widget.LinearLayoutCompat>
 
                 <android.support.v7.widget.AppCompatSpinner
                     android:id="@+id/spinner_fragment_file_upload"
@@ -66,7 +98,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/et_tags"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload"/>
+                    app:layout_constraintTop_toBottomOf="@+id/ll_image_details" />
 
                 <EditText
                     android:id="@+id/et_tags"
