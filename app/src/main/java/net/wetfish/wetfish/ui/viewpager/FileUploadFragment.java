@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -61,20 +62,28 @@ import retrofit2.Retrofit;
  * Use the {@link FileUploadFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class FileUploadFragment extends Fragment implements FABProgressListener {
+public class FileUploadFragment extends Fragment implements FABProgressListener,
+        AdapterView.OnItemSelectedListener{
 
     /* Fragment initialization parameter keys */
     private static final String ARG_SECTION_NUMBER = "section_number";
     private static final String ARG_FILE_URI = "file_uri";
+
     /* Constants */
     private static final String LOG_TAG = FileUploadFragment.class.getSimpleName();
     private static final int REQUEST_STORAGE = 0;
     private static final String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
-    private static final int POSITION_BUFFER = 1;
+    private static final int ORIGINAL_SIZE_SELECTION = 0;
+    private static final int LARGE_SIZE_SELECTION = 1;
+    private static final int MEDIUM_SIZE_SELECTION = 2;
+    private static final int SMALL_SIZE_SELECTION = 3;
+
+
     /* Fragment initialization parameter variables */
     private int sectionNumber;
     private Uri fileUri;
+
     /* Views */
     private TextView fileNotFoundView;
     private ImageView fileView;
@@ -158,6 +167,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener 
 
         // Apply the adapter to the mSpinner
         mSpinner.setAdapter(spinnerAdapter);
+
+        // Setup onItemSelectedListener
+        mSpinner.setOnItemSelectedListener(this);
 
 
         // Set a focus change listener to allow for focus to dictate the appearance of the keyboard
@@ -519,6 +531,52 @@ public class FileUploadFragment extends Fragment implements FABProgressListener 
     public void onStart() {
         super.onStart();
         responseURLAcquired = false;
+    }
+
+    /**
+     * <p>Callback method to be invoked when an item in this view has been
+     * selected. This callback is invoked only when the newly selected
+     * position is different from the previously selected position or if
+     * there was no selected item.</p>
+     * <p>
+     * Impelmenters can call getItemAtPosition(position) if they need to access the
+     * data associated with the selected item.
+     *
+     * @param parent   The AdapterView where the selection happened
+     * @param view     The view within the AdapterView that was clicked
+     * @param position The position of the view in the adapter
+     * @param id       The row id of the item that is selected
+     */
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        switch(position) {
+            case ORIGINAL_SIZE_SELECTION:
+                Log.d(LOG_TAG, "Case 0");
+                break;
+            case LARGE_SIZE_SELECTION:
+                Log.d(LOG_TAG, "Case 1");
+                break;
+            case MEDIUM_SIZE_SELECTION:
+                Log.d(LOG_TAG, "Case 2");
+                break;
+            case SMALL_SIZE_SELECTION:
+                Log.d(LOG_TAG, "Case 3");
+                break;
+            default:
+                Log.d(LOG_TAG, "Y'never know!");
+        }
+    }
+
+    /**
+     * Callback method to be invoked when the selection disappears from this
+     * view. The selection can disappear for instance when touch is activated
+     * or when the adapter becomes empty.
+     *
+     * @param parent The AdapterView that now contains no selected item.
+     */
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Do nothin'
     }
 
     /**
