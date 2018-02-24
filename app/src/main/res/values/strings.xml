@@ -75,6 +75,23 @@
     <string name="url_clipboard_success">URL successfully copied to clipboard</string>
     <string name="url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
 
+    <!-- Spinner Values -->
+    <string-array name="upload_fragment_spinner_array">
+        <item>Resolution: [Original 100%]</item>
+        <item>Resolution: [Large 75%]</item>
+        <item>Resolution: [Medium 50%]</item>
+        <item>Resolution: [Small 25%]</item>
+    </string-array>
+
+    // Resolution: [Original (1920x1080) (3.2 MB) ]
+    // Resolution: [Large (1440x810) (3.2 MB) ]
+    // Resolution: [Medium (960x540) (3.2 MB) ]
+    // Resolution: [Original (480x270) (3.2 MB) ]
+    // Resolution: [Original (1920x1080) (3.2 MB) ]
+    //
+    //
+    //
+    //
 
 </resources>
 

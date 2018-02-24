@@ -1,6 +1,7 @@
 package net.wetfish.wetfish.ui.viewpager;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
@@ -16,8 +17,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -82,6 +85,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener 
     private FABProgressCircle fabProgressCircle;
     private View mRootLayout;
     private View fileUploadContent;
+    private Spinner mSpinner;
 
     /* Data */
     private String responseViewURL;
@@ -141,6 +145,20 @@ public class FileUploadFragment extends Fragment implements FABProgressListener 
         fileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
         fileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
         fabProgressCircle = mRootLayout.findViewById(R.id.fab_progress_circle);
+
+        // Setup Spinner
+        mSpinner = (Spinner) mRootLayout.findViewById(R.id.spinner_fragment_file_upload);
+
+        // Array Adapter for Spinner
+        @SuppressLint("ResourceType") ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
+                R.array.upload_fragment_spinner_array, R.xml.custom_spinner_item);
+
+        // Specific array adapter layout
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // Apply the adapter to the mSpinner
+        mSpinner.setAdapter(spinnerAdapter);
+
 
         // Set a focus change listener to allow for focus to dictate the appearance of the keyboard
         View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
