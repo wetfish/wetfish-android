@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -109,6 +110,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private String responseDeleteURL;
     private boolean responseURLAcquired;
     private boolean mDownscaledImageCreated = false;
+    private boolean mDatabaseAdditionSuccessful = false;
     private boolean fileFound;
     private int uploadID;
     private int mCurrentSpinnerSelection = 0;
@@ -277,6 +279,33 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     }
 
     /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to {@link Fragment#onPause() Activity.onPause} of the containing
+     * Activity's lifecycle.
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+        //TODO: Potentially delete and recreate image on onPause()?
+    }
+
+    /**
+     * Called when the fragment is no longer in use.  This is called
+     * after {@link #onStop()} and before {@link #onDetach()}.
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (!mDatabaseAdditionSuccessful && mDownscaledImageCreated) {
+            Log.d(LOG_TAG, "Database addition wasn't successful, delete file");
+            deleteDownscaledFile();
+        } else {
+            // Do Nothing
+            Log.d(LOG_TAG, "Database addition was successful or file wasn't created");
+        }
+    }
+
+    /**
      * Animation to depict the uploading process
      */
     @Override
@@ -360,12 +389,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Check to see if a file has been generated before this
                 if (mDownscaledImageCreated) {
                     // Delete Previous File
-                    File file = new File(mDownscaledImageAbsolutePath.toString());
-                    if (file.exists()) {
-                        file.delete();
-                    }
-
-                    mDownscaledImageCreated = false;
+                    deleteDownscaledFile();
                 }
 
                 Log.d(LOG_TAG, "Case 0");
@@ -375,12 +399,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Check to see if a file has been generated before this
                 if (mDownscaledImageCreated) {
                     // Delete Previous File
-                    File file = new File(mDownscaledImageAbsolutePath.toString());
-                    if (file.exists()) {
-                        file.delete();
-                    }
-
-                    mDownscaledImageCreated = false;
+                    deleteDownscaledFile();
                 }
 
                 // Generate medium sized image (75%)) and setup fileView accordingly
@@ -393,12 +412,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Check to see if a file has been generated before this
                 if (mDownscaledImageCreated) {
                     // Delete Previous File
-                    File file = new File(mDownscaledImageAbsolutePath.toString());
-                    if (file.exists()) {
-                        file.delete();
-                    }
-
-                    mDownscaledImageCreated = false;
+                    deleteDownscaledFile();
                 }
 
                 // Generate medium sized image (50%)) and setup fileView accordingly
@@ -410,13 +424,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             case SMALL_SIZE_SELECTION:
                 // Check to see if a file has been generated before this
                 if (mDownscaledImageCreated) {
-                    // Delete Previous File
-                    File file = new File(mDownscaledImageAbsolutePath.toString());
-                    if (file.exists()) {
-                        file.delete();
-                    }
+                    deleteDownscaledFile();
 
-                    mDownscaledImageCreated = false;
                 }
 
                 // Generate small sized image (25%) and setup fileView accordingly
@@ -428,6 +437,31 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             default:
                 Log.d(LOG_TAG, "Y'never know!");
         }
+    }
+
+    private void deleteDownscaledFile() {
+        // Delete Previous File
+        File file = new File(mDownscaledImageAbsolutePath.toString());
+
+        String canonicalPath;
+
+        try {
+            canonicalPath = file.getCanonicalPath();
+        } catch (IOException e) {
+            canonicalPath = file.getAbsolutePath();
+        }
+        final Uri uri = MediaStore.Files.getContentUri("external");
+        final int result = getContext().getContentResolver().delete(uri,
+                MediaStore.Files.FileColumns.DATA + "=?", new String[]{canonicalPath});
+        if (result == 0) {
+            final String absolutePath = file.getAbsolutePath();
+            if (!absolutePath.equals(canonicalPath)) {
+                getContext().getContentResolver().delete(uri,
+                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{mDownscaledImageAbsolutePath.toString()});
+            }
+        }
+
+        mDownscaledImageCreated = false;
     }
 
     /**
@@ -516,6 +550,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         }
     }
 
+    //TODO: Do this during a loader and during the loader hide the upload button.
     /**
      * This method will create a downscaled bitmap  image utilizing FileUtils createDownscaledImageFile,
      * and upon success, accordingly change fileView's onClickListener and displayed image. Upon failure
@@ -657,7 +692,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         // Gather file URI from chosen file for database.
         final String filePath = fileUriAbsolutePath.toString();
-        final String downscaledFilePath = null;
+
+
         Log.d(LOG_TAG, "mFileUriAbsolutePath: " + fileUriAbsolutePath);
         Log.d(LOG_TAG, "filePath: " + filePath);
 
@@ -674,6 +710,14 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     // Get response body as a string
                     String onResponseString = response.body().string();
                     Log.d(LOG_TAG, "onResponse: " + onResponseString);
+
+                    //  Downscaled image path
+                    String downscaledFilePath;
+                    if (mDownscaledImageCreated) {
+                        downscaledFilePath = mDownscaledImageAbsolutePath.toString();
+                    } else {
+                        downscaledFilePath = "";
+                    }
 
                     // If response body is not empty get returned URL
                     if (!(onResponseString.isEmpty())) {
@@ -694,7 +738,21 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     fileExtension,
                                     filePath,
                                     responseViewURL,
-                                    responseDeleteURL);
+                                    responseDeleteURL,
+                                    downscaledFilePath);
+
+                            /**
+                             *  Check to see if upload was successful to determine if the downscaled image
+                             * should be kept or deleted
+                             */
+                            if (uploadID >= 0) {
+                                mDatabaseAdditionSuccessful = true;
+
+                                // Update media
+                                sendMediaBroadcast(downscaledFilePath);
+                            } else {
+                                mDatabaseAdditionSuccessful = false;
+                            }
 
                             Log.d(LOG_TAG, "onResponse: " + responseViewURL);
                             Log.d(LOG_TAG, "id: " + uploadID);
@@ -716,7 +774,21 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     fileExtension,
                                     filePath,
                                     responseViewURL,
-                                    responseDeleteURL);
+                                    responseDeleteURL,
+                                    downscaledFilePath);
+
+                            /**
+                             *  Check to see if upload was successful to determine if the downscaled image
+                             * should be kept or deleted
+                             */
+                            if (uploadID >= 0) {
+                                mDatabaseAdditionSuccessful = true;
+
+                                // Update media
+                                sendMediaBroadcast(downscaledFilePath);
+                            } else {
+                                mDatabaseAdditionSuccessful = false;
+                            }
 
                             Log.d(LOG_TAG, "onResponse: " + responseViewURL);
                             Log.d(LOG_TAG, "id: " + uploadID);
@@ -739,7 +811,21 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 fileExtension,
                                 filePath,
                                 responseViewURL,
-                                responseDeleteURL);
+                                responseDeleteURL,
+                                downscaledFilePath);
+
+                        /**
+                         *  Check to see if upload was successful to determine if the downscaled image
+                         * should be kept or deleted
+                         */
+                        if (uploadID >= 0) {
+                            mDatabaseAdditionSuccessful = true;
+
+                            // Update media
+                            sendMediaBroadcast(downscaledFilePath);
+                        } else {
+                            mDatabaseAdditionSuccessful = false;
+                        }
 
                         Log.d(LOG_TAG, "onResponse: " + responseViewURL);
                         Log.d(LOG_TAG, "id: " + uploadID);

@@ -118,7 +118,7 @@ public class FileUtils {
     public static int insertFileData(Context context, String fileTitle, String fileTags,
                                      String fileDescription, long fileUploadDate, String fileExtension,
                                      String fileDeviceUri, String fileWetfishLocationUrl,
-                                     String fileWetfishDeletionUrl) {
+                                     String fileWetfishDeletionUrl, String editedFileDeviceUri) {
 
         //TODO: Potential for adding error checking
 //        String selection = FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK + "=?" +
@@ -141,6 +141,7 @@ public class FileUtils {
         cv.put(FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK, fileDeviceUri);
         cv.put(FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK, fileWetfishLocationUrl);
         cv.put(FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK, fileWetfishDeletionUrl);
+        cv.put(FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK, editedFileDeviceUri);
 
         // Insert the content values into the database and get the position
         return Integer.valueOf(((context.getContentResolver().insert(Files.CONTENT_URI, cv)).getLastPathSegment()).toString());
