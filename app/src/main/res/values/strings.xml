@@ -16,7 +16,7 @@
     <string name="tv_tags">Tags </string>
     <string name="tv_description">Description </string>
     <string name="error_loading_db">Error Loading Database</string>
-    <string name="no_results">No Files Uploaded...</string>
+    <string name="no_results">No Files Uploaded…</string>
     <string name="et_description_hint">Description</string>
     <string name="et_tags_hint">Tags</string>
     <string name="et_title_hint">Title</string>
@@ -76,6 +76,8 @@
     <string name="fab_take_picture">Capture Image</string>
     <string name="url_clipboard_success">URL successfully copied to clipboard</string>
     <string name="url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
+    <string name="image_successfully_downscaled">Image successfully downscaled</string>
+    <string name="image_unsuccessfully_downscaled">Image unsuccessfully downscaled</string>
 
     <!-- Spinner Values -->
     <string-array name="upload_fragment_spinner_array">

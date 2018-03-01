@@ -3,14 +3,23 @@ package net.wetfish.wetfish.utils;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
+import android.view.View;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileContract.FileColumns;
 import net.wetfish.wetfish.data.FileContract.Files;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +34,7 @@ public class FileUtils {
     public static String getRealPathFromUri(Context context, Uri contentUri) {
         String fileProviderString = "(/net.wetfish.wetfish/)";
         String capturedFileString = "(CAPTURED_FILE_)";
-        String storageString  = "(/storage/)";
+        String storageString = "(/storage/)";
         Pattern fileProviderPattern = Pattern.compile(capturedFileString);
         Pattern capturedFilePattern = Pattern.compile(fileProviderString);
         Pattern storagePattern = Pattern.compile(storageString);
@@ -33,8 +42,7 @@ public class FileUtils {
         Matcher capturedFileMatcher = capturedFilePattern.matcher(contentUri.toString());
         Matcher storageStringMatcher = storagePattern.matcher(contentUri.toString());
 
-        if (fileProviderMatcher.find() || capturedFileMatcher.find() || storageStringMatcher.find())
-        {
+        if (fileProviderMatcher.find() || capturedFileMatcher.find() || storageStringMatcher.find()) {
             // provided uri is already the file path
             return contentUri.toString();
         } else {
@@ -68,12 +76,12 @@ public class FileUtils {
         Matcher contentMatcher = patternTwo.matcher(contentUri.toString());
         if (storageMatcher.find()) {
             String[] tokens = contentUri.toString().split("\\.(?=[^\\.]+$)");
-            return "." + tokens[tokens.length-1];
+            return "." + tokens[tokens.length - 1];
         }
 
         if (contentMatcher.find()) {
             String[] tokens = contentUri.toString().split("\\.(?=[^\\.]+$)");
-            return "." + tokens[tokens.length-1];
+            return "." + tokens[tokens.length - 1];
         }
 
         // Try a RegEx matcher for files within MediaStore.Images.Media.Data
@@ -142,8 +150,9 @@ public class FileUtils {
     /**
      * Method to determine what the mime type is for the provided file extension
      *
-     * @param fileType
-     * @return
+     * @param fileType provided file type
+     * @param context TODO: Likely remove soon
+     * @return return the appropriate mime type
      */
     public static String determineMimeType(Context context, String fileType) {
         Log.d("FileUtils[dMT]: ", "CHECK IT: " + fileType);
@@ -152,7 +161,7 @@ public class FileUtils {
             return context.getString(R.string.image_mime_type);
         } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
                 "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
-                "|.flv|.mkv|.webm|.mp3|.mp4")) {
+                "|.mkv|.webm|.mp3|.mp4")) {
             Log.d("FileUtils[dMT]: ", "video/*");
             return context.getString(R.string.video_mime_type);
         } else {
@@ -168,12 +177,84 @@ public class FileUtils {
             return true;
         } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
                 "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
-                "|.flv|.mkv|.webm|.mp3|.mp4")) {
+                "|.mkv|.webm|.mp3|.mp4")) {
             Log.d("FileUtils[rBG]", "video/*");
             return true;
         } else {
             Log.d("FileUtils[rBG]: ", "What");
             return false;
         }
+    }
+
+    /**
+     * Create a scaled bitmap of the given image, reducing resolution by the scaleRatio while preserving
+     * the image's native aspect ratio.
+     *
+     * @param bitmapToDownscale    Bitmap to downscale to populate downscaledBitmapFile
+     * @param scaleRatio           Ratio as to which to downscale the bitmap provided
+     * @param downscaledBitmapFile the downscaled bitmap image populating an image
+     * @param view                 utilized to generate a snackbar for the appropriate layout
+     * @return downscaled image or regular image if downscaling has failed
+     */
+    public static boolean createDownscaledImageFile(Bitmap bitmapToDownscale, double scaleRatio, File downscaledBitmapFile, View view) {
+        // Height and width downscaled by the scaleRatio
+        double destinationHeight = bitmapToDownscale.getHeight() * scaleRatio;
+        double destinationWidth = bitmapToDownscale.getWidth() * scaleRatio;
+
+        // Return a new bitmap that's a downscaled version of the provided bitmap
+        Bitmap bitmap = Bitmap.createScaledBitmap(bitmapToDownscale, (int) destinationWidth, (int) destinationHeight, true);
+
+        try {
+            // Byte Array Output Stream
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            // Compress to the desired format, JPEG, at full quality
+            boolean successfulDownscale = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+
+            if (successfulDownscale) {
+                // File Output Stream for the downscaledBitmapFile
+                FileOutputStream fileOutputStream = new FileOutputStream(downscaledBitmapFile);
+                fileOutputStream.write(byteArrayOutputStream.toByteArray());
+
+                // Close File Output Stream when finished
+                fileOutputStream.close();
+
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static boolean checkSuccessfulBitmapDownscale(Uri originalBitmapUri, Uri downscaledBitmapUri) {
+        Bitmap bitmapOriginal = BitmapFactory.decodeFile(originalBitmapUri.toString());
+        Bitmap bitmapDownscaledOriginal = BitmapFactory.decodeFile(downscaledBitmapUri.toString());
+
+        double originalWidth = bitmapOriginal.getWidth();
+        double downscaledWidth = bitmapDownscaledOriginal.getWidth();
+
+        return downscaledWidth < originalWidth;
+    }
+
+    public double checkFileSize(Uri fileUri, Context context) {
+        File imageFile = new File(fileUri.toString());
+        double imageFileSize = imageFile.length();
+
+        Uri fileUri2 = FileProvider.getUriForFile(context,
+                context.getString(R.string.file_provider_authority),
+                new File(fileUri.toString()));
+        File imageFile2 = new File(fileUri2.toString());
+        double imageFileSize2 = imageFile2.length();
+
+        Log.d("This is in FileUtils", "\nImageFileSize: " + imageFileSize + "\nImageFileSize2: " + imageFileSize2);
+
+        return 0.0;
     }
 }

@@ -6,9 +6,13 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -41,7 +45,9 @@ import net.wetfish.wetfish.utils.UIUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,7 +69,7 @@ import retrofit2.Retrofit;
  * create an instance of this fragment.
  */
 public class FileUploadFragment extends Fragment implements FABProgressListener,
-        AdapterView.OnItemSelectedListener{
+        AdapterView.OnItemSelectedListener {
 
     /* Fragment initialization parameter keys */
     private static final String ARG_SECTION_NUMBER = "section_number";
@@ -78,11 +84,12 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final int LARGE_SIZE_SELECTION = 1;
     private static final int MEDIUM_SIZE_SELECTION = 2;
     private static final int SMALL_SIZE_SELECTION = 3;
+    private static final double[] SELECTIONRATIO = {1, .75, .5, .2};
 
 
     /* Fragment initialization parameter variables */
     private int sectionNumber;
-    private Uri fileUri;
+    private Uri mFileUriAbsolutePath;
 
     /* Views */
     private TextView fileNotFoundView;
@@ -97,11 +104,16 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private Spinner mSpinner;
 
     /* Data */
+    private Uri mDownscaledImageAbsolutePath;
     private String responseViewURL;
     private String responseDeleteURL;
     private boolean responseURLAcquired;
+    private boolean mDownscaledImageCreated = false;
     private boolean fileFound;
     private int uploadID;
+    private int mCurrentSpinnerSelection = 0;
+    private double mImageFileSize = 0;
+
     //TODO: Potentially remove.
     private OnFragmentInteractionListener mListener;
 
@@ -131,13 +143,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             sectionNumber = getArguments().getInt(ARG_SECTION_NUMBER);
-            fileUri = Uri.parse(getArguments().getString(ARG_FILE_URI));
+            mFileUriAbsolutePath = Uri.parse(getArguments().getString(ARG_FILE_URI));
         }
     }
 
     //TODO: Later on when Video Playback is possible with exoplayer the focus feature will only be for images
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
 
@@ -154,9 +166,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         fileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
         fileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
         fabProgressCircle = mRootLayout.findViewById(R.id.fab_progress_circle);
+        fileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
+
+        // Setup fileView's image and onClickListener with the correct file Uri
+        if (mDownscaledImageCreated) {
+            determineFileViewContent(mDownscaledImageAbsolutePath);
+        } else {
+            determineFileViewContent(mFileUriAbsolutePath);
+        }
+
 
         // Setup Spinner
-        mSpinner = (Spinner) mRootLayout.findViewById(R.id.spinner_fragment_file_upload);
+        mSpinner = mRootLayout.findViewById(R.id.spinner_fragment_file_upload);
 
         // Array Adapter for Spinner
         @SuppressLint("ResourceType") ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
@@ -171,7 +192,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Setup onItemSelectedListener
         mSpinner.setOnItemSelectedListener(this);
 
-
         // Set a focus change listener to allow for focus to dictate the appearance of the keyboard
         View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
             /**
@@ -182,7 +202,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
              */
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus){
+                if (hasFocus) {
                     fileView.setClickable(false);
                 } else if (!hasFocus) {
                     fileView.setClickable(true);
@@ -197,48 +217,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         // Setup listener for progress bar
         fabProgressCircle.attachListener(this);
-
-        // Setup file interaction
-        fileView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Intent to find proper app to open file
-                Intent selectViewingApp = new Intent();
-                selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                selectViewingApp.setAction(Intent.ACTION_VIEW);
-
-                // Use FileProvider to get an appropriate URI compatible with version Nougat+
-                // File path and type from the given file
-                String fileStorageLink = FileUtils.getRealPathFromUri(getContext(), fileUri);
-                String fileType = FileUtils.getFileExtensionFromUri(getContext(), fileUri);
-                Log.d(LOG_TAG, "File Storage Link: " + fileStorageLink);
-                Log.d(LOG_TAG, "File Type: " + fileType);
-                Uri fileProviderUri = FileProvider.getUriForFile(getContext(),
-                        getString(R.string.file_provider_authority),
-                        new File(fileStorageLink));
-
-                // Setup the data and type
-                // Appropriately determine mime type for the file
-                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.determineMimeType(getContext(), fileType));
-
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
-                    selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
-                    selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                }
-
-                Log.d(LOG_TAG, "Quack: " + fileProviderUri.toString());
-                startActivity(selectViewingApp);
-            }
-        });
-
-        //TODO: Make view to show nonImageType data
-        // View to show if data wasn't accessible. Hidden/Shown depending on the result
-        fileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
-        if (fileFound) {
-            fileNotFoundView.setVisibility(View.GONE);
-        } else {
-            fileNotFoundView.setVisibility(View.VISIBLE);
-        }
 
         // Fab to upload file to Wetfish server
         fabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
@@ -261,52 +239,46 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     // Storage permissions granted!
                     fabProgressCircle.show();
                     fabUploadFile.setClickable(false);
-                    uploadFile(fileUri);
+                    uploadFile(mFileUriAbsolutePath);
                 }
 
             }
         });
 
-        // Find out if the file is null
-        if (fileUri != null && !(fileUri.toString().isEmpty())) {
-            if (fileUri != null) {
-                // File was found
-                fileNotFoundView.setVisibility(View.GONE);
-                fileFound = true;
-
-                // Setup view data
-                // Check to see if the view is representable by glide
-                if (FileUtils.representableByGlide(FileUtils.getFileExtensionFromUri(getContext(), fileUri))) {
-                    Glide.with(this)
-                            .load(FileProvider.getUriForFile(getContext(),
-                                    getString(R.string.file_provider_authority),
-                                    new File(fileUri.toString())))
-                            .apply(RequestOptions.fitCenterTransform())
-                            .transition(DrawableTransitionOptions.withCrossFade())
-                            .into(fileView);
-                } else {
-                    // If not, let the user know
-                    Log.d(LOG_TAG, "Welp, something still went wrong!");
-
-                }
-
-            } else {
-                UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-                        "File location was not found", Snackbar.LENGTH_LONG);
-            }
-        } else {
-            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-                    "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
-
-            // Make upload file inaccessible and inform the user.
-            fabUploadFile.setVisibility(View.GONE);
-            fileNotFoundView.setVisibility(View.VISIBLE);
-
-        }
-
         return mRootLayout;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /**
+     * Called when the Fragment is visible to the user.  This is generally
+     * tied to {@link net.wetfish.wetfish.ui.GalleryUploadActivity#onStart() Activity.onStart} of the containing
+     * Activity's lifecycle.
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+        responseURLAcquired = false;
+    }
+
+    /**
+     * Animation to depict the uploading process
+     */
     @Override
     public void onFABProgressAnimationEnd() {
         Snackbar.make(fabProgressCircle, getContext().getString(R.string.cloud_upload_complete), Snackbar.LENGTH_SHORT)
@@ -322,26 +294,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         // Start GalleryDetailActivity with an artificial back stack
         getContext().startActivities(intents);
-    }
-
-
-    //TODO: Potentially Remove Permission Questioning here, or keep just in case
-    private void requestStoragePermission() {
-        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-
-            // If the user has previously denied granting the permission, offer the rationale
-            Snackbar.make(mRootLayout, R.string.permission_storage_rationale,
-                    Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
-                        }
-                    }).show();
-        } else {
-            // No explanation needed, request permission
-            requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
-        }
     }
 
     /**
@@ -367,7 +319,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 if (requestCode == REQUEST_STORAGE) {
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         // Storage permissions were granted. Upload file.
-                        uploadFile(fileUri);
+                        uploadFile(mFileUriAbsolutePath);
                     } else {
                         // Storage Permissions were not granted
                         Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
@@ -384,7 +336,312 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         }
     }
 
-    private void uploadFile(Uri fileUri) {
+    /**
+     * <p>Callback method to be invoked when an item in this view has been
+     * selected. This callback is invoked only when the newly selected
+     * position is different from the previously selected position or if
+     * there was no selected item.</p>
+     * <p>
+     * Impelmenters can call getItemAtPosition(position) if they need to access the
+     * data associated with the selected item.
+     *
+     * @param parent   The AdapterView where the selection happened
+     * @param view     The view within the AdapterView that was clicked
+     * @param position The position of the view in the adapter
+     * @param id       The row id of the item that is selected
+     */
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+        mCurrentSpinnerSelection = position;
+
+        switch (position) {
+            case ORIGINAL_SIZE_SELECTION:
+                // Check to see if a file has been generated before this
+                if (mDownscaledImageCreated) {
+                    // Delete Previous File
+                    File file = new File(mDownscaledImageAbsolutePath.toString());
+                    if (file.exists()) {
+                        file.delete();
+                    }
+
+                    mDownscaledImageCreated = false;
+                }
+
+                Log.d(LOG_TAG, "Case 0");
+                break;
+
+            case LARGE_SIZE_SELECTION:
+                // Check to see if a file has been generated before this
+                if (mDownscaledImageCreated) {
+                    // Delete Previous File
+                    File file = new File(mDownscaledImageAbsolutePath.toString());
+                    if (file.exists()) {
+                        file.delete();
+                    }
+
+                    mDownscaledImageCreated = false;
+                }
+
+                // Generate medium sized image (75%)) and setup fileView accordingly
+                createDownscaledFile(position);
+
+                Log.d(LOG_TAG, "Case 1");
+                break;
+
+            case MEDIUM_SIZE_SELECTION:
+                // Check to see if a file has been generated before this
+                if (mDownscaledImageCreated) {
+                    // Delete Previous File
+                    File file = new File(mDownscaledImageAbsolutePath.toString());
+                    if (file.exists()) {
+                        file.delete();
+                    }
+
+                    mDownscaledImageCreated = false;
+                }
+
+                // Generate medium sized image (50%)) and setup fileView accordingly
+                createDownscaledFile(position);
+
+                Log.d(LOG_TAG, "Case 2");
+                break;
+
+            case SMALL_SIZE_SELECTION:
+                // Check to see if a file has been generated before this
+                if (mDownscaledImageCreated) {
+                    // Delete Previous File
+                    File file = new File(mDownscaledImageAbsolutePath.toString());
+                    if (file.exists()) {
+                        file.delete();
+                    }
+
+                    mDownscaledImageCreated = false;
+                }
+
+                // Generate small sized image (25%) and setup fileView accordingly
+                createDownscaledFile(position);
+
+                Log.d(LOG_TAG, "Case 3");
+                break;
+
+            default:
+                Log.d(LOG_TAG, "Y'never know!");
+        }
+    }
+
+    /**
+     * Callback method to be invoked when the selection disappears from this
+     * view. The selection can disappear for instance when touch is activated
+     * or when the adapter becomes empty.
+     *
+     * @param parent The AdapterView that now contains no selected item.
+     */
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Do nothin'
+    }
+
+    /**
+     * This method will determine what Uri to use in displaying fileView's background and onClickListener
+     *
+     * @param desiredAbsoluteFilePath passed Uri for the desired file path to be used for fileView
+     */
+    private void determineFileViewContent(final Uri desiredAbsoluteFilePath) {
+
+        // Setup file interaction
+        fileView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Intent to find proper app to open file
+                Intent selectViewingApp = new Intent();
+                selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                selectViewingApp.setAction(Intent.ACTION_VIEW);
+
+                // Use FileProvider to get an appropriate URI compatible with version Nougat+
+                // File path and type from the given file
+                String fileStorageLink = FileUtils.getRealPathFromUri(getContext(), desiredAbsoluteFilePath);
+                String fileType = FileUtils.getFileExtensionFromUri(getContext(), desiredAbsoluteFilePath);
+                Log.d(LOG_TAG, "File Storage Link: " + fileStorageLink);
+                Log.d(LOG_TAG, "File Type: " + fileType);
+                Uri fileProviderUri = FileProvider.getUriForFile(getContext(),
+                        getString(R.string.file_provider_authority),
+                        new File(fileStorageLink));
+
+                // Setup the data and type
+                // Appropriately determine mime type for the file
+                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.determineMimeType(getContext(), fileType));
+
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                    selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
+                    selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+
+                Log.d(LOG_TAG, "Quack: " + fileProviderUri.toString());
+                startActivity(selectViewingApp);
+            }
+        });
+
+        // Find out if the file is null
+        if (desiredAbsoluteFilePath != null && !(desiredAbsoluteFilePath.toString().isEmpty())) {
+            if (desiredAbsoluteFilePath != null) {
+                // File was found
+                fileNotFoundView.setVisibility(View.GONE);
+
+                // Setup view data
+                // Check to see if the view is representable by glide
+                if (FileUtils.representableByGlide(FileUtils.getFileExtensionFromUri(getContext(), desiredAbsoluteFilePath))) {
+                    Glide.with(this)
+                            .load(FileProvider.getUriForFile(getContext(),
+                                    getString(R.string.file_provider_authority),
+                                    new File(desiredAbsoluteFilePath.toString())))
+                            .apply(RequestOptions.fitCenterTransform())
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(fileView);
+                } else {
+                    // If not, let the user know
+                    Log.d(LOG_TAG, "Welp, something still went wrong!");
+                }
+            } else {
+                UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+                        "File location was not found", Snackbar.LENGTH_LONG);
+            }
+        } else {
+            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+                    "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
+
+            // Make upload file inaccessible and inform the user.
+            fabUploadFile.setVisibility(View.GONE);
+            fileNotFoundView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     * This method will create a downscaled bitmap  image utilizing FileUtils createDownscaledImageFile,
+     * and upon success, accordingly change fileView's onClickListener and displayed image. Upon failure
+     * Snackbars will be shown.
+     *
+     * @param downscaleRatioSelected a passed value determined on the onClick
+     */
+    private void createDownscaledFile(int downscaleRatioSelected) {
+        // Create a bitmap of the original file
+        Bitmap bitmap = BitmapFactory.decodeFile(mFileUriAbsolutePath.toString());
+
+        // Create the file that the result will populate
+        File imageFile = null;
+
+        try {
+            // Create the file name that we'd like to use and populate
+            imageFile = createImageFile();
+        } catch (IOException e) {
+            Log.d(LOG_TAG, "Error occurred while creating the file: " + e);
+            e.printStackTrace();
+        }
+
+        if (imageFile != null) {
+
+            // Create a downscaled bitmap of the original file
+            boolean downscaledFileCreated = FileUtils.createDownscaledImageFile(bitmap, SELECTIONRATIO[downscaleRatioSelected],
+                    imageFile, mRootLayout.findViewById(R.id.gallery_detail_content));
+
+            // Check to see if the file is actually downscaled
+            if (downscaledFileCreated) {
+                mDownscaledImageCreated = FileUtils.checkSuccessfulBitmapDownscale(mFileUriAbsolutePath,
+                        mDownscaledImageAbsolutePath);
+                if (mDownscaledImageCreated) {
+                    // Change the file to be opened accordingly
+                    determineFileViewContent(mDownscaledImageAbsolutePath);
+
+                    // Let the user know the image was successfully downscaled
+                    Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                            R.string.image_successfully_downscaled, Snackbar.LENGTH_LONG).show();
+                }
+            } else {
+                // Let the user know the image was unsuccessfully downscaled
+                Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                        R.string.image_unsuccessfully_downscaled, Snackbar.LENGTH_LONG).show();
+            }
+        } else {
+            // Let the user know the image was unsuccessfully downscaled
+            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                    R.string.image_unsuccessfully_downscaled, Snackbar.LENGTH_LONG).show();
+        }
+        // Generate large sized image (75%)
+    }
+
+    /**
+     * Creates an image file with a given name at the location
+     *
+     * @return returns the generated file created at the desired location
+     * @throws IOException
+     */
+    private File createImageFile() throws IOException {
+        // Create a unique image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = getString(R.string.image_file_start) + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        storageDir.mkdir();
+        File image = File.createTempFile(
+                imageFileName,
+                getString(R.string.image_file_extension),
+                storageDir
+        );
+
+        // File path
+        mDownscaledImageAbsolutePath = Uri.parse(image.getAbsolutePath());
+
+        return image;
+    }
+
+    /**
+     * Send a broadcast to the media scanner to add this photo
+     */
+    private void sendMediaBroadcast(String imagePath) {
+        // Create intent to put in the broadcast
+        Intent imageMediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+
+        // Create an object of the file we want to broadcast to obtain the Uri
+        File imageFile = new File(imagePath);
+        Uri imageContentUri = Uri.fromFile(imageFile);
+
+        //TODO: Delete later
+        Log.d(LOG_TAG, "mDownscaledImageAbsolutePath: " + imagePath);
+        Log.d(LOG_TAG, "imageContentUri: " + imageContentUri.toString());
+
+        // Set the data for the intent and broadcast it
+        imageMediaScanIntent.setData(imageContentUri);
+        getContext().sendBroadcast(imageMediaScanIntent);
+    }
+
+    private void requestStoragePermission() {
+        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+            // If the user has previously denied granting the permission, offer the rationale
+            Snackbar.make(mRootLayout, R.string.permission_storage_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction(R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
+                        }
+                    }).show();
+        } else {
+            // No explanation needed, request permission
+            requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
+        }
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    private void uploadFile(Uri fileUriAbsolutePath) {
 
         // Create Retrofit Instance
         Retrofit retrofit = RetrofitClient.getClient(getString(R.string.wetfish_base_url));
@@ -393,13 +650,16 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         RESTInterface restInterface = retrofit.create(RESTInterface.class);
 
         // Create RequestBody instance from our chosen file
-        File file = new File(FileUtils.getRealPathFromUri(getContext(), fileUri));
+        File file = new File(FileUtils.getRealPathFromUri(getContext(), fileUriAbsolutePath));
 
         // Gather file extension from chosen file for database
-        final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), fileUri);
+        final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), fileUriAbsolutePath);
 
-        // Gather file URI from chosen file for database
-        final String filePath = FileUtils.getRealPathFromUri(getContext(), fileUri);
+        // Gather file URI from chosen file for database.
+        final String filePath = fileUriAbsolutePath.toString();
+        final String downscaledFilePath = null;
+        Log.d(LOG_TAG, "mFileUriAbsolutePath: " + fileUriAbsolutePath);
+        Log.d(LOG_TAG, "filePath: " + filePath);
 
         // Create RequestBody & MultipartBody to create a Call.
         RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
@@ -505,90 +765,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         });
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * Called when the Fragment is visible to the user.  This is generally
-     * tied to {@link net.wetfish.wetfish.ui.GalleryUploadActivity#onStart() Activity.onStart} of the containing
-     * Activity's lifecycle.
-     */
-    @Override
-    public void onStart() {
-        super.onStart();
-        responseURLAcquired = false;
-    }
-
-    /**
-     * <p>Callback method to be invoked when an item in this view has been
-     * selected. This callback is invoked only when the newly selected
-     * position is different from the previously selected position or if
-     * there was no selected item.</p>
-     * <p>
-     * Impelmenters can call getItemAtPosition(position) if they need to access the
-     * data associated with the selected item.
-     *
-     * @param parent   The AdapterView where the selection happened
-     * @param view     The view within the AdapterView that was clicked
-     * @param position The position of the view in the adapter
-     * @param id       The row id of the item that is selected
-     */
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        switch(position) {
-            case ORIGINAL_SIZE_SELECTION:
-                Log.d(LOG_TAG, "Case 0");
-                break;
-            case LARGE_SIZE_SELECTION:
-                Log.d(LOG_TAG, "Case 1");
-                break;
-            case MEDIUM_SIZE_SELECTION:
-                Log.d(LOG_TAG, "Case 2");
-                break;
-            case SMALL_SIZE_SELECTION:
-                Log.d(LOG_TAG, "Case 3");
-                break;
-            default:
-                Log.d(LOG_TAG, "Y'never know!");
-        }
-    }
-
-    /**
-     * Callback method to be invoked when the selection disappears from this
-     * view. The selection can disappear for instance when touch is activated
-     * or when the adapter becomes empty.
-     *
-     * @param parent The AdapterView that now contains no selected item.
-     */
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-        // Do nothin'
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO:
         void onUploadFragmentInteraction(Uri uri);
