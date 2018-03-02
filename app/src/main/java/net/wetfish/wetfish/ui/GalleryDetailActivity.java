@@ -286,22 +286,18 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         String fileDevicePath;
 
         // Show the edited version of the original image if present
-        if (!fileInfo.getFileDeviceStorageLink().equals("")) {
-            fileDevicePath = fileInfo.getEditedFileDeviceStorageLink();
+        if (fileInfo.getEditedFileDeviceStorageLink() != null) {
+            if (!fileInfo.getEditedFileDeviceStorageLink().isEmpty() && !fileInfo.getEditedFileDeviceStorageLink().equals("")) {
+                Log.d(LOG_TAG, "editedFile exists and is not empty");
+                fileDevicePath = fileInfo.getEditedFileDeviceStorageLink();
+            } else {
+                Log.d(LOG_TAG, "file does not exist and/or is empty");
+                fileDevicePath = fileInfo.getFileDeviceStorageLink();
+            }
         } else {
+            Log.d(LOG_TAG, "file does not exist and/or is empty");
             fileDevicePath = fileInfo.getFileDeviceStorageLink();
         }
-
-        File file = new File(fileDevicePath);
-        if (file.exists()) {
-            Glide.with(this)
-                    .load(fileDevicePath)
-                    .apply(RequestOptions.centerCropTransform())
-                    .transition(DrawableTransitionOptions.withCrossFade())
-                    .into(mFileView);
-        }
-
-        // Check to see if the view is representable by glide
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
@@ -319,8 +315,6 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                         .error(Glide.with(this)
                                 .load(fileInfo.getFileWetfishStorageLink())
                                 .apply(RequestOptions.centerCropTransform()))
-                        .error(Glide.with(this)
-                                .load(new ColorDrawable(Color.BLACK)))
                         .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
                         .apply(RequestOptions.fitCenterTransform())
                         .transition(DrawableTransitionOptions.withCrossFade())
@@ -363,10 +357,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         mFileDescriptionTextView.setText(fileInfo.getFileDescription());
 
         // File storage link to be used as a passed value for the intent when the file is clicked
-        //TODO: Must check how this will work when file is not downloaded on device
-        mFileStorageLink = fileInfo.getFileDeviceStorageLink();
-
-        // File extension type to check the appropriate mime type
+        mFileStorageLink = fileDevicePath;
     }
 
     /**

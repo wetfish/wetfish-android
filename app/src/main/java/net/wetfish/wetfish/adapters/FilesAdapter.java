@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -163,10 +164,31 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
         public void bind(Cursor fileCursor) {
             if (fileCursor != null) {
 
-                //TODO: Clean this up depending on the context
-                String fileDevicePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
+                // Storage paths for all files saved to the database
+                String fileDeviceStoragePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
+                String editedFileDeviceStoragePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK));
                 String fileWetfishPath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK));
 
+                Log.d(LOG_TAG, "Original: " + fileDeviceStoragePath);
+                Log.d(LOG_TAG, "Edited: " + editedFileDeviceStoragePath);
+                Log.d(LOG_TAG, "Online: " + fileWetfishPath);
+
+                // Variable to store the appropriate storage path to use
+                String fileDevicePath;
+
+                // Determine whether to use the original file or an edited file should it exist
+                if (editedFileDeviceStoragePath != null) {
+                    if (!editedFileDeviceStoragePath.isEmpty() && !editedFileDeviceStoragePath.equals("")) {
+                        Log.d(LOG_TAG, "editedFile exists and is not empty");
+                        fileDevicePath = editedFileDeviceStoragePath;
+                    } else {
+                        Log.d(LOG_TAG, "file does not exist and/or is empty");
+                        fileDevicePath = fileDeviceStoragePath;
+                    }
+                } else {
+                    Log.d(LOG_TAG, "file does not exist and/or is empty");
+                    fileDevicePath = fileDeviceStoragePath;
+                }
 
                 ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo networkInfo = cm.getActiveNetworkInfo();
@@ -180,8 +202,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                 .error(Glide.with(mContext)
                                         .load(fileWetfishPath)
                                         .apply(RequestOptions.centerCropTransform()))
-                                .error(Glide.with(mContext)
-                                        .load(new ColorDrawable(Color.BLACK)))
                                 .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
                                 .apply(RequestOptions.centerCropTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
