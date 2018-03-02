@@ -19,6 +19,7 @@ public class FileInfo {
     public String fileDeviceStorageLink;
     public String fileWetfishStorageLink;
     public String fileWetfishDeletionLink;
+    public String editedFileDeviceStorageLink;
     public boolean fileInfoInitialized = false;
 
     /**
@@ -51,6 +52,7 @@ public class FileInfo {
         fileDeviceStorageLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
         fileWetfishStorageLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK));
         fileWetfishDeletionLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK));
+        editedFileDeviceStorageLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK));
     }
 
     public String getFileTitle() {
@@ -83,6 +85,10 @@ public class FileInfo {
 
     public String getFileWetfishDeletionLink() {
         return fileWetfishDeletionLink;
+    }
+
+    public String getEditedFileDeviceStorageLink() {
+        return editedFileDeviceStorageLink;
     }
 
     public boolean getFileInfoInitialized() {

@@ -21,8 +21,6 @@ import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileContract;
 import net.wetfish.wetfish.utils.FileUtils;
 
-import java.io.File;
-
 /**
  * Created by ${Michael} on 12/12/2017.
  */
@@ -44,7 +42,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
 
     // Activity cursor
     private Cursor mCursor;
-
 
 
     public FilesAdapter(Context mContext, FileAdapterOnClickHandler mClickHandler) {
@@ -100,7 +97,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
      * Called by RecyclerView to display the data at the specified position. This method should
      * update the contents of the {@link FileViewHolder#itemView} to reflect the item at the given
      * position.
-     *
+     * <p>
      * Note that unlike {@link ListView}, RecyclerView will not call this method
      * again if the position of the item changes in the data set unless the item itself is
      * invalidated or the new position cannot be determined. For this reason, you should only
@@ -108,7 +105,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
      * this method and should not keep a copy of it. If you need the position of an item later
      * on (e.g. in a click listener), use {@link FileViewHolder#getAdapterPosition()} which will
      * have the updated adapter position.
-     *
+     * <p>
      * Override {@link #onBindViewHolder(FileViewHolder, int)} instead if Adapter can
      * handle efficient partial bind.
      *
@@ -170,58 +167,50 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                 String fileDevicePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
                 String fileWetfishPath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK));
 
-                File file = new File(fileDevicePath);
-                if (file.exists()) {
-                    Glide.with(mContext)
-                            .load(fileDevicePath)
-                            //TODO: Potentially change image loading logic
-                            .apply(RequestOptions.centerCropTransform())
-                            .transition(DrawableTransitionOptions.withCrossFade())
-                            .into(fileView);
-                } else {
-                    ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-                    NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 
-                    if(networkInfo != null && networkInfo.isConnected()){
-                        // If network is connected search the device for the stored image on the device
-                        // then wetfish if not found.
-                        if (FileUtils.representableByGlide(fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_TYPE_EXTENSION)))) {
-                            Glide.with(mContext)
-                                    .load(fileDevicePath)
-                                    .error(Glide.with(mContext)
-                                            .load(fileWetfishPath)
-                                            .apply(RequestOptions.centerCropTransform()))
-//                                    .error(Glide.with(mContext).load(new ColorDrawable(Color.BLACK)))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                    .apply(RequestOptions.centerCropTransform())
-                                    .transition(DrawableTransitionOptions.withCrossFade())
-                                    .into(fileView);
-                        } else {
-                            Glide.with(mContext)
-                                    .load(null)
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
-                                    .apply(RequestOptions.centerCropTransform())
-                                    .transition(DrawableTransitionOptions.withCrossFade())
-                                    .into(fileView);
-                        }
+                ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 
-                    } else {
-                        // If network is not connected search the device for the stored file on the
-                        // device then show a black image if not found.
-                        //TODO: Figure out a good method for this later. In the meantime, storage or black image.
+                if (networkInfo != null && networkInfo.isConnected()) {
+                    // If network is connected search the device for the stored image on the device
+                    // then wetfish if not found.
+                    if (FileUtils.representableByGlide(fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_TYPE_EXTENSION)))) {
                         Glide.with(mContext)
                                 .load(fileDevicePath)
                                 .error(Glide.with(mContext)
-                                        .load(new ColorDrawable(Color.BLACK))
-                                        .apply(RequestOptions.fitCenterTransform()))
+                                        .load(fileWetfishPath)
+                                        .apply(RequestOptions.centerCropTransform()))
+                                .error(Glide.with(mContext)
+                                        .load(new ColorDrawable(Color.BLACK)))
                                 .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                .apply(RequestOptions.fitCenterTransform())
+                                .apply(RequestOptions.centerCropTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(fileView);
+                    } else {
+                        Glide.with(mContext)
+                                .load(null)
+                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
+                                .apply(RequestOptions.centerCropTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(fileView);
                     }
-                }
 
+                } else {
+                    // If network is not connected search the device for the stored file on the
+                    // device then show a black image if not found.
+                    //TODO: Figure out a good method for this later. In the meantime, storage or black image.
+                    Glide.with(mContext)
+                            .load(fileDevicePath)
+                            .error(Glide.with(mContext)
+                                    .load(new ColorDrawable(Color.BLACK))
+                                    .apply(RequestOptions.fitCenterTransform()))
+                            .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                            .apply(RequestOptions.fitCenterTransform())
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(fileView);
+                }
             }
+
         }
 
         @Override

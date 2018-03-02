@@ -114,9 +114,9 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
                 // Use FileProvider to get an appropriate URI compatible with version Nougat+
                 Log.d(LOG_TAG, "File Storage Link: " + mFileStorageLink);
-                     fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
-                            getString(R.string.file_provider_authority),
-                            new File(mFileStorageLink));
+                fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
+                        getString(R.string.file_provider_authority),
+                        new File(mFileStorageLink));
 
                 // Setup the data and type
                 // Appropriately determine mime type for the file
@@ -134,7 +134,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 if (selectViewingApp.resolveActivity(packageManager) != null) {
                     startActivity(selectViewingApp);
                 } else {
-                    Snackbar.make(mIncludeLayout, R.string.no_app_available, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
                 }
             }
         });
@@ -189,11 +189,11 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 String clipboardClipData = tokensTwo[0];
 
                 // Check to see if the clipboard data link equals the database stored link
-                if(clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_success,
+                if (clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
+                    Snackbar.make(findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
                             Snackbar.LENGTH_SHORT).show();
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_failure,
+                    Snackbar.make(findViewById(android.R.id.content), R.string.sb_url_clipboard_failure,
                             Snackbar.LENGTH_SHORT).show();
                 }
 
@@ -227,8 +227,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishDeletionLink()));
 
-                if(clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_success,
+                if (clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
+                    Snackbar.make(findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
                             Snackbar.LENGTH_LONG);
                 }
             }
@@ -283,26 +283,52 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         }
 
         mFileType = fileInfo.getFileExtensionType();
+        String fileDevicePath;
 
-        // Setup view data
+        // Show the edited version of the original image if present
+        if (!fileInfo.getFileDeviceStorageLink().equals("")) {
+            fileDevicePath = fileInfo.getEditedFileDeviceStorageLink();
+        } else {
+            fileDevicePath = fileInfo.getFileDeviceStorageLink();
+        }
+
+        File file = new File(fileDevicePath);
+        if (file.exists()) {
+            Glide.with(this)
+                    .load(fileDevicePath)
+                    .apply(RequestOptions.centerCropTransform())
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .into(mFileView);
+        }
+
         // Check to see if the view is representable by glide
+
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+
+        // If network is connected search the device for the stored image, then wetfish if not found
         if (networkInfo != null && networkInfo.isConnected()) {
-            // If network is connected search the device for the stored image on the device
-            // then wetfish if not found.if (FileUtils.representableByGlide(mFileType)) {
+            // Check to see if the image is representable by glide. If not, let the user know.
             if (FileUtils.representableByGlide(mFileType)) {
                 Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
                 Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
+                Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
+
                 Glide.with(this)
-                        .load(fileInfo.getFileWetfishStorageLink()) //TODO: Do file storage first
-                        .error(Glide.with(this).load(fileInfo.getFileWetfishStorageLink()))
-                        .error(Glide.with(this).load(new ColorDrawable(Color.BLACK)))
+                        .load(fileDevicePath)
+                        .error(Glide.with(this)
+                                .load(fileInfo.getFileWetfishStorageLink())
+                                .apply(RequestOptions.centerCropTransform()))
+                        .error(Glide.with(this)
+                                .load(new ColorDrawable(Color.BLACK)))
                         .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
                         .apply(RequestOptions.fitCenterTransform())
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(mFileView);
             } else {
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
+                Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
                 // If not, let the user know
                 //TODO: Figure out a good method for this later. In the meantime, black image.
                 Glide.with(this)
@@ -311,18 +337,24 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                         .apply(RequestOptions.fitCenterTransform())
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(mFileView);
+
+                Snackbar.make(mIncludeLayout, R.string.sb_not_representable_by_glide, Snackbar.LENGTH_LONG).show();
             }
         } else {
-        // If network is not connected search the device for the stored file on the
-        // device then show a black image if not found.
-        //TODO: Figure out a good method for this later. In the meantime, storage or black image.
-        Glide.with(this)
+            // If network is not connected search the device for the stored file on the
+            // device then show a black image if not found.
+            //TODO: Figure out a good method for this later. In the meantime, storage or black image.
+            Glide.with(this)
                     .load(fileInfo.getFileDeviceStorageLink())
-                    .error(Glide.with(this).load(new ColorDrawable(Color.BLACK)))
+                    .error(Glide.with(this)
+                            .load(new ColorDrawable(Color.BLACK))
+                            .apply(RequestOptions.fitCenterTransform()))
                     .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
                     .apply(RequestOptions.fitCenterTransform())
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .into(mFileView);
+
+            Snackbar.make(mIncludeLayout, R.string.sb_network_not_connected, Snackbar.LENGTH_LONG).show();
         }
 
 

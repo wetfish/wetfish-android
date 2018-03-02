@@ -74,7 +74,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             Log.d(LOG_TAG, "File Data URI: " + fileUri.toString());
         } else {
             Log.d(LOG_TAG, "Bundle returned null");
-            Snackbar.make(findViewById(android.R.id.content), R.string.unable_to_obtain_file, Snackbar.LENGTH_LONG).show();
+            Snackbar.make(findViewById(android.R.id.content), R.string.sb_unable_to_obtain_file, Snackbar.LENGTH_LONG).show();
 
 //            UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
 //                    "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
@@ -152,9 +152,9 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 
         // Title and Image arrays for tabs
         private String tabTitles[] = new String[] {
-                getString(R.string.title_upload),
-                getString(R.string.title_edit_exif),
-                getString(R.string.title_edit_file)};
+                getString(R.string.tv_title_upload),
+                getString(R.string.tv_title_edit_exif),
+                getString(R.string.tv_title_edit_file)};
 
         private int[] imageResId = {
                 R.drawable.ic_upload_file,

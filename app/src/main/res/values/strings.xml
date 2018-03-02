@@ -3,28 +3,40 @@
     <string name="app_name">Wetfish</string>
 
     <!-- Layout Strings -->
-    <string name="action_settings">Settings</string>
-    <string name="toolbar_subheader">The Best Internet On the Internet</string>
-    <string name="title_activity_gallery_view_pager">GalleryViewPagerActivity</string>
-    <string name="title_activity_gallery_upload">Wetfish File Sharing</string>
-    <string name="title_upload">Upload File</string>
-    <string name="title_edit_exif">Edit EXIF</string>
-    <string name="title_edit_file">Edit File</string>
-    <string name="under_construction">Feature Under Construction</string>
-    <string name="title_activity_gallery_detail">Gallery Item Details</string>
+    <string name="tv_action_settings">Settings</string>
+    <string name="tv_toolbar_subheader">The Best Internet On the Internet</string>
+    <string name="tv_title_activity_gallery_view_pager">GalleryViewPagerActivity</string>
+    <string name="tv_title_activity_gallery_upload">Wetfish File Sharing</string>
+    <string name="tv_title_upload">Upload File</string>
+    <string name="tv_title_edit_exif">Edit EXIF</string>
+    <string name="tv_title_edit_file">Edit File</string>
+    <string name="tv_under_construction">Feature Under Construction</string>
+    <string name="tv_title_activity_gallery_detail">Gallery Item Details</string>
     <string name="tv_title">Title </string>
     <string name="tv_tags">Tags </string>
     <string name="tv_description">Description </string>
-    <string name="error_loading_db">Error Loading Database</string>
-    <string name="no_results">No Files Uploaded…</string>
+    <string name="tv_image_resolution">%dX%d</string>
+    <string name="tv_image_size_mb">%d mb</string> <string name="error_loading_db">Error Loading Database</string>
+    <string name="tv_no_results">No Files Uploaded…</string>
     <string name="et_description_hint">Description</string>
     <string name="et_tags_hint">Tags</string>
     <string name="et_title_hint">Title</string>
-    <string name="tv_image_resolution">%dX%d</string>
-    <string name="tv_image_size_mb">%d mb</string>
+    <string name="fab_select_file">Select File</string>
+    <string name="fab_take_video">Capture Video</string>
+    <string name="fab_take_picture">Capture Image</string>
+    <string name="sb_url_clipboard_success">URL successfully copied to clipboard</string>
+    <string name="sb_url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
+    <string name="sb_image_successfully_downscaled">Image successfully downscaled</string>
+    <string name="sb_image_unsuccessfully_downscaled">Image unsuccessfully downscaled</string>
+    <string name="sb_not_representable_by_glide">The given file is currently unsupported. Please view at Wetfish.</string>
+    <string name="sb_network_not_connected">Currently unconnected to a network.</string>
+    <string name="sb_no_app_available">No app installed can interact with this file.</string>
+    <string name="sb_unable_to_obtain_file">Unable to obtain chosen file.</string>
+    <string name="sb_no_file_selected">No file selected.</string>
+    <string name="tv_cloud_upload_complete">Upload Complete!</string>
 
     <!-- Snackbar Strings -->
-    <string name="permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
+    <string name="sb_permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
     <string name="permission_not_granted_storage">Uploading to Wetfish requires Storage permissions.</string>
     <string name="ok">OK</string>
 
@@ -67,17 +79,7 @@
 
     <!-- File Provider strings -->
     <string name="file_provider_authority">net.wetfish.wetfish.fileprovider</string>
-    <string name="no_app_available">No app installed can interact with this file.</string>
-    <string name="unable_to_obtain_file">Unable to obtain chosen file.</string>
-    <string name="no_file_selected">No file selected.</string>
-    <string name="cloud_upload_complete">Upload Complete!</string>
-    <string name="fab_select_file">Select File</string>
-    <string name="fab_take_video">Capture Video</string>
-    <string name="fab_take_picture">Capture Image</string>
-    <string name="url_clipboard_success">URL successfully copied to clipboard</string>
-    <string name="url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
-    <string name="image_successfully_downscaled">Image successfully downscaled</string>
-    <string name="image_unsuccessfully_downscaled">Image unsuccessfully downscaled</string>
+
 
     <!-- Spinner Values -->
     <string-array name="upload_fragment_spinner_array">
@@ -86,17 +88,6 @@
         <item>Resolution: [Medium 50%]</item>
         <item>Resolution: [Small 25%]</item>
     </string-array>
-
-
-    // Resolution: [Original (1920x1080) (3.2 MB) ]
-    // Resolution: [Large (1440x810) (3.2 MB) ]
-    // Resolution: [Medium (960x540) (3.2 MB) ]
-    // Resolution: [Original (480x270) (3.2 MB) ]
-    // Resolution: [Original (1920x1080) (3.2 MB) ]
-    //
-    //
-    //
-    //
 
 </resources>
 

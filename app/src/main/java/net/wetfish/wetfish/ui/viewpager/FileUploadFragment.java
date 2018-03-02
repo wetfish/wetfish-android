@@ -310,7 +310,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      */
     @Override
     public void onFABProgressAnimationEnd() {
-        Snackbar.make(fabProgressCircle, getContext().getString(R.string.cloud_upload_complete), Snackbar.LENGTH_SHORT)
+        Snackbar.make(fabProgressCircle, getContext().getString(R.string.tv_cloud_upload_complete), Snackbar.LENGTH_SHORT)
                 .show();
         // Create file detail activity intent
         Intent fileDetails = new Intent(getContext(), GalleryDetailActivity.class);
@@ -589,17 +589,17 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                     // Let the user know the image was successfully downscaled
                     Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                            R.string.image_successfully_downscaled, Snackbar.LENGTH_LONG).show();
+                            R.string.sb_image_successfully_downscaled, Snackbar.LENGTH_LONG).show();
                 }
             } else {
                 // Let the user know the image was unsuccessfully downscaled
                 Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                        R.string.image_unsuccessfully_downscaled, Snackbar.LENGTH_LONG).show();
+                        R.string.sb_image_unsuccessfully_downscaled, Snackbar.LENGTH_LONG).show();
             }
         } else {
             // Let the user know the image was unsuccessfully downscaled
             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                    R.string.image_unsuccessfully_downscaled, Snackbar.LENGTH_LONG).show();
+                    R.string.sb_image_unsuccessfully_downscaled, Snackbar.LENGTH_LONG).show();
         }
         // Generate large sized image (75%)
     }
@@ -652,7 +652,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
             // If the user has previously denied granting the permission, offer the rationale
-            Snackbar.make(mRootLayout, R.string.permission_storage_rationale,
+            Snackbar.make(mRootLayout, R.string.sb_permission_storage_rationale,
                     Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.ok, new View.OnClickListener() {
                         @Override
