@@ -79,6 +79,7 @@
 
     <!-- File Provider strings -->
     <string name="file_provider_authority">net.wetfish.wetfish.fileprovider</string>
+    <string name="fab_view_original">View Original</string>
 
 
     <!-- Spinner Values -->
