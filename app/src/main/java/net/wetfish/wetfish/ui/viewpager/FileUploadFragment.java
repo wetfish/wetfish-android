@@ -87,24 +87,22 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final int SMALL_SIZE_SELECTION = 3;
     private static final double[] SELECTIONRATIO = {1, .75, .5, .2};
 
-
-    /* Fragment initialization parameter variables */
-    private int sectionNumber;
-    private Uri mFileUriAbsolutePath;
-
     /* Views */
-    private TextView fileNotFoundView;
-    private ImageView fileView;
-    private EditText fileEditTitleView;
-    private EditText fileEditTagsView;
-    private EditText fileEditDescriptionView;
+    private TextView mFileNotFoundView;
+    private ImageView mFileView;
+    private TextView mFileViewSize;
+    private TextView mFileViewResolution;
+    private EditText mFileEditTitleView;
+    private EditText mFileEditTagsView;
+    private EditText mFileEditDescriptionView;
     private FloatingActionButton fabUploadFile;
-    private FABProgressCircle fabProgressCircle;
+    private FABProgressCircle mFabProgressCircle;
     private View mRootLayout;
     private View fileUploadContent;
     private Spinner mSpinner;
 
     /* Data */
+    private Uri mFileUriAbsolutePath;
     private Uri mDownscaledImageAbsolutePath;
     private String responseViewURL;
     private String responseDeleteURL;
@@ -115,10 +113,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private int uploadID;
     private int mCurrentSpinnerSelection = 0;
     private double mImageFileSize = 0;
+    private int sectionNumber;
+
 
     //TODO: Potentially remove.
     private OnFragmentInteractionListener mListener;
-
     public FileUploadFragment() {
         // Required empty public constructor
     }
@@ -163,20 +162,21 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         // Views
         // TODO: Support Video Views soon. (Glide/VideoView/Exoplayer)
-        fileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
-        fileEditTitleView = mRootLayout.findViewById(R.id.et_title);
-        fileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
-        fileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
-        fabProgressCircle = mRootLayout.findViewById(R.id.fab_progress_circle);
-        fileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
+        mFileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
+        mFileViewResolution = mRootLayout.findViewById(R.id.tv_image_resolution);
+        mFileViewSize = mRootLayout.findViewById(R.id.tv_image_size);
+        mFileEditTitleView = mRootLayout.findViewById(R.id.et_title);
+        mFileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
+        mFileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
+        mFabProgressCircle = mRootLayout.findViewById(R.id.fab_progress_circle);
+        mFileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
 
-        // Setup fileView's image and onClickListener with the correct file Uri
+        // Setup mFileView's image and onClickListener with the correct file Uri
         if (mDownscaledImageCreated) {
             determineFileViewContent(mDownscaledImageAbsolutePath);
         } else {
             determineFileViewContent(mFileUriAbsolutePath);
         }
-
 
         // Setup Spinner
         mSpinner = mRootLayout.findViewById(R.id.spinner_fragment_file_upload);
@@ -205,20 +205,20 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    fileView.setClickable(false);
+                    mFileView.setClickable(false);
                 } else if (!hasFocus) {
-                    fileView.setClickable(true);
+                    mFileView.setClickable(true);
                     UIUtils.hideKeyboard(v, getContext());
                 }
             }
         };
 
-        fileEditTitleView.setOnFocusChangeListener(focusChangeListener);
-        fileEditTagsView.setOnFocusChangeListener(focusChangeListener);
-        fileEditDescriptionView.setOnFocusChangeListener(focusChangeListener);
+        mFileEditTitleView.setOnFocusChangeListener(focusChangeListener);
+        mFileEditTagsView.setOnFocusChangeListener(focusChangeListener);
+        mFileEditDescriptionView.setOnFocusChangeListener(focusChangeListener);
 
         // Setup listener for progress bar
-        fabProgressCircle.attachListener(this);
+        mFabProgressCircle.attachListener(this);
 
         // Fab to upload file to Wetfish server
         fabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
@@ -239,7 +239,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 } else {
 
                     // Storage permissions granted!
-                    fabProgressCircle.show();
+                    mFabProgressCircle.show();
                     fabUploadFile.setClickable(false);
                     uploadFile(mFileUriAbsolutePath);
                 }
@@ -310,12 +310,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      */
     @Override
     public void onFABProgressAnimationEnd() {
-        Snackbar.make(fabProgressCircle, getContext().getString(R.string.tv_cloud_upload_complete), Snackbar.LENGTH_SHORT)
+        Snackbar.make(mFabProgressCircle, getContext().getString(R.string.tv_cloud_upload_complete), Snackbar.LENGTH_SHORT)
                 .show();
         // Create file detail activity intent
         Intent fileDetails = new Intent(getContext(), GalleryDetailActivity.class);
+
+        // Create artificial backstack to populate the intent
         Intent backStackIntent = new Intent(getContext(), GalleryActivity.class);
         Intent[] intents = {backStackIntent, fileDetails};
+
+        // Clear the backstack to prevent erroneous behaviour
+        fileDetails.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        backStackIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         // Pass the Uri to the corresponding gallery item
         fileDetails.putExtra(getString(R.string.file_details),
@@ -392,9 +398,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     deleteDownscaledFile();
                 }
 
-                Log.d(LOG_TAG, "Case 0");
-                break;
+                // Setup the file stats
+                setupFileStats(mDownscaledImageCreated);
 
+                break;
             case LARGE_SIZE_SELECTION:
                 // Check to see if a file has been generated before this
                 if (mDownscaledImageCreated) {
@@ -402,12 +409,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     deleteDownscaledFile();
                 }
 
-                // Generate medium sized image (75%)) and setup fileView accordingly
+                // Generate medium sized image (75%)) and setup mFileView accordingly
                 createDownscaledFile(position);
 
-                Log.d(LOG_TAG, "Case 1");
-                break;
+                // Setup the file stats
+                setupFileStats(mDownscaledImageCreated);
 
+                break;
             case MEDIUM_SIZE_SELECTION:
                 // Check to see if a file has been generated before this
                 if (mDownscaledImageCreated) {
@@ -415,12 +423,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     deleteDownscaledFile();
                 }
 
-                // Generate medium sized image (50%)) and setup fileView accordingly
+                // Generate medium sized image (50%)) and setup mFileView accordingly
                 createDownscaledFile(position);
 
-                Log.d(LOG_TAG, "Case 2");
-                break;
+                // Setup the file stats
+                setupFileStats(mDownscaledImageCreated);
 
+                break;
             case SMALL_SIZE_SELECTION:
                 // Check to see if a file has been generated before this
                 if (mDownscaledImageCreated) {
@@ -428,14 +437,29 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 }
 
-                // Generate small sized image (25%) and setup fileView accordingly
+                // Generate small sized image (25%) and setup mFileView accordingly
                 createDownscaledFile(position);
 
-                Log.d(LOG_TAG, "Case 3");
-                break;
+                // Setup the file stats
+                setupFileStats(mDownscaledImageCreated);
 
+                break;
             default:
                 Log.d(LOG_TAG, "Y'never know!");
+        }
+    }
+
+    /**
+     * Sets up the given file's stats
+     * @param determineDesiredFileUri
+     */
+    private void setupFileStats(Boolean determineDesiredFileUri) {
+        if (mDownscaledImageCreated) {
+            mFileViewSize.setText(FileUtils.getFileSize(mDownscaledImageAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getFileResolution(mDownscaledImageAbsolutePath, getContext()));
+        } else {
+            mFileViewSize.setText(FileUtils.getFileSize(mFileUriAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getFileResolution(mFileUriAbsolutePath, getContext()));
         }
     }
 
@@ -477,14 +501,14 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     }
 
     /**
-     * This method will determine what Uri to use in displaying fileView's background and onClickListener
+     * This method will determine what Uri to use in displaying mFileView's background and onClickListener
      *
-     * @param desiredAbsoluteFilePath passed Uri for the desired file path to be used for fileView
+     * @param desiredAbsoluteFilePath passed Uri for the desired file path to be used for mFileView
      */
     private void determineFileViewContent(final Uri desiredAbsoluteFilePath) {
 
         // Setup file interaction
-        fileView.setOnClickListener(new View.OnClickListener() {
+        mFileView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Intent to find proper app to open file
@@ -520,7 +544,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         if (desiredAbsoluteFilePath != null && !(desiredAbsoluteFilePath.toString().isEmpty())) {
             if (desiredAbsoluteFilePath != null) {
                 // File was found
-                fileNotFoundView.setVisibility(View.GONE);
+                mFileNotFoundView.setVisibility(View.GONE);
 
                 // Setup view data
                 // Check to see if the view is representable by glide
@@ -531,7 +555,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     new File(desiredAbsoluteFilePath.toString())))
                             .apply(RequestOptions.fitCenterTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
-                            .into(fileView);
+                            .into(mFileView);
                 } else {
                     // If not, let the user know
                     Log.d(LOG_TAG, "Welp, something still went wrong!");
@@ -546,14 +570,14 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
             // Make upload file inaccessible and inform the user.
             fabUploadFile.setVisibility(View.GONE);
-            fileNotFoundView.setVisibility(View.VISIBLE);
+            mFileNotFoundView.setVisibility(View.VISIBLE);
         }
     }
 
     //TODO: Do this during a loader and during the loader hide the upload button.
     /**
      * This method will create a downscaled bitmap  image utilizing FileUtils createDownscaledImageFile,
-     * and upon success, accordingly change fileView's onClickListener and displayed image. Upon failure
+     * and upon success, accordingly change mFileView's onClickListener and displayed image. Upon failure
      * Snackbars will be shown.
      *
      * @param downscaleRatioSelected a passed value determined on the onClick
@@ -648,6 +672,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         getContext().sendBroadcast(imageMediaScanIntent);
     }
 
+    /**
+     * Currently a backup method for storage permission access.
+     * Can likely be deleted soon.
+     * TODO: Check this out later
+     */
     private void requestStoragePermission() {
         if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
@@ -731,9 +760,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                             // Add to database
                             uploadID = FileUtils.insertFileData(getContext(),
-                                    fileEditTitleView.getText().toString(),
-                                    fileEditTagsView.getText().toString(),
-                                    fileEditDescriptionView.getText().toString(),
+                                    mFileEditTitleView.getText().toString(),
+                                    mFileEditTagsView.getText().toString(),
+                                    mFileEditDescriptionView.getText().toString(),
                                     Calendar.getInstance().getTimeInMillis(),
                                     fileExtension,
                                     filePath,
@@ -759,7 +788,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                            fabProgressCircle.beginFinalAnimation();
+                            mFabProgressCircle.beginFinalAnimation();
                         } else {
                             responseViewURL = getString(R.string.wetfish_base_uploader_url);
 
@@ -767,9 +796,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                             // Add to database
                             uploadID = FileUtils.insertFileData(getContext(),
-                                    fileEditTitleView.getText().toString(),
-                                    fileEditTagsView.getText().toString(),
-                                    fileEditDescriptionView.getText().toString(),
+                                    mFileEditTitleView.getText().toString(),
+                                    mFileEditTagsView.getText().toString(),
+                                    mFileEditDescriptionView.getText().toString(),
                                     Calendar.getInstance().getTimeInMillis(),
                                     fileExtension,
                                     filePath,
@@ -795,7 +824,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                            fabProgressCircle.beginFinalAnimation();
+                            mFabProgressCircle.beginFinalAnimation();
                         }
                     } else {
                         responseViewURL = getString(R.string.wetfish_base_uploader_url);
@@ -804,9 +833,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                         // Add to database
                         uploadID = FileUtils.insertFileData(getContext(),
-                                fileEditTitleView.getText().toString(),
-                                fileEditTagsView.getText().toString(),
-                                fileEditDescriptionView.getText().toString(),
+                                mFileEditTitleView.getText().toString(),
+                                mFileEditTagsView.getText().toString(),
+                                mFileEditDescriptionView.getText().toString(),
                                 Calendar.getInstance().getTimeInMillis(),
                                 fileExtension,
                                 filePath,
@@ -832,7 +861,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                "File Uploaded!", Snackbar.LENGTH_LONG);
-                        fabProgressCircle.beginFinalAnimation();
+                        mFabProgressCircle.beginFinalAnimation();
                     }
                 } catch (IOException e) {
                     Log.d(LOG_TAG, "onFailure Catch: ");
@@ -843,7 +872,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 fabUploadFile.setClickable(true);
-                fabProgressCircle.hide();
+                mFabProgressCircle.hide();
                 UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                         "File Upload Failed!", Snackbar.LENGTH_LONG);
                 Log.d(LOG_TAG, "onFailure Response: " + t);

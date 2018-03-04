@@ -528,7 +528,7 @@ public class GalleryActivity extends AppCompatActivity implements
             // If the cursor has no data
             mEmptyStateView.setVisibility(View.VISIBLE);
         } else {
-            mEmptyStateView.setText(getString(R.string.error_loading_db));
+            mEmptyStateView.setText(getString(R.string.tv_error_loading_db));
             mEmptyStateView.setVisibility(View.VISIBLE);
         }
 

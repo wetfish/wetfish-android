@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.View;
 
@@ -30,6 +29,9 @@ import java.util.regex.Pattern;
  */
 
 public class FileUtils {
+
+    private static final double UNIT_CONVERSION = 1000;
+
     // TODO: Might want to rename this
     public static String getRealPathFromUri(Context context, Uri contentUri) {
         String fileProviderString = "(/net.wetfish.wetfish/)";
@@ -244,18 +246,38 @@ public class FileUtils {
         return downscaledWidth < originalWidth;
     }
 
-    public double checkFileSize(Uri fileUri, Context context) {
-        File imageFile = new File(fileUri.toString());
-        double imageFileSize = imageFile.length();
+    public static String getFileSize(Uri fileUri, Context context) {
+        // Create an image to reference
+        File file = new File(fileUri.toString());
 
-        Uri fileUri2 = FileProvider.getUriForFile(context,
-                context.getString(R.string.file_provider_authority),
-                new File(fileUri.toString()));
-        File imageFile2 = new File(fileUri2.toString());
-        double imageFileSize2 = imageFile2.length();
+        // float for image file length
+        float fileSize = file.length();
 
-        Log.d("This is in FileUtils", "\nImageFileSize: " + imageFileSize + "\nImageFileSize2: " + imageFileSize2);
+        // Get file size in kilobytes
+        fileSize = (float) (fileSize / UNIT_CONVERSION);
 
-        return 0.0;
+        // Return the gathered file size, rounded up to mb
+        if (fileSize / UNIT_CONVERSION < 1) {
+            // File Size is within the kilobyte range, return the appropriate string
+            return context.getString(R.string.tv_image_sizez_kb, Math.round(fileSize));
+        } else if (fileSize / UNIT_CONVERSION >= 1 && !(fileSize / UNIT_CONVERSION >= 1000)) {
+            // File Size is within the megabyte range, convert to mb
+            fileSize = (float) (fileSize / UNIT_CONVERSION);
+
+            // Return the appropriate string
+            return context.getString(R.string.tv_image_size_mb, Math.round(fileSize));
+        } else {
+            // TODO: This shouldn't feasibly happen, but must be dealt with. This will be implemented when desired functionality is discussed for this edge case.
+        }
+        return context.getString(R.string.tv_image_size_mb, Math.round(file.length()));
+
+    }
+
+    public static String getFileResolution(Uri fileUri, Context context) {
+        // Get the bitmap we want the resolution from
+        Bitmap bitmap = BitmapFactory.decodeFile(fileUri.toString());
+
+        // Grab the height and width and return it in the form a resolution
+        return context.getString(R.string.tv_image_resolution, bitmap.getWidth(), bitmap.getHeight());
     }
 }

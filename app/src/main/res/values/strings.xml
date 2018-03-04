@@ -15,8 +15,10 @@
     <string name="tv_title">Title </string>
     <string name="tv_tags">Tags </string>
     <string name="tv_description">Description </string>
-    <string name="tv_image_resolution">%dX%d</string>
-    <string name="tv_image_size_mb">%d mb</string> <string name="error_loading_db">Error Loading Database</string>
+    <string name="tv_image_resolution">%d X %d</string>
+    <string name="tv_image_sizez_kb">%d kb</string>
+    <string name="tv_image_size_mb">%d mb</string>
+    <string name="tv_error_loading_db">Error Loading Database</string>
     <string name="tv_no_results">No Files Uploaded…</string>
     <string name="et_description_hint">Description</string>
     <string name="et_tags_hint">Tags</string>
