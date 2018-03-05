@@ -158,12 +158,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-
+        // Determine the mime type
         mFileType = FileUtils.getFileExtensionFromUri(getContext(), mFileUriAbsolutePath);
-        mMimeType = FileUtils.determineMimeType(getContext(), mFileType);
+        mMimeType = FileUtils.getMimeType(mFileType, getContext());
 
-        // Determine what file type we are working with
+        // Inflate the proper layout depending on the mime type
         switch (mMimeType) {
             case IMAGE_FILE: // This layout is for image files
                 // Inflate the layout for this fragment
@@ -172,6 +171,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Reference to file upload layout content
                 fileUploadContent = mRootLayout.findViewById(R.id.file_upload_content_container);
 
+                // File Views
                 mFileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
                 mFileViewSize = mRootLayout.findViewById(R.id.tv_image_size);
                 mFileViewResolution = mRootLayout.findViewById(R.id.tv_image_resolution);
@@ -195,11 +195,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 break;
             case VIDEO_FILE: // This layout is for video files
+                //TODO: This will support a separate root layout for videos specifically
                 mRootLayout = inflater.inflate(R.layout.fragment_file_upload_video_view_pager, container, false);
 
                 // Reference to file upload layout content
                 fileUploadContent = mRootLayout.findViewById(R.id.file_upload_content_container);
 
+                // File views
                 mFileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
                 mFileLength = mRootLayout.findViewById(R.id.tv_video_length);
                 mFileViewSize = mRootLayout.findViewById(R.id.tv_video_size);
@@ -210,7 +212,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 break;
             default:
-                Log.d(LOG_TAG, "this Shouldn't Happen");
+                //TODO: Potentially make an error page
                 break;
         }
 
@@ -563,7 +565,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 // Setup the data and type
                 // Appropriately determine mime type for the file
-                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.determineMimeType(getContext(), fileType));
+                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(fileType, getContext()));
 
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
                     selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
@@ -842,9 +844,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     responseDeleteURL,
                                     downscaledFilePath);
 
-                            /**
-                             *  Check to see if upload was successful to determine if the downscaled image
-                             * should be kept or deleted
+                            /*
+                               Check to see if upload was successful to determine if the downscaled image
+                              should be kept or deleted
                              */
                             if (uploadID >= 0) {
                                 mDatabaseAdditionSuccessful = true;
@@ -879,9 +881,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 responseDeleteURL,
                                 downscaledFilePath);
 
-                        /**
-                         *  Check to see if upload was successful to determine if the downscaled image
-                         * should be kept or deleted
+                        /*
+                           Check to see if upload was successful to determine if the downscaled image
+                          should be kept or deleted
                          */
                         if (uploadID >= 0) {
                             mDatabaseAdditionSuccessful = true;

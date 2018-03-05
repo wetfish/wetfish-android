@@ -49,6 +49,10 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     private static final int FILES_DETAIL_LOADER = 1;
     // Bundle key to save instance state
     private static final String BUNDLE_KEY = "fileInfoKey";
+    // Image file switch constant
+    private static final String IMAGE_FILE = "image/*";
+    // Video file switch constant
+    private static final String VIDEO_FILE = "video/*";
 
     /* FAM & FABs */
     // Display FABs
@@ -73,6 +77,12 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     private TextView mFileTagsTextView;
     // File description text view
     private TextView mFileDescriptionTextView;
+    // File playback length text view
+    private TextView mFileViewLength;
+    // File size text view
+    private TextView mFileViewSize;
+    // File resolution text view
+    private TextView mFileViewResolution;
     // Layout include reference
     private View mIncludeLayout;
 
@@ -95,16 +105,6 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         // Setup Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        // Reference included layout
-        mIncludeLayout = findViewById(R.id.include_layout_gallery_detail);
-
-        // Views
-        // TODO: Support Video Views soon. (Glide/VideoView/Exoplayer)
-        mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
-        mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
-        mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
-        mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
 
         // FAM
         mFAM = findViewById(R.id.fam_gallery_detail);
@@ -159,7 +159,6 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     }
 
     public void displayFileDetails(FileInfo fileInfo) {
-
         // String to determine the appropriate Uri to use
         String desiredFileStorageLink;
 
@@ -197,18 +196,58 @@ public class GalleryDetailActivity extends AppCompatActivity implements
             desiredFileStorageLink = fileInfo.getFileDeviceStorageLink();
         }
 
-        // See if the deletion link has been provided for the given database entry
-        if (fileInfo.getFileWetfishDeletionLink().equals(getString(R.string.not_implemented)) ||
-                fileInfo.getFileWetfishDeletionLink().isEmpty() || fileInfo.getFileWetfishDeletionLink().equals("")) {
-            deletionLinkPresent = false;
-        } else {
-            deletionLinkPresent = true;
+        // Determine the mime type
+        String mimeType = FileUtils.getMimeType(fileInfo.getFileExtensionType(), this);
+
+        // Inflate the proper layout depending on the mime type
+        switch (mimeType) {
+            case IMAGE_FILE: // This layout is for image files
+                // Reference the image layout and hide the video layout
+                mIncludeLayout = findViewById(R.id.include_layout_gallery_image_detail);
+                findViewById(R.id.include_layout_gallery_video_detail).setVisibility(View.GONE);
+
+                // Views
+                mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
+                mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
+                mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
+                mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
+                mFileViewSize = mIncludeLayout.findViewById(R.id.tv_image_size);
+                mFileViewResolution = mIncludeLayout.findViewById(R.id.tv_image_resolution);
+
+                // Setup view data
+                mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(desiredFileStorageLink), this));
+                mFileViewResolution.setText(FileUtils.getImageResolution(Uri.parse(desiredFileStorageLink), this));
+
+                break;
+            case VIDEO_FILE: // This layout is for video files
+                // Reference the video layout and hide the image layout
+                mIncludeLayout = findViewById(R.id.include_layout_gallery_video_detail);
+                findViewById(R.id.include_layout_gallery_image_detail).setVisibility(View.GONE);
+
+                // Views
+                mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
+                mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
+                mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
+                mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
+                mFileViewSize = mIncludeLayout.findViewById(R.id.tv_video_size);
+                mFileViewLength = mIncludeLayout.findViewById(R.id.tv_video_length);
+
+                // Setup view data
+                mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(desiredFileStorageLink), this));
+                mFileViewLength.setText(FileUtils.getVideoLength(Uri.parse(desiredFileStorageLink), this));
+
+                break;
+            default:
+                //TODO: Potentially make an error page
+                break;
         }
+
+        // See if the deletion link has been provided for the given database entry
+        deletionLinkPresent = !(fileInfo.getFileWetfishDeletionLink().equals(getString(R.string.not_implemented)) ||
+                !(fileInfo.getFileWetfishDeletionLink().isEmpty()) || !(fileInfo.getFileWetfishDeletionLink().equals("")));
 
         // Setup the interaction listeners now that the appropriate data has been received
         setupOnInteractionListeners(editedFilePresent, deletionLinkPresent, originalFileStorageLink);
-
-
 
         mFileType = fileInfo.getFileExtensionType();
 
@@ -264,11 +303,6 @@ public class GalleryDetailActivity extends AppCompatActivity implements
             Snackbar.make(mIncludeLayout, R.string.sb_network_not_connected, Snackbar.LENGTH_LONG).show();
         }
 
-
-        mFileTitleTextView.setText(fileInfo.getFileTitle());
-        mFileTagsTextView.setText(fileInfo.getFileTags());
-        mFileDescriptionTextView.setText(fileInfo.getFileDescription());
-
         // File storage link to be used as a passed value for the intent when the file is clicked
         this.desiredFileStorageLink = desiredFileStorageLink;
 
@@ -302,7 +336,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
                 // Setup the data and type
                 // Appropriately determine mime type for the file
-                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.determineMimeType(GalleryDetailActivity.this, mFileType));
+                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, GalleryDetailActivity.this));
 
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
                     selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
@@ -345,7 +379,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
                     // Setup the data and type
                     // Appropriately determine mime type for the file
-                    selectViewingApp.setDataAndType(fileProviderUri, FileUtils.determineMimeType(GalleryDetailActivity.this, mFileType));
+                    selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, GalleryDetailActivity.this));
 
                     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
                         selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));

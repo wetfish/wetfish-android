@@ -160,7 +160,7 @@ public class FileUtils {
      * @param context  TODO: Likely remove soon
      * @return return the appropriate mime type
      */
-    public static String determineMimeType(Context context, String fileType) {
+    public static String getMimeType(String fileType, Context context) {
         Log.d("FileUtils[dMT]: ", "CHECK IT: " + fileType);
         if (fileType.matches(".jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg")) {
             Log.d("Ehyo", "image/*");

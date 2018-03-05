@@ -24,9 +24,15 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <!-- This will be shown for images and hidden for videos-->
     <include
-        android:id="@+id/include_layout_gallery_detail"
-        layout="@layout/content_gallery_detail" />
+        android:id="@+id/include_layout_gallery_image_detail"
+        layout="@layout/content_gallery_image_detail" />
+
+    <!-- This will be shown for videos and hidden for images-->
+    <include
+        android:id="@+id/include_layout_gallery_video_detail"
+        layout="@layout/content_gallery_video_detail" />
 
     <com.github.clans.fab.FloatingActionMenu
         android:id="@+id/fam_gallery_detail"
