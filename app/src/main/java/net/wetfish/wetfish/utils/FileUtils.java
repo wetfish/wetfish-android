@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +33,7 @@ import java.util.regex.Pattern;
 public class FileUtils {
 
     private static final double UNIT_CONVERSION = 1000;
+    private static final double ROUNDING_NUMBER = 100.0;
 
     // TODO: Might want to rename this
     public static String getRealPathFromUri(Context context, Uri contentUri) {
@@ -154,7 +157,7 @@ public class FileUtils {
      * Method to determine what the mime type is for the provided file extension
      *
      * @param fileType provided file type
-     * @param context TODO: Likely remove soon
+     * @param context  TODO: Likely remove soon
      * @return return the appropriate mime type
      */
     public static String determineMimeType(Context context, String fileType) {
@@ -168,8 +171,10 @@ public class FileUtils {
             Log.d("FileUtils[dMT]: ", "video/*");
             return context.getString(R.string.video_mime_type);
         } else {
-            Log.d("FileUtils[dMT]", "image/*, video/*");
-            return context.getString(R.string.file_mime_type);
+            Log.d("FileUtils[dMT]", "Improper response");
+            //TODO:  This shouldn't happen
+            //            return context.getString(R.string.file_mime_type);
+            return null;
         }
     }
 
@@ -265,19 +270,42 @@ public class FileUtils {
             fileSize = (float) (fileSize / UNIT_CONVERSION);
 
             // Return the appropriate string
-            return context.getString(R.string.tv_image_size_mb, Math.round(fileSize));
+            return context.getString(R.string.tv_file_size_mb, Math.round(fileSize * ROUNDING_NUMBER) / ROUNDING_NUMBER);
         } else {
             // TODO: This shouldn't feasibly happen, but must be dealt with. This will be implemented when desired functionality is discussed for this edge case.
         }
-        return context.getString(R.string.tv_image_size_mb, Math.round(file.length()));
+        return context.getString(R.string.tv_file_size_mb, Math.round(file.length()));
 
     }
 
-    public static String getFileResolution(Uri fileUri, Context context) {
+    public static String getImageResolution(Uri fileUri, Context context) {
         // Get the bitmap we want the resolution from
         Bitmap bitmap = BitmapFactory.decodeFile(fileUri.toString());
 
         // Grab the height and width and return it in the form a resolution
         return context.getString(R.string.tv_image_resolution, bitmap.getWidth(), bitmap.getHeight());
+    }
+
+    public static String getVideoLength(Uri fileUri, Context context) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+
+        // file to be used
+        retriever.setDataSource(context, fileUri);
+        String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        long timeInMillisec = Long.parseLong(time);
+
+        // Get the time in minutes, then get the time in seconds minus the total time in seconds converted to minutes to obtain seconds
+
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillisec);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillisec) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeInMillisec));
+
+
+        if (seconds < 10) {
+            return context.getString(R.string.tv_video_length_below_ten_seconds, minutes, seconds);
+        } else {
+            return context.getString(R.string.tv_video_length_above_ten_seconds, minutes, seconds);
+        }
+
     }
 }

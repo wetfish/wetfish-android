@@ -17,7 +17,7 @@
     <string name="tv_description">Description </string>
     <string name="tv_image_resolution">%d X %d</string>
     <string name="tv_image_sizez_kb">%d kb</string>
-    <string name="tv_image_size_mb">%d mb</string>
+    <string name="tv_file_size_mb">%.2f mb</string>
     <string name="tv_error_loading_db">Error Loading Database</string>
     <string name="tv_no_results">No Files Uploaded…</string>
     <string name="et_description_hint">Description</string>
@@ -82,6 +82,8 @@
     <!-- File Provider strings -->
     <string name="file_provider_authority">net.wetfish.wetfish.fileprovider</string>
     <string name="fab_view_original">View Original</string>
+    <string name="tv_video_length_below_ten_seconds">%d:0%d</string>
+    <string name="tv_video_length_above_ten_seconds">%d:%d</string>
 
 
     <!-- Spinner Values -->

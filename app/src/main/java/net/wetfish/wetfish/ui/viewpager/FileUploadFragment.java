@@ -86,14 +86,17 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final int MEDIUM_SIZE_SELECTION = 2;
     private static final int SMALL_SIZE_SELECTION = 3;
     private static final double[] SELECTIONRATIO = {1, .75, .5, .2};
+    private static final String IMAGE_FILE = "image/*";
+    private static final String VIDEO_FILE = "video/*";
 
     /* Views */
-    private TextView mFileNotFoundView;
     private ImageView mFileView;
+    private TextView mFileLength;
     private TextView mFileViewSize;
+    private TextView mFileNotFoundView;
     private TextView mFileViewResolution;
-    private EditText mFileEditTitleView;
     private EditText mFileEditTagsView;
+    private EditText mFileEditTitleView;
     private EditText mFileEditDescriptionView;
     private FloatingActionButton fabUploadFile;
     private FABProgressCircle mFabProgressCircle;
@@ -104,6 +107,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     /* Data */
     private Uri mFileUriAbsolutePath;
     private Uri mDownscaledImageAbsolutePath;
+    private String mFileType;
+    private String mMimeType;
     private String responseViewURL;
     private String responseDeleteURL;
     private boolean responseURLAcquired;
@@ -118,6 +123,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     //TODO: Potentially remove.
     private OnFragmentInteractionListener mListener;
+
     public FileUploadFragment() {
         // Required empty public constructor
     }
@@ -154,17 +160,62 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                              Bundle savedInstanceState) {
 
 
-        // Inflate the layout for this fragment
-        mRootLayout = inflater.inflate(R.layout.fragment_file_upload_view_pager, container, false);
+        mFileType = FileUtils.getFileExtensionFromUri(getContext(), mFileUriAbsolutePath);
+        mMimeType = FileUtils.determineMimeType(getContext(), mFileType);
 
-        // Reference to file upload layout content
-        fileUploadContent = mRootLayout.findViewById(R.id.file_upload_content_container);
+        // Determine what file type we are working with
+        switch (mMimeType) {
+            case IMAGE_FILE: // This layout is for image files
+                // Inflate the layout for this fragment
+                mRootLayout = inflater.inflate(R.layout.fragment_file_upload_image_view_pager, container, false);
+
+                // Reference to file upload layout content
+                fileUploadContent = mRootLayout.findViewById(R.id.file_upload_content_container);
+
+                mFileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
+                mFileViewSize = mRootLayout.findViewById(R.id.tv_image_size);
+                mFileViewResolution = mRootLayout.findViewById(R.id.tv_image_resolution);
+
+                // Setup Spinner
+                mSpinner = mRootLayout.findViewById(R.id.spinner_fragment_file_upload);
+
+                // Array Adapter for Spinner
+                @SuppressLint("ResourceType") ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
+                        R.array.upload_fragment_spinner_array, R.xml.custom_spinner_item);
+
+                // Specific array adapter layout
+                spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+                // Apply the adapter to the mSpinner
+                mSpinner.setAdapter(spinnerAdapter);
+
+                // Setup onItemSelectedListener
+                mSpinner.setOnItemSelectedListener(this);
+
+
+                break;
+            case VIDEO_FILE: // This layout is for video files
+                mRootLayout = inflater.inflate(R.layout.fragment_file_upload_video_view_pager, container, false);
+
+                // Reference to file upload layout content
+                fileUploadContent = mRootLayout.findViewById(R.id.file_upload_content_container);
+
+                mFileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
+                mFileLength = mRootLayout.findViewById(R.id.tv_video_length);
+                mFileViewSize = mRootLayout.findViewById(R.id.tv_video_size);
+
+                // Setup view data
+                mFileViewSize.setText(FileUtils.getFileSize(mFileUriAbsolutePath, getContext()));
+                mFileLength.setText(FileUtils.getVideoLength(mFileUriAbsolutePath, getContext()));
+
+                break;
+            default:
+                Log.d(LOG_TAG, "this Shouldn't Happen");
+                break;
+        }
 
         // Views
         // TODO: Support Video Views soon. (Glide/VideoView/Exoplayer)
-        mFileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
-        mFileViewResolution = mRootLayout.findViewById(R.id.tv_image_resolution);
-        mFileViewSize = mRootLayout.findViewById(R.id.tv_image_size);
         mFileEditTitleView = mRootLayout.findViewById(R.id.et_title);
         mFileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
         mFileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
@@ -177,23 +228,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         } else {
             determineFileViewContent(mFileUriAbsolutePath);
         }
-
-        // Setup Spinner
-        mSpinner = mRootLayout.findViewById(R.id.spinner_fragment_file_upload);
-
-        // Array Adapter for Spinner
-        @SuppressLint("ResourceType") ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
-                R.array.upload_fragment_spinner_array, R.xml.custom_spinner_item);
-
-        // Specific array adapter layout
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        // Apply the adapter to the mSpinner
-        mSpinner.setAdapter(spinnerAdapter);
-
-        // Setup onItemSelectedListener
-        mSpinner.setOnItemSelectedListener(this);
-
         // Set a focus change listener to allow for focus to dictate the appearance of the keyboard
         View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
             /**
@@ -451,15 +485,16 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     /**
      * Sets up the given file's stats
+     *
      * @param determineDesiredFileUri
      */
     private void setupFileStats(Boolean determineDesiredFileUri) {
         if (mDownscaledImageCreated) {
             mFileViewSize.setText(FileUtils.getFileSize(mDownscaledImageAbsolutePath, getContext()));
-            mFileViewResolution.setText(FileUtils.getFileResolution(mDownscaledImageAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getImageResolution(mDownscaledImageAbsolutePath, getContext()));
         } else {
             mFileViewSize.setText(FileUtils.getFileSize(mFileUriAbsolutePath, getContext()));
-            mFileViewResolution.setText(FileUtils.getFileResolution(mFileUriAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getImageResolution(mFileUriAbsolutePath, getContext()));
         }
     }
 
@@ -575,6 +610,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     }
 
     //TODO: Do this during a loader and during the loader hide the upload button.
+
     /**
      * This method will create a downscaled bitmap  image utilizing FileUtils createDownscaledImageFile,
      * and upon success, accordingly change mFileView's onClickListener and displayed image. Upon failure
