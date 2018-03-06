@@ -18,13 +18,6 @@
         android:layout_marginTop="16dp"
         android:paddingBottom="24dp">
 
-        <!-- Focused Image View -->
-        <ImageView
-            android:id="@+id/expanded_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="invisible" />
-
         <android.support.constraint.ConstraintLayout
             android:id="@+id/gallery_detail_content_container"
             android:layout_width="match_parent"
@@ -59,12 +52,43 @@
                 android:layout_height="240dp"
                 android:layout_marginEnd="48dp"
                 android:layout_marginStart="48dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tv_title" />
+
+            <!-- Gallery Item Image Details -->
+            <android.support.v7.widget.LinearLayoutCompat
+                android:id="@+id/ll_image_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="48dp"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@+id/iv_gallery_item_detail">
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/tv_image_resolution"
+                    style="@style/TextViewBody"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="start" />
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/tv_image_size"
+                    style="@style/TextViewBody"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:paddingEnd="8dp" />
+
+            </android.support.v7.widget.LinearLayoutCompat>
 
             <!-- Gallery Item Tags -->
             <TextView
@@ -75,7 +99,7 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/tv_tags"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/iv_gallery_item_detail" />
+                app:layout_constraintTop_toBottomOf="@+id/ll_image_details" />
 
             <TextView
                 android:id="@+id/tv_tags"

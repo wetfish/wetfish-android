@@ -62,6 +62,7 @@ public class GalleryActivity extends AppCompatActivity implements
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
     // Content Provider Auto Increment Buffer
     private int POSITION_BUFFER = 1;
+
     /* Views */
     // Progress bar utilized during loader
     private ProgressBar mProgressBar;
@@ -202,7 +203,7 @@ public class GalleryActivity extends AppCompatActivity implements
         if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
             // If the user has previously denied granting the permission, offer the rationale
-            Snackbar.make(findViewById(android.R.id.content), R.string.permission_storage_rationale,
+            Snackbar.make(findViewById(android.R.id.content), R.string.sb_permission_storage_rationale,
                     Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.ok, new View.OnClickListener() {
                         @RequiresApi(api = Build.VERSION_CODES.M)
@@ -231,7 +232,7 @@ public class GalleryActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        // as you specify a parent activity in AndroidManifest.xml
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -307,6 +308,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
                 // Set member variable to that uri to pass to the next activity
                 mCurrentImageUri = imageUri;
+                Log.d(LOG_TAG, "New Image File Provider Path: " +  mCurrentImageUri);
 
                 cameraImageIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                 startActivityForResult(cameraImageIntent, REQUEST_CAPTURE_IMAGE);
@@ -328,12 +330,13 @@ public class GalleryActivity extends AppCompatActivity implements
 
         // File path
         mCurrentImagePath = image.getAbsolutePath();
+        Log.d(LOG_TAG, "New Image Absolute Path: " + mCurrentImagePath);
 
         return image;
     }
 
     /**
-     * Capture an image or video to upload
+     * Capture a video to upload
      */
     private void captureVideoToUpload() {
         // Setup intent
@@ -391,6 +394,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     /**
      * Gather the result code from our intent result and start GalleryUploadActivity.class
+     * This passes the absolute image path through the intent
      *
      * @param reqCode
      * @param resultCode Determines the result of the request
@@ -402,41 +406,8 @@ public class GalleryActivity extends AppCompatActivity implements
 
         // Close FAM.
         mFAM.close(true);
-//
-//        if (resultCode == RESULT_OK && reqCode == REQUEST_PICK_FILE) {
-//            // User decided to select an already existing file.
-//            Uri contentUri = data.getData();
-//
-//            Log.d(LOG_TAG, contentUri.toString());
-//            contentUri = Uri.parse(FileUtils.getRealPathFromUri(this, contentUri));
-//
-//            Log.d(LOG_TAG, contentUri.toString());
-//
-//            startActivity(new Intent(this, GalleryUploadActivity.class)
-//                    .setDataAndType(contentUri, getString(R.string.file_mime_type)));
-//        } else if (resultCode == RESULT_OK && reqCode == REQUEST_CAPTURE_IMAGE) {
-//            // User decided to capture an image
-//            // Inform media  scanner so that is immediately available
-//            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//            File f = new File(mCurrentImagePath);
-//            Uri contentUri = Uri.fromFile(f);
-//            mediaScanIntent.setData(contentUri);
-//            this.sendBroadcast(mediaScanIntent);
-//
-//            startActivity(new Intent(this, GalleryUploadActivity.class)
-//                    .setDataAndType(Uri.parse(mCurrentImagePath), getString(R.string.image_mime_type)));
-//        } else if (resultCode == RESULT_OK && reqCode == REQUEST_CAPTURE_VIDEO) {
-//            // User decided to capture a video
-//            // Inform media  scanner so that is immediately available
-//            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//            File f = new File(mCurrentVideoPath);
-//            Uri contentUri = Uri.fromFile(f);
-//            mediaScanIntent.setData(contentUri);
-//            this.sendBroadcast(mediaScanIntent);
-//
-//            startActivity(new Intent(this, GalleryUploadActivity.class)
-//                    .setDataAndType(Uri.parse(mCurrentVideoPath), getString(R.string.video_mime_type)));
-//        }
+
+        // Determine the result of the activity.
         if (resultCode == RESULT_OK) {
             switch (reqCode) {
                 case REQUEST_PICK_FILE:
@@ -476,14 +447,14 @@ public class GalleryActivity extends AppCompatActivity implements
                             .setDataAndType(Uri.parse(mCurrentVideoPath), getString(R.string.video_mime_type)));
                     break;
                 default:
-                    Snackbar.make(findViewById(android.R.id.content), R.string.no_file_selected, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(android.R.id.content), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
 
                     Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
                     break;
 
             }
         } else {
-            Snackbar.make(findViewById(android.R.id.content), R.string.no_file_selected, Snackbar.LENGTH_LONG).show();
+            Snackbar.make(findViewById(android.R.id.content), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
 
             Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
 
@@ -557,7 +528,7 @@ public class GalleryActivity extends AppCompatActivity implements
             // If the cursor has no data
             mEmptyStateView.setVisibility(View.VISIBLE);
         } else {
-            mEmptyStateView.setText(getString(R.string.error_loading_db));
+            mEmptyStateView.setText(getString(R.string.tv_error_loading_db));
             mEmptyStateView.setVisibility(View.VISIBLE);
         }
 

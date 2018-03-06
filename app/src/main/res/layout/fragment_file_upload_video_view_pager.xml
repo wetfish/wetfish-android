@@ -19,23 +19,16 @@
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:focusable="true"
             android:clickable="true"
+            android:focusable="true"
             android:focusableInTouchMode="true">
-
-
-            <!-- Focused Image View -->
-            <ImageView
-                android:id="@+id/expanded_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="invisible" />
 
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/file_upload_content_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+                <!-- Edit Text Title -->
                 <EditText
                     android:id="@+id/et_title"
                     style="@style/EditTextVariation"
@@ -47,21 +40,55 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <!-- TODO: Potentially change to a video player-->
+                <!-- File View -->
                 <ImageView
                     android:id="@+id/iv_fragment_file_upload"
                     android:layout_width="0dp"
                     android:layout_height="240dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="8dp"
                     android:layout_marginEnd="48dp"
                     android:layout_marginStart="48dp"
                     android:layout_marginTop="16dp"
                     android:adjustViewBounds="true"
                     android:scaleType="fitCenter"
-                    app:layout_constraintBottom_toTopOf="@+id/et_tags"
+                    app:layout_constraintBottom_toTopOf="@+id/ll_image_details"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/et_title" />
 
+                <!-- File View Stats -->
+                <android.support.v7.widget.LinearLayoutCompat
+                    android:id="@+id/ll_image_details"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="48dp"
+                    android:layout_marginStart="48dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toTopOf="@+id/et_tags"
+                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload">
+
+                    <android.support.v7.widget.AppCompatTextView
+                        android:id="@+id/tv_video_length"
+                        style="@style/TextViewBody"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="start" />
+
+                    <android.support.v7.widget.AppCompatTextView
+                        android:id="@+id/tv_video_size"
+                        style="@style/TextViewBody"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:paddingEnd="8dp"
+                        android:gravity="end" />
+
+                </android.support.v7.widget.LinearLayoutCompat>
+
+                <!-- Edit Text Tags -->
                 <EditText
                     android:id="@+id/et_tags"
                     style="@style/EditTextVariation"
@@ -73,6 +100,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/et_description"
                     app:layout_constraintStart_toStartOf="parent" />
 
+                <!-- Edit Text Description -->
                 <EditText
                     android:id="@+id/et_description"
                     style="@style/EditTextVariation"
@@ -89,6 +117,7 @@
         </android.support.constraint.ConstraintLayout>
     </android.support.v4.widget.NestedScrollView>
 
+    <!-- FAB & FAB Animation -->
     <com.github.jorgecastilloprz.FABProgressCircle
         android:id="@+id/fab_progress_circle"
         android:layout_width="wrap_content"
@@ -114,7 +143,7 @@
 
     </com.github.jorgecastilloprz.FABProgressCircle>
 
-
+    <!-- File Not Found Text View -->
     <TextView
         android:id="@+id/tv_file_not_found"
         android:layout_width="match_parent"

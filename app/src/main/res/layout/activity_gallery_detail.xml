@@ -24,9 +24,15 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <!-- This will be shown for images and hidden for videos-->
     <include
-        android:id="@+id/include_layout_gallery_detail"
-        layout="@layout/content_gallery_detail" />
+        android:id="@+id/include_layout_gallery_image_detail"
+        layout="@layout/content_gallery_image_detail" />
+
+    <!-- This will be shown for videos and hidden for images-->
+    <include
+        android:id="@+id/include_layout_gallery_video_detail"
+        layout="@layout/content_gallery_video_detail" />
 
     <com.github.clans.fab.FloatingActionMenu
         android:id="@+id/fam_gallery_detail"
@@ -65,6 +71,16 @@
         fab:menu_shadowXOffset="0dp"
         fab:menu_shadowYOffset="0dp"
         fab:menu_showShadow="true">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fab_view_original"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_view_image_white"
+            fab:fab_colorNormal="@color/accent"
+            fab:fab_colorPressed="@color/accent_dark"
+            fab:fab_label="@string/fab_view_original"
+            fab:fab_size="mini" />
 
         <com.github.clans.fab.FloatingActionButton
             android:id="@+id/fab_visit_upload_link"
