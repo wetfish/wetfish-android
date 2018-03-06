@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
+ * File contract for Wetfish User DB
+ *
  * Created by ${Michael} on 12/9/2017.
  */
 
@@ -51,6 +53,9 @@ public class FileContract {
 
         // File Wetfish Uploader Deletion Link
         public static final String COLUMN_FILE_WETFISH_DELETION_LINK = "wetfishDeletionLink";
+
+        // File Wetfish Uploader Modified Storage Link
+        public static final String COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK =  "deviceLocationLinkEditedVersion";
 
     }
 }
