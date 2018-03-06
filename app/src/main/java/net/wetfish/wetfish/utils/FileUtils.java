@@ -3,14 +3,24 @@ package net.wetfish.wetfish.utils;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileContract.FileColumns;
 import net.wetfish.wetfish.data.FileContract.Files;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,11 +31,15 @@ import java.util.regex.Pattern;
  */
 
 public class FileUtils {
+
+    private static final double UNIT_CONVERSION = 1000;
+    private static final double ROUNDING_NUMBER = 100.0;
+
     // TODO: Might want to rename this
     public static String getRealPathFromUri(Context context, Uri contentUri) {
         String fileProviderString = "(/net.wetfish.wetfish/)";
         String capturedFileString = "(CAPTURED_FILE_)";
-        String storageString  = "(/storage/)";
+        String storageString = "(/storage/)";
         Pattern fileProviderPattern = Pattern.compile(capturedFileString);
         Pattern capturedFilePattern = Pattern.compile(fileProviderString);
         Pattern storagePattern = Pattern.compile(storageString);
@@ -33,8 +47,7 @@ public class FileUtils {
         Matcher capturedFileMatcher = capturedFilePattern.matcher(contentUri.toString());
         Matcher storageStringMatcher = storagePattern.matcher(contentUri.toString());
 
-        if (fileProviderMatcher.find() || capturedFileMatcher.find() || storageStringMatcher.find())
-        {
+        if (fileProviderMatcher.find() || capturedFileMatcher.find() || storageStringMatcher.find()) {
             // provided uri is already the file path
             return contentUri.toString();
         } else {
@@ -68,12 +81,12 @@ public class FileUtils {
         Matcher contentMatcher = patternTwo.matcher(contentUri.toString());
         if (storageMatcher.find()) {
             String[] tokens = contentUri.toString().split("\\.(?=[^\\.]+$)");
-            return "." + tokens[tokens.length-1];
+            return "." + tokens[tokens.length - 1];
         }
 
         if (contentMatcher.find()) {
             String[] tokens = contentUri.toString().split("\\.(?=[^\\.]+$)");
-            return "." + tokens[tokens.length-1];
+            return "." + tokens[tokens.length - 1];
         }
 
         // Try a RegEx matcher for files within MediaStore.Images.Media.Data
@@ -110,7 +123,7 @@ public class FileUtils {
     public static int insertFileData(Context context, String fileTitle, String fileTags,
                                      String fileDescription, long fileUploadDate, String fileExtension,
                                      String fileDeviceUri, String fileWetfishLocationUrl,
-                                     String fileWetfishDeletionUrl) {
+                                     String fileWetfishDeletionUrl, String editedFileDeviceUri) {
 
         //TODO: Potential for adding error checking
 //        String selection = FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK + "=?" +
@@ -133,6 +146,7 @@ public class FileUtils {
         cv.put(FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK, fileDeviceUri);
         cv.put(FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK, fileWetfishLocationUrl);
         cv.put(FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK, fileWetfishDeletionUrl);
+        cv.put(FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK, editedFileDeviceUri);
 
         // Insert the content values into the database and get the position
         return Integer.valueOf(((context.getContentResolver().insert(Files.CONTENT_URI, cv)).getLastPathSegment()).toString());
@@ -142,22 +156,25 @@ public class FileUtils {
     /**
      * Method to determine what the mime type is for the provided file extension
      *
-     * @param fileType
-     * @return
+     * @param fileType provided file type
+     * @param context  TODO: Likely remove soon
+     * @return return the appropriate mime type
      */
-    public static String determineMimeType(Context context, String fileType) {
+    public static String getMimeType(String fileType, Context context) {
         Log.d("FileUtils[dMT]: ", "CHECK IT: " + fileType);
         if (fileType.matches(".jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg")) {
             Log.d("Ehyo", "image/*");
             return context.getString(R.string.image_mime_type);
         } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
                 "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
-                "|.flv|.mkv|.webm|.mp3|.mp4")) {
+                "|.mkv|.webm|.mp3|.mp4")) {
             Log.d("FileUtils[dMT]: ", "video/*");
             return context.getString(R.string.video_mime_type);
         } else {
-            Log.d("FileUtils[dMT]", "image/*, video/*");
-            return context.getString(R.string.file_mime_type);
+            Log.d("FileUtils[dMT]", "Improper response");
+            //TODO:  This shouldn't happen
+            //            return context.getString(R.string.file_mime_type);
+            return null;
         }
     }
 
@@ -168,12 +185,127 @@ public class FileUtils {
             return true;
         } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
                 "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
-                "|.flv|.mkv|.webm|.mp3|.mp4")) {
+                "|.mkv|.webm|.mp3|.mp4")) {
             Log.d("FileUtils[rBG]", "video/*");
             return true;
         } else {
             Log.d("FileUtils[rBG]: ", "What");
             return false;
         }
+    }
+
+    /**
+     * Create a scaled bitmap of the given image, reducing resolution by the scaleRatio while preserving
+     * the image's native aspect ratio.
+     *
+     * @param bitmapToDownscale    Bitmap to downscale to populate downscaledBitmapFile
+     * @param scaleRatio           Ratio as to which to downscale the bitmap provided
+     * @param downscaledBitmapFile the downscaled bitmap image populating an image
+     * @param view                 utilized to generate a snackbar for the appropriate layout
+     * @return downscaled image or regular image if downscaling has failed
+     */
+    public static boolean createDownscaledImageFile(Bitmap bitmapToDownscale, double scaleRatio, File downscaledBitmapFile, View view) {
+        // Height and width downscaled by the scaleRatio
+        double destinationHeight = bitmapToDownscale.getHeight() * scaleRatio;
+        double destinationWidth = bitmapToDownscale.getWidth() * scaleRatio;
+
+        // Return a new bitmap that's a downscaled version of the provided bitmap
+        Bitmap bitmap = Bitmap.createScaledBitmap(bitmapToDownscale, (int) destinationWidth, (int) destinationHeight, true);
+
+        try {
+            // Byte Array Output Stream
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            // Compress to the desired format, JPEG, at full quality
+            boolean successfulDownscale = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+
+            if (successfulDownscale) {
+                // File Output Stream for the downscaledBitmapFile
+                FileOutputStream fileOutputStream = new FileOutputStream(downscaledBitmapFile);
+                fileOutputStream.write(byteArrayOutputStream.toByteArray());
+
+                // Close File Output Stream when finished
+                fileOutputStream.close();
+
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static boolean checkSuccessfulBitmapDownscale(Uri originalBitmapUri, Uri downscaledBitmapUri) {
+        Bitmap bitmapOriginal = BitmapFactory.decodeFile(originalBitmapUri.toString());
+        Bitmap bitmapDownscaledOriginal = BitmapFactory.decodeFile(downscaledBitmapUri.toString());
+
+        double originalWidth = bitmapOriginal.getWidth();
+        double downscaledWidth = bitmapDownscaledOriginal.getWidth();
+
+        return downscaledWidth < originalWidth;
+    }
+
+    public static String getFileSize(Uri fileUri, Context context) {
+        // Create an image to reference
+        File file = new File(fileUri.toString());
+
+        // float for image file length
+        float fileSize = file.length();
+
+        // Get file size in kilobytes
+        fileSize = (float) (fileSize / UNIT_CONVERSION);
+
+        // Return the gathered file size, rounded up to mb
+        if (fileSize / UNIT_CONVERSION < 1) {
+            // File Size is within the kilobyte range, return the appropriate string
+            return context.getString(R.string.tv_image_sizez_kb, Math.round(fileSize));
+        } else if (fileSize / UNIT_CONVERSION >= 1 && !(fileSize / UNIT_CONVERSION >= 1000)) {
+            // File Size is within the megabyte range, convert to mb
+            fileSize = (float) (fileSize / UNIT_CONVERSION);
+
+            // Return the appropriate string
+            return context.getString(R.string.tv_file_size_mb, Math.round(fileSize * ROUNDING_NUMBER) / ROUNDING_NUMBER);
+        } else {
+            // TODO: This shouldn't feasibly happen, but must be dealt with. This will be implemented when desired functionality is discussed for this edge case.
+        }
+        return context.getString(R.string.tv_file_size_mb, Math.round(file.length()));
+
+    }
+
+    public static String getImageResolution(Uri fileUri, Context context) {
+        // Get the bitmap we want the resolution from
+        Bitmap bitmap = BitmapFactory.decodeFile(fileUri.toString());
+
+        // Grab the height and width and return it in the form a resolution
+        return context.getString(R.string.tv_image_resolution, bitmap.getWidth(), bitmap.getHeight());
+    }
+
+    public static String getVideoLength(Uri fileUri, Context context) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+
+        // file to be used
+        retriever.setDataSource(context, fileUri);
+        String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        long timeInMillisec = Long.parseLong(time);
+
+        // Get the time in minutes, then get the time in seconds minus the total time in seconds converted to minutes to obtain seconds
+
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillisec);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillisec) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeInMillisec));
+
+
+        if (seconds < 10) {
+            return context.getString(R.string.tv_video_length_below_ten_seconds, minutes, seconds);
+        } else {
+            return context.getString(R.string.tv_video_length_above_ten_seconds, minutes, seconds);
+        }
+
     }
 }

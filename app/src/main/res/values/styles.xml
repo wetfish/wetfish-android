@@ -35,6 +35,12 @@
         <item name="android:layout_marginStart">8dp</item>
     </style>
 
+    <!-- Spinner View Header -->
+    <style name="Spinner">
+        <item name="android:textColor">@color/primary_text</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

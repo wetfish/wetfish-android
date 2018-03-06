@@ -49,6 +49,10 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     private static final int FILES_DETAIL_LOADER = 1;
     // Bundle key to save instance state
     private static final String BUNDLE_KEY = "fileInfoKey";
+    // Image file switch constant
+    private static final String IMAGE_FILE = "image/*";
+    // Video file switch constant
+    private static final String VIDEO_FILE = "video/*";
 
     /* FAM & FABs */
     // Display FABs
@@ -61,6 +65,8 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     private FloatingActionButton mVisitFileDeleteFAB;
     // Copy visit delete file URL
     private FloatingActionButton mCopyFileDeleteURLFAB;
+    // View the original image
+    private FloatingActionButton mViewOriginalFile;
 
     /* Views */
     // File image view TODO: Impelemnt exoplayer later if video playback is desired
@@ -71,6 +77,12 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     private TextView mFileTagsTextView;
     // File description text view
     private TextView mFileDescriptionTextView;
+    // File playback length text view
+    private TextView mFileViewLength;
+    // File size text view
+    private TextView mFileViewSize;
+    // File resolution text view
+    private TextView mFileViewResolution;
     // Layout include reference
     private View mIncludeLayout;
 
@@ -80,7 +92,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
     // FileInfo object that holds all data
     private FileInfo mFileInfo;
     // FileInfo string that holds file location
-    private String mFileStorageLink;
+    private String desiredFileStorageLink;
     // FileType string that holds the file extension type
     private String mFileType;
 
@@ -90,15 +102,219 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery_detail);
 
-        // Reference included layout
-        mIncludeLayout = findViewById(R.id.include_layout_gallery_detail);
+        // Setup Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        // Views
-        // TODO: Support Video Views soon. (Glide/VideoView/Exoplayer)
-        mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
-        mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
-        mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
-        mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
+        // FAM
+        mFAM = findViewById(R.id.fam_gallery_detail);
+
+        // FABs
+        //TODO: Add an upload FAB!
+        mViewOriginalFile = findViewById(R.id.fab_view_original);
+        mVisitFileFAB = findViewById(R.id.fab_visit_upload_link);
+        mCopyFileURLFAB = findViewById(R.id.fab_copy_upload_link);
+        mVisitFileDeleteFAB = findViewById(R.id.fab_visit_deletion_link);
+        mCopyFileDeleteURLFAB = findViewById(R.id.fab_copy_deletion_link);
+
+        // Intent Data
+        Bundle bundle = getIntent().getExtras();
+        mUri = (Uri) bundle.get(getString(R.string.file_details));
+
+        // Setup FileInfo
+        if (mFileInfo == null) {
+            mFileInfo = new FileInfo();
+        }
+
+        // Utilize FileInfo & setup interaction listeners for the views, FAM and FABs
+        getLoaderManager().initLoader(FILES_DETAIL_LOADER, null, this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mFileInfo != null && mFileInfo.getFileInfoInitialized()) {
+            getIntent().putExtra(BUNDLE_KEY, Parcels.wrap(mFileInfo));
+        }
+    }
+
+    /**
+     * Dispatch onResume() to fragments.  Note that for better inter-operation
+     * with older versions of the platform, at the point of this call the
+     * fragments attached to the activity are <em>not</em> resumed.  This means
+     * that in some cases the previous state may still be saved, not allowing
+     * fragment transactions that modify the state.  To correctly interact
+     * with fragments in their proper state, you should instead override
+     * {@link #onResumeFragments()}.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FileInfo fileInfo = Parcels.unwrap(getIntent().getParcelableExtra(BUNDLE_KEY));
+        if (fileInfo != null && fileInfo.getFileInfoInitialized()) {
+            mFileInfo = fileInfo;
+            displayFileDetails(mFileInfo);
+        }
+
+    }
+
+    public void displayFileDetails(FileInfo fileInfo) {
+        // String to determine the appropriate Uri to use
+        String desiredFileStorageLink;
+
+        // String only present should there be an edited copy populating desiredFileStorageLink
+        String originalFileStorageLink = null;
+
+        // Boolean to determine if an edited image exists
+        boolean editedFilePresent;
+
+        // Boolean to determine if deletion links have been provided for the image
+        boolean deletionLinkPresent;
+
+        // Determine if an edited version of the file has been provided for the given database entry
+        if (fileInfo.getEditedFileDeviceStorageLink() != null) {
+            if (!fileInfo.getEditedFileDeviceStorageLink().isEmpty() && !fileInfo.getEditedFileDeviceStorageLink().equals("")) {
+                // Setup the desiredFileStorageLink to reference the correct uri and show mViewOriginalImage FAB
+                Log.d(LOG_TAG, "editedFile exists and is not empty");
+
+
+                editedFilePresent = true;
+                originalFileStorageLink = fileInfo.getFileDeviceStorageLink();
+                desiredFileStorageLink = fileInfo.getEditedFileDeviceStorageLink();
+            } else {
+                // Setup the desiredFileStorageLink to reference the correct uri and hide mViewOriginalImage FAB
+                Log.d(LOG_TAG, "file does not exist and/or is empty");
+
+                editedFilePresent = false;
+                desiredFileStorageLink = fileInfo.getFileDeviceStorageLink();
+            }
+        } else {
+            // Setup the desiredFileStorageLink to reference the correct uri and hide mViewOriginalImage FAB
+            Log.d(LOG_TAG, "file does not exist and/or is empty");
+
+            editedFilePresent = false;
+            desiredFileStorageLink = fileInfo.getFileDeviceStorageLink();
+        }
+
+        // Determine the mime type
+        String mimeType = FileUtils.getMimeType(fileInfo.getFileExtensionType(), this);
+
+        // Inflate the proper layout depending on the mime type
+        switch (mimeType) {
+            case IMAGE_FILE: // This layout is for image files
+                // Reference the image layout and hide the video layout
+                mIncludeLayout = findViewById(R.id.include_layout_gallery_image_detail);
+                findViewById(R.id.include_layout_gallery_video_detail).setVisibility(View.GONE);
+
+                // Views
+                mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
+                mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
+                mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
+                mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
+                mFileViewSize = mIncludeLayout.findViewById(R.id.tv_image_size);
+                mFileViewResolution = mIncludeLayout.findViewById(R.id.tv_image_resolution);
+
+                // Setup view data
+                mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(desiredFileStorageLink), this));
+                mFileViewResolution.setText(FileUtils.getImageResolution(Uri.parse(desiredFileStorageLink), this));
+
+                break;
+            case VIDEO_FILE: // This layout is for video files
+                // Reference the video layout and hide the image layout
+                mIncludeLayout = findViewById(R.id.include_layout_gallery_video_detail);
+                findViewById(R.id.include_layout_gallery_image_detail).setVisibility(View.GONE);
+
+                // Views
+                mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
+                mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
+                mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
+                mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
+                mFileViewSize = mIncludeLayout.findViewById(R.id.tv_video_size);
+                mFileViewLength = mIncludeLayout.findViewById(R.id.tv_video_length);
+
+                // Setup view data
+                mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(desiredFileStorageLink), this));
+                mFileViewLength.setText(FileUtils.getVideoLength(Uri.parse(desiredFileStorageLink), this));
+
+                break;
+            default:
+                //TODO: Potentially make an error page
+                break;
+        }
+
+        // See if the deletion link has been provided for the given database entry
+        deletionLinkPresent = !(fileInfo.getFileWetfishDeletionLink().equals(getString(R.string.not_implemented)) ||
+                !(fileInfo.getFileWetfishDeletionLink().isEmpty()) || !(fileInfo.getFileWetfishDeletionLink().equals("")));
+
+        // Setup the interaction listeners now that the appropriate data has been received
+        setupOnInteractionListeners(editedFilePresent, deletionLinkPresent, originalFileStorageLink);
+
+        mFileType = fileInfo.getFileExtensionType();
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+
+        // If network is connected search the device for the stored image, then wetfish if not found
+        if (networkInfo != null && networkInfo.isConnected()) {
+            // Check to see if the image is representable by glide. If not, let the user know.
+            if (FileUtils.representableByGlide(mFileType)) {
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
+                Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
+
+                Glide.with(this)
+                        .load(desiredFileStorageLink)
+                        .error(Glide.with(this)
+                                .load(fileInfo.getFileWetfishStorageLink())
+                                .apply(RequestOptions.centerCropTransform()))
+                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                        .apply(RequestOptions.fitCenterTransform())
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(mFileView);
+            } else {
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
+                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
+                Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
+                // If not, let the user know
+                //TODO: Figure out a method to better illustrate errors
+                Glide.with(this)
+                        .load(null)
+                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
+                        .apply(RequestOptions.fitCenterTransform())
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(mFileView);
+
+                Snackbar.make(mIncludeLayout, R.string.sb_not_representable_by_glide, Snackbar.LENGTH_LONG).show();
+            }
+        } else {
+            // If network is not connected search the device for the stored file on the
+            // device then show a black image if not found.
+            //TODO: Figure out a method to better illustrate errors
+            Glide.with(this)
+                    .load(fileInfo.getFileDeviceStorageLink())
+                    .error(Glide.with(this)
+                            .load(new ColorDrawable(Color.BLACK))
+                            .apply(RequestOptions.fitCenterTransform()))
+                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                    .apply(RequestOptions.fitCenterTransform())
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .into(mFileView);
+
+            Snackbar.make(mIncludeLayout, R.string.sb_network_not_connected, Snackbar.LENGTH_LONG).show();
+        }
+
+        // File storage link to be used as a passed value for the intent when the file is clicked
+        this.desiredFileStorageLink = desiredFileStorageLink;
+
+    }
+
+    private void setupOnInteractionListeners(boolean editedFilePresent, boolean deletionLinkPresent,
+                                             final String originalImageStorageLink) {
+        // String of the originalImageStorageLink
+        final String originalDesiredFileStorageLink = originalImageStorageLink;
+
+        // Close FAM if clicking outside of a button.
+        mFAM.setClosedOnTouchOutside(true);
 
         // Setup file interaction
         mFileView.setOnClickListener(new View.OnClickListener() {
@@ -113,14 +329,14 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 Uri fileProviderUri;
 
                 // Use FileProvider to get an appropriate URI compatible with version Nougat+
-                Log.d(LOG_TAG, "File Storage Link: " + mFileStorageLink);
-                     fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
-                            getString(R.string.file_provider_authority),
-                            new File(mFileStorageLink));
+                Log.d(LOG_TAG, "File Storage Link: " + desiredFileStorageLink);
+                fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
+                        getString(R.string.file_provider_authority),
+                        new File(desiredFileStorageLink));
 
                 // Setup the data and type
                 // Appropriately determine mime type for the file
-                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.determineMimeType(GalleryDetailActivity.this, mFileType));
+                selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, GalleryDetailActivity.this));
 
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
                     selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
@@ -134,27 +350,58 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 if (selectViewingApp.resolveActivity(packageManager) != null) {
                     startActivity(selectViewingApp);
                 } else {
-                    Snackbar.make(mIncludeLayout, R.string.no_app_available, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
                 }
             }
         });
 
-        // Setup Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // Setup mViewOriginalFile FAB if an edited file is present
+        if (editedFilePresent && originalDesiredFileStorageLink != null) {
+            // Edited file is present
+            mViewOriginalFile.setVisibility(View.VISIBLE);
 
-        // FAM
-        mFAM = findViewById(R.id.fam_gallery_detail);
+            mViewOriginalFile.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Intent to find proper app to open file
+                    Intent selectViewingApp = new Intent();
+                    selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    selectViewingApp.setAction(Intent.ACTION_VIEW);
 
-        // Close FAM if clicking outside of a button.
-        mFAM.setClosedOnTouchOutside(true);
+                    // Uri path to the file
+                    Uri fileProviderUri;
 
-        // FABs
-        //TODO: Add an upload FAB!
-        mVisitFileFAB = findViewById(R.id.fab_visit_upload_link);
-        mCopyFileURLFAB = findViewById(R.id.fab_copy_upload_link);
-        mVisitFileDeleteFAB = findViewById(R.id.fab_visit_deletion_link);
-        mCopyFileDeleteURLFAB = findViewById(R.id.fab_copy_deletion_link);
+                    // Use FileProvider to get an appropriate URI compatible with version Nougat+
+                    Log.d(LOG_TAG, "File Storage Link: " + originalDesiredFileStorageLink);
+                    fileProviderUri = FileProvider.getUriForFile(GalleryDetailActivity.this,
+                            getString(R.string.file_provider_authority),
+                            new File(originalDesiredFileStorageLink));
+
+                    // Setup the data and type
+                    // Appropriately determine mime type for the file
+                    selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, GalleryDetailActivity.this));
+
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                        selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
+                        selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    }
+
+                    Log.d(LOG_TAG, "Quack: " + fileProviderUri.toString());
+
+                    // Check to see if an app can open this file. If so, do so, if not, inform the user
+                    PackageManager packageManager = getPackageManager();
+                    if (selectViewingApp.resolveActivity(packageManager) != null) {
+                        startActivity(selectViewingApp);
+                    } else {
+                        Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
+                    }
+                }
+            });
+        } else {
+            // Edited file is not present
+            mViewOriginalFile.setVisibility(View.GONE);
+        }
+
 
         mVisitFileFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -189,152 +436,61 @@ public class GalleryDetailActivity extends AppCompatActivity implements
                 String clipboardClipData = tokensTwo[0];
 
                 // Check to see if the clipboard data link equals the database stored link
-                if(clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_success,
+                if (clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
+                    Snackbar.make(findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
                             Snackbar.LENGTH_SHORT).show();
                 } else {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_failure,
+                    Snackbar.make(findViewById(android.R.id.content), R.string.sb_url_clipboard_failure,
                             Snackbar.LENGTH_SHORT).show();
                 }
 
             }
         });
 
-        mVisitFileDeleteFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Close FAM.
-                mFAM.close(true);
+        if (deletionLinkPresent) {
+            // Deletion link is present, show the FABs
+            mVisitFileDeleteFAB.setVisibility(View.VISIBLE);
+            mCopyFileDeleteURLFAB.setVisibility(View.VISIBLE);
 
-                // Intent to visit webpage
-                Intent webIntent = new Intent(Intent.ACTION_VIEW);
+            // Setup onClickListeners for the deletion options
+            mVisitFileDeleteFAB.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Close FAM.
+                    mFAM.close(true);
 
-                // Link data
-                webIntent.setData(Uri.parse(mFileInfo.getFileWetfishDeletionLink()));
+                    // Intent to visit webpage
+                    Intent webIntent = new Intent(Intent.ACTION_VIEW);
 
-                // Start intent
-                startActivity(webIntent);
-            }
-        });
+                    // Link data
+                    webIntent.setData(Uri.parse(mFileInfo.getFileWetfishDeletionLink()));
 
-        mCopyFileDeleteURLFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Close FAM.
-                mFAM.close(true);
-
-                // Allow link to be copied to the clipboard
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishDeletionLink()));
-
-                if(clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
-                    Snackbar.make(findViewById(android.R.id.content), R.string.url_clipboard_success,
-                            Snackbar.LENGTH_LONG);
+                    // Start intent
+                    startActivity(webIntent);
                 }
-            }
-        });
+            });
 
-        // Get intent data
-        Bundle bundle = getIntent().getExtras();
-        mUri = (Uri) bundle.get(getString(R.string.file_details));
+            mCopyFileDeleteURLFAB.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Close FAM.
+                    mFAM.close(true);
 
-        // Setup FileInfo
-        if (mFileInfo == null) {
-            mFileInfo = new FileInfo();
-        }
+                    // Allow link to be copied to the clipboard
+                    ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishDeletionLink()));
 
-        getLoaderManager().initLoader(FILES_DETAIL_LOADER, null, this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mFileInfo != null && mFileInfo.getFileInfoInitialized()) {
-            getIntent().putExtra(BUNDLE_KEY, Parcels.wrap(mFileInfo));
-        }
-    }
-
-    /**
-     * Dispatch onResume() to fragments.  Note that for better inter-operation
-     * with older versions of the platform, at the point of this call the
-     * fragments attached to the activity are <em>not</em> resumed.  This means
-     * that in some cases the previous state may still be saved, not allowing
-     * fragment transactions that modify the state.  To correctly interact
-     * with fragments in their proper state, you should instead override
-     * {@link #onResumeFragments()}.
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        FileInfo fileInfo = Parcels.unwrap(getIntent().getParcelableExtra(BUNDLE_KEY));
-        if (fileInfo != null && fileInfo.getFileInfoInitialized()) {
-            mFileInfo = fileInfo;
-            displayFileDetails(mFileInfo);
-        }
-
-    }
-
-    public void displayFileDetails(FileInfo fileInfo) {
-
-        // Should deletion not yet be available, hide these options from view
-        if (fileInfo.getFileWetfishDeletionLink().equals(getString(R.string.not_implemented))) {
+                    if (clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
+                        Snackbar.make(findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
+                                Snackbar.LENGTH_LONG);
+                    }
+                }
+            });
+        } else {
+            // Deletion link not present, hide the FABs
             mVisitFileDeleteFAB.setVisibility(View.GONE);
             mCopyFileDeleteURLFAB.setVisibility(View.GONE);
         }
-
-        mFileType = fileInfo.getFileExtensionType();
-
-        // Setup view data
-        // Check to see if the view is representable by glide
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            // If network is connected search the device for the stored image on the device
-            // then wetfish if not found.if (FileUtils.representableByGlide(mFileType)) {
-            if (FileUtils.representableByGlide(mFileType)) {
-                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
-                Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
-                Glide.with(this)
-                        .load(fileInfo.getFileWetfishStorageLink()) //TODO: Do file storage first
-                        .error(Glide.with(this).load(fileInfo.getFileWetfishStorageLink()))
-                        .error(Glide.with(this).load(new ColorDrawable(Color.BLACK)))
-                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                        .apply(RequestOptions.fitCenterTransform())
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(mFileView);
-            } else {
-                // If not, let the user know
-                //TODO: Figure out a good method for this later. In the meantime, black image.
-                Glide.with(this)
-                        .load(null)
-                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
-                        .apply(RequestOptions.fitCenterTransform())
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(mFileView);
-            }
-        } else {
-        // If network is not connected search the device for the stored file on the
-        // device then show a black image if not found.
-        //TODO: Figure out a good method for this later. In the meantime, storage or black image.
-        Glide.with(this)
-                    .load(fileInfo.getFileDeviceStorageLink())
-                    .error(Glide.with(this).load(new ColorDrawable(Color.BLACK)))
-                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                    .apply(RequestOptions.fitCenterTransform())
-                    .transition(DrawableTransitionOptions.withCrossFade())
-                    .into(mFileView);
-        }
-
-
-        mFileTitleTextView.setText(fileInfo.getFileTitle());
-        mFileTagsTextView.setText(fileInfo.getFileTags());
-        mFileDescriptionTextView.setText(fileInfo.getFileDescription());
-
-        // File storage link to be used as a passed value for the intent when the file is clicked
-        //TODO: Must check how this will work when file is not downloaded on device
-        mFileStorageLink = fileInfo.getFileDeviceStorageLink();
-
-        // File extension type to check the appropriate mime type
     }
 
     /**

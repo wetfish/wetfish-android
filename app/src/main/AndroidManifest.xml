@@ -36,7 +36,7 @@
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait"
             android:name=".ui.GalleryUploadActivity"
-            android:label="@string/title_activity_gallery_upload"
+            android:label="@string/tv_title_activity_gallery_upload"
             android:parentActivityName=".ui.GalleryActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
@@ -75,7 +75,7 @@
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait"
             android:name=".ui.GalleryDetailActivity"
-            android:label="@string/title_activity_gallery_detail"
+            android:label="@string/tv_title_activity_gallery_detail"
             android:parentActivityName=".ui.GalleryActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
