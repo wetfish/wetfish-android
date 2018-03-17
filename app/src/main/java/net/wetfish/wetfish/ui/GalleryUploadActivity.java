@@ -70,7 +70,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         } else if (intent.getExtras().get(Intent.EXTRA_STREAM) != null) {
             // Handle intents with image data from share smenu implicit intents...
             fileUri = (Uri) intent.getExtras().get(Intent.EXTRA_STREAM);
-            fileUri = Uri.parse(FileUtils.getRealPathFromUri(this, fileUri));
+            fileUri = Uri.parse(FileUtils.getAbsolutePathFromUri(this, fileUri));
             Log.d(LOG_TAG, "File Data URI: " + fileUri.toString());
         } else {
             Log.d(LOG_TAG, "Bundle returned null");
