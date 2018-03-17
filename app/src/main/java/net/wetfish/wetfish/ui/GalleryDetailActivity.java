@@ -306,6 +306,11 @@ public class GalleryDetailActivity extends AppCompatActivity implements
         // File storage link to be used as a passed value for the intent when the file is clicked
         this.desiredFileStorageLink = desiredFileStorageLink;
 
+        // Show file's title, description and tags.
+        mFileTitleTextView.setText(fileInfo.getFileTitle());
+        mFileTagsTextView.setText(fileInfo.getFileTags());
+        mFileDescriptionTextView.setText(fileInfo.getFileDescription());
+
     }
 
     private void setupOnInteractionListeners(boolean editedFilePresent, boolean deletionLinkPresent,
