@@ -36,7 +36,7 @@ public class FileUtils {
     private static final double ROUNDING_NUMBER = 100.0;
 
     // TODO: Might want to rename this
-    public static String getRealPathFromUri(Context context, Uri contentUri) {
+    public static String getAbsolutePathFromUri(Context context, Uri contentUri) {
         String fileProviderString = "(/net.wetfish.wetfish/)";
         String capturedFileString = "(CAPTURED_FILE_)";
         String storageString = "(/storage/)";

@@ -415,7 +415,7 @@ public class GalleryActivity extends AppCompatActivity implements
                     Uri contentUri = data.getData();
 
                     Log.d(LOG_TAG, contentUri.toString());
-                    contentUri = Uri.parse(FileUtils.getRealPathFromUri(this, contentUri));
+                    contentUri = Uri.parse(FileUtils.getAbsolutePathFromUri(this, contentUri));
 
                     Log.d(LOG_TAG, contentUri.toString());
 
