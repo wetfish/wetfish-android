@@ -277,6 +277,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     // Storage permissions granted!
                     mFabProgressCircle.show();
                     fabUploadFile.setClickable(false);
+                    mSpinner.setEnabled(false);
                     uploadFile(mFileUriAbsolutePath);
                 }
 
@@ -555,7 +556,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 // Use FileProvider to get an appropriate URI compatible with version Nougat+
                 // File path and type from the given file
-                String fileStorageLink = FileUtils.getRealPathFromUri(getContext(), desiredAbsoluteFilePath);
+                String fileStorageLink = FileUtils.getAbsolutePathFromUri(getContext(), desiredAbsoluteFilePath);
                 String fileType = FileUtils.getFileExtensionFromUri(getContext(), desiredAbsoluteFilePath);
                 Log.d(LOG_TAG, "File Storage Link: " + fileStorageLink);
                 Log.d(LOG_TAG, "File Type: " + fileType);
@@ -751,82 +752,121 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Create REST Interface
         RESTInterface restInterface = retrofit.create(RESTInterface.class);
 
-        // Create RequestBody instance from our chosen file
-        File file = new File(FileUtils.getRealPathFromUri(getContext(), fileUriAbsolutePath));
+        // Provide the correct image to Wetfish depending on the images currently available
+        if (mDownscaledImageCreated) {
+            // Should a downscaled image be present
+            // Populate the file with the correct data to later pass to the  RequestBody instance
+            File file = new File(mDownscaledImageAbsolutePath.toString());
 
-        // Gather file extension from chosen file for database
-        final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), fileUriAbsolutePath);
+            // Gather file extension from chosen file for database
+            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), mDownscaledImageAbsolutePath);
 
-        // Gather file URI from chosen file for database.
-        final String filePath = fileUriAbsolutePath.toString();
+            // Gather file URI from chosen file for database.
+            final String filePath = mDownscaledImageAbsolutePath.toString();
 
+            Log.d(LOG_TAG, "mFileUriAbsolutePath: " + mDownscaledImageAbsolutePath);
+            Log.d(LOG_TAG, "filePath: " + filePath);
 
-        Log.d(LOG_TAG, "mFileUriAbsolutePath: " + fileUriAbsolutePath);
-        Log.d(LOG_TAG, "filePath: " + filePath);
+            // Create RequestBody & MultipartBody to create a Call.
+            RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("Image", file.getName(), requestBody);
+            Call<ResponseBody> call = restInterface.postFile(body);
 
-        // Create RequestBody & MultipartBody to create a Call.
-        RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("Image", file.getName(), requestBody);
-        Call<ResponseBody> call = restInterface.postFile(body);
+            // Execute call request
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        // Get response body as a string
+                        String onResponseString = response.body().string();
+                        Log.d(LOG_TAG, "onResponse: " + onResponseString);
 
-        // Execute call request
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    // Get response body as a string
-                    String onResponseString = response.body().string();
-                    Log.d(LOG_TAG, "onResponse: " + onResponseString);
+                        //  Downscaled image path
+                        String downscaledFilePath;
+                        if (mDownscaledImageCreated) {
+                            downscaledFilePath = mDownscaledImageAbsolutePath.toString();
+                        } else {
+                            downscaledFilePath = "";
+                        }
 
-                    //  Downscaled image path
-                    String downscaledFilePath;
-                    if (mDownscaledImageCreated) {
-                        downscaledFilePath = mDownscaledImageAbsolutePath.toString();
-                    } else {
-                        downscaledFilePath = "";
-                    }
+                        // If response body is not empty get returned URL
+                        if (!(onResponseString.isEmpty())) {
+                            Pattern pattern = Pattern.compile("url=(.*?)'>");
+                            Matcher matcher = pattern.matcher(onResponseString);
+                            if (matcher.find()) {
+                                // Obtain the link given in response to the image
+                                responseViewURL = getString(R.string.wetfish_base_url) + matcher.group(1);
 
-                    // If response body is not empty get returned URL
-                    if (!(onResponseString.isEmpty())) {
-                        Pattern pattern = Pattern.compile("url=(.*?)'>");
-                        Matcher matcher = pattern.matcher(onResponseString);
-                        if (matcher.find()) {
-                            // Obtain the link given in response to the image
-                            responseViewURL = getString(R.string.wetfish_base_url) + matcher.group(1);
+                                responseDeleteURL = getContext().getString(R.string.not_implemented);
 
-                            responseDeleteURL = getContext().getString(R.string.not_implemented);
+                                // Add to database
+                                uploadID = FileUtils.insertFileData(getContext(),
+                                        mFileEditTitleView.getText().toString(),
+                                        mFileEditTagsView.getText().toString(),
+                                        mFileEditDescriptionView.getText().toString(),
+                                        Calendar.getInstance().getTimeInMillis(),
+                                        fileExtension,
+                                        filePath,
+                                        responseViewURL,
+                                        responseDeleteURL,
+                                        downscaledFilePath);
 
-                            // Add to database
-                            uploadID = FileUtils.insertFileData(getContext(),
-                                    mFileEditTitleView.getText().toString(),
-                                    mFileEditTagsView.getText().toString(),
-                                    mFileEditDescriptionView.getText().toString(),
-                                    Calendar.getInstance().getTimeInMillis(),
-                                    fileExtension,
-                                    filePath,
-                                    responseViewURL,
-                                    responseDeleteURL,
-                                    downscaledFilePath);
+                                /**
+                                 *  Check to see if upload was successful to determine if the downscaled image
+                                 * should be kept or deleted
+                                 */
+                                if (uploadID >= 0) {
+                                    mDatabaseAdditionSuccessful = true;
 
-                            /**
-                             *  Check to see if upload was successful to determine if the downscaled image
-                             * should be kept or deleted
-                             */
-                            if (uploadID >= 0) {
-                                mDatabaseAdditionSuccessful = true;
+                                    // Update media
+                                    sendMediaBroadcast(downscaledFilePath);
+                                } else {
+                                    mDatabaseAdditionSuccessful = false;
+                                }
 
-                                // Update media
-                                sendMediaBroadcast(downscaledFilePath);
-                            } else {
-                                mDatabaseAdditionSuccessful = false;
-                            }
-
-                            Log.d(LOG_TAG, "onResponse: " + responseViewURL);
-                            Log.d(LOG_TAG, "id: " + uploadID);
+                                Log.d(LOG_TAG, "onResponse: " + responseViewURL);
+                                Log.d(LOG_TAG, "id: " + uploadID);
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                            mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircle.beginFinalAnimation();
+                            } else {
+                                responseViewURL = getString(R.string.wetfish_base_uploader_url);
+
+                                responseDeleteURL = getContext().getString(R.string.not_implemented);
+
+                                // Add to database
+                                uploadID = FileUtils.insertFileData(getContext(),
+                                        mFileEditTitleView.getText().toString(),
+                                        mFileEditTagsView.getText().toString(),
+                                        mFileEditDescriptionView.getText().toString(),
+                                        Calendar.getInstance().getTimeInMillis(),
+                                        fileExtension,
+                                        filePath,
+                                        responseViewURL,
+                                        responseDeleteURL,
+                                        downscaledFilePath);
+
+                            /*
+                               Check to see if upload was successful to determine if the downscaled image
+                              should be kept or deleted
+                             */
+                                if (uploadID >= 0) {
+                                    mDatabaseAdditionSuccessful = true;
+
+                                    // Update media
+                                    sendMediaBroadcast(downscaledFilePath);
+                                } else {
+                                    mDatabaseAdditionSuccessful = false;
+                                }
+
+                                Log.d(LOG_TAG, "onResponse: " + responseViewURL);
+                                Log.d(LOG_TAG, "id: " + uploadID);
+
+//                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+//                                    "File Uploaded!", Snackbar.LENGTH_LONG);
+                                mFabProgressCircle.beginFinalAnimation();
+                            }
                         } else {
                             responseViewURL = getString(R.string.wetfish_base_uploader_url);
 
@@ -844,10 +884,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     responseDeleteURL,
                                     downscaledFilePath);
 
-                            /*
-                               Check to see if upload was successful to determine if the downscaled image
-                              should be kept or deleted
-                             */
+                        /*
+                           Check to see if upload was successful to determine if the downscaled image
+                          should be kept or deleted
+                         */
                             if (uploadID >= 0) {
                                 mDatabaseAdditionSuccessful = true;
 
@@ -860,62 +900,193 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             Log.d(LOG_TAG, "onResponse: " + responseViewURL);
                             Log.d(LOG_TAG, "id: " + uploadID);
 
-//                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-//                                    "File Uploaded!", Snackbar.LENGTH_LONG);
+//                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+//                                "File Uploaded!", Snackbar.LENGTH_LONG);
                             mFabProgressCircle.beginFinalAnimation();
                         }
-                    } else {
-                        responseViewURL = getString(R.string.wetfish_base_uploader_url);
+                    } catch (IOException e) {
+                        Log.d(LOG_TAG, "onFailure Catch: ");
+                        e.printStackTrace();
+                    }
+                }
 
-                        responseDeleteURL = getContext().getString(R.string.not_implemented);
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    fabUploadFile.setClickable(true);
+                    mFabProgressCircle.hide();
+                    UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+                            "File Upload Failed!", Snackbar.LENGTH_LONG);
+                    Log.d(LOG_TAG, "onFailure Response: " + t);
+                }
+            });
 
-                        // Add to database
-                        uploadID = FileUtils.insertFileData(getContext(),
-                                mFileEditTitleView.getText().toString(),
-                                mFileEditTagsView.getText().toString(),
-                                mFileEditDescriptionView.getText().toString(),
-                                Calendar.getInstance().getTimeInMillis(),
-                                fileExtension,
-                                filePath,
-                                responseViewURL,
-                                responseDeleteURL,
-                                downscaledFilePath);
+        } else {
+            // Should no downscaled image be present
+            // Populate the file with the correct data to later pass to the  RequestBody instance
+            File file = new File(fileUriAbsolutePath.toString());
+
+            // Gather file extension from chosen file for database
+            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), fileUriAbsolutePath);
+
+            // Gather file URI from chosen file for database.
+            final String filePath = fileUriAbsolutePath.toString();
+
+            Log.d(LOG_TAG, "mFileUriAbsolutePath: " + fileUriAbsolutePath);
+            Log.d(LOG_TAG, "filePath: " + filePath);
+
+            // Create RequestBody & MultipartBody to create a Call.
+            RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("Image", file.getName(), requestBody);
+            Call<ResponseBody> call = restInterface.postFile(body);
+
+            // Execute call request
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    try {
+                        // Get response body as a string
+                        String onResponseString = response.body().string();
+                        Log.d(LOG_TAG, "onResponse: " + onResponseString);
+
+                        //  Downscaled image path
+                        String downscaledFilePath;
+                        if (mDownscaledImageCreated) {
+                            downscaledFilePath = mDownscaledImageAbsolutePath.toString();
+                        } else {
+                            downscaledFilePath = "";
+                        }
+
+                        // If response body is not empty get returned URL
+                        if (!(onResponseString.isEmpty())) {
+                            Pattern pattern = Pattern.compile("url=(.*?)'>");
+                            Matcher matcher = pattern.matcher(onResponseString);
+                            if (matcher.find()) {
+                                // Obtain the link given in response to the image
+                                responseViewURL = getString(R.string.wetfish_base_url) + matcher.group(1);
+
+                                responseDeleteURL = getContext().getString(R.string.not_implemented);
+
+                                // Add to database
+                                uploadID = FileUtils.insertFileData(getContext(),
+                                        mFileEditTitleView.getText().toString(),
+                                        mFileEditTagsView.getText().toString(),
+                                        mFileEditDescriptionView.getText().toString(),
+                                        Calendar.getInstance().getTimeInMillis(),
+                                        fileExtension,
+                                        filePath,
+                                        responseViewURL,
+                                        responseDeleteURL,
+                                        downscaledFilePath);
+
+                                /**
+                                 *  Check to see if upload was successful to determine if the downscaled image
+                                 * should be kept or deleted
+                                 */
+                                if (uploadID >= 0) {
+                                    mDatabaseAdditionSuccessful = true;
+
+                                    // Update media
+                                    sendMediaBroadcast(downscaledFilePath);
+                                } else {
+                                    mDatabaseAdditionSuccessful = false;
+                                }
+
+                                Log.d(LOG_TAG, "onResponse: " + responseViewURL);
+                                Log.d(LOG_TAG, "id: " + uploadID);
+
+//                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+//                                    "File Uploaded!", Snackbar.LENGTH_LONG);
+                                mFabProgressCircle.beginFinalAnimation();
+                            } else {
+                                responseViewURL = getString(R.string.wetfish_base_uploader_url);
+
+                                responseDeleteURL = getContext().getString(R.string.not_implemented);
+
+                                // Add to database
+                                uploadID = FileUtils.insertFileData(getContext(),
+                                        mFileEditTitleView.getText().toString(),
+                                        mFileEditTagsView.getText().toString(),
+                                        mFileEditDescriptionView.getText().toString(),
+                                        Calendar.getInstance().getTimeInMillis(),
+                                        fileExtension,
+                                        filePath,
+                                        responseViewURL,
+                                        responseDeleteURL,
+                                        downscaledFilePath);
+
+                            /*
+                               Check to see if upload was successful to determine if the downscaled image
+                              should be kept or deleted
+                             */
+                                if (uploadID >= 0) {
+                                    mDatabaseAdditionSuccessful = true;
+
+                                    // Update media
+                                    sendMediaBroadcast(downscaledFilePath);
+                                } else {
+                                    mDatabaseAdditionSuccessful = false;
+                                }
+
+                                Log.d(LOG_TAG, "onResponse: " + responseViewURL);
+                                Log.d(LOG_TAG, "id: " + uploadID);
+
+//                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+//                                    "File Uploaded!", Snackbar.LENGTH_LONG);
+                                mFabProgressCircle.beginFinalAnimation();
+                            }
+                        } else {
+                            responseViewURL = getString(R.string.wetfish_base_uploader_url);
+
+                            responseDeleteURL = getContext().getString(R.string.not_implemented);
+
+                            // Add to database
+                            uploadID = FileUtils.insertFileData(getContext(),
+                                    mFileEditTitleView.getText().toString(),
+                                    mFileEditTagsView.getText().toString(),
+                                    mFileEditDescriptionView.getText().toString(),
+                                    Calendar.getInstance().getTimeInMillis(),
+                                    fileExtension,
+                                    filePath,
+                                    responseViewURL,
+                                    responseDeleteURL,
+                                    downscaledFilePath);
 
                         /*
                            Check to see if upload was successful to determine if the downscaled image
                           should be kept or deleted
                          */
-                        if (uploadID >= 0) {
-                            mDatabaseAdditionSuccessful = true;
+                            if (uploadID >= 0) {
+                                mDatabaseAdditionSuccessful = true;
 
-                            // Update media
-                            sendMediaBroadcast(downscaledFilePath);
-                        } else {
-                            mDatabaseAdditionSuccessful = false;
-                        }
+                                // Update media
+                                sendMediaBroadcast(downscaledFilePath);
+                            } else {
+                                mDatabaseAdditionSuccessful = false;
+                            }
 
-                        Log.d(LOG_TAG, "onResponse: " + responseViewURL);
-                        Log.d(LOG_TAG, "id: " + uploadID);
+                            Log.d(LOG_TAG, "onResponse: " + responseViewURL);
+                            Log.d(LOG_TAG, "id: " + uploadID);
 
 //                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                "File Uploaded!", Snackbar.LENGTH_LONG);
-                        mFabProgressCircle.beginFinalAnimation();
+                            mFabProgressCircle.beginFinalAnimation();
+                        }
+                    } catch (IOException e) {
+                        Log.d(LOG_TAG, "onFailure Catch: ");
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    Log.d(LOG_TAG, "onFailure Catch: ");
-                    e.printStackTrace();
                 }
-            }
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                fabUploadFile.setClickable(true);
-                mFabProgressCircle.hide();
-                UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-                        "File Upload Failed!", Snackbar.LENGTH_LONG);
-                Log.d(LOG_TAG, "onFailure Response: " + t);
-            }
-        });
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    fabUploadFile.setClickable(true);
+                    mFabProgressCircle.hide();
+                    UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+                            "File Upload Failed!", Snackbar.LENGTH_LONG);
+                    Log.d(LOG_TAG, "onFailure Response: " + t);
+                }
+            });
+        }
     }
 
     public interface OnFragmentInteractionListener {
