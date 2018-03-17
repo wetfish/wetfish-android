@@ -277,6 +277,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     // Storage permissions granted!
                     mFabProgressCircle.show();
                     fabUploadFile.setClickable(false);
+                    mSpinner.setEnabled(false);
                     uploadFile(mFileUriAbsolutePath);
                 }
 
