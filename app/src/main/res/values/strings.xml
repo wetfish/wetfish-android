@@ -166,10 +166,10 @@
 
     <!-- Spinner Values -->
     <string-array name="upload_fragment_spinner_array">
-        <item>Resolution: [Original 100%]</item>
-        <item>Resolution: [Large 75%]</item>
-        <item>Resolution: [Medium 50%]</item>
-        <item>Resolution: [Small 25%]</item>
+        <item>Resolution: Original</item>
+        <item>Resolution: Large</item>
+        <item>Resolution: Medium</item>
+        <item>Resolution: Small</item>
     </string-array>
     <string name="title_activity_settings">Settings</string>
 

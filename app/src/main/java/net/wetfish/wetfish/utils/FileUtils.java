@@ -234,7 +234,7 @@ public class FileUtils {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
             // Compress to the desired format, JPEG, at full quality
-            boolean successfulDownscale = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            boolean successfulDownscale = bitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
 
             if (successfulDownscale) {
                 // File Output Stream for the downscaledBitmapFile
