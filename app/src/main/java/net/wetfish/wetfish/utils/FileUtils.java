@@ -2,11 +2,13 @@ package net.wetfish.wetfish.utils;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -109,11 +111,26 @@ public class FileUtils {
 
     public static Cursor getFilesData(Context context) {
         // Used within loader to obtain cursor data
-        return context.getContentResolver().query(Files.CONTENT_URI,
-                null,
-                null,
-                null,
-                null);
+        // Read the current preferences of the user to determine which cursor to provide back to the user
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean sortByMostRecentSetting = sharedPref.getBoolean(context.getString(R.string.pref_sortByMostRecent_key),
+                Boolean.valueOf(context.getString(R.string.pref_sortByMostRecent_default_value)));
+
+        if (sortByMostRecentSetting) {
+            // user wan
+            return context.getContentResolver().query(Files.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    FileColumns.COLUMN_FILE_UPLOAD_TIME + " DESC");
+        } else {
+            return context.getContentResolver().query(Files.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    FileColumns.COLUMN_FILE_UPLOAD_TIME + " ASC");
+        }
     }
 
     public static Uri getFileData(Context context, int id) {
@@ -217,7 +234,7 @@ public class FileUtils {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
             // Compress to the desired format, JPEG, at full quality
-            boolean successfulDownscale = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            boolean successfulDownscale = bitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
 
             if (successfulDownscale) {
                 // File Output Stream for the downscaledBitmapFile

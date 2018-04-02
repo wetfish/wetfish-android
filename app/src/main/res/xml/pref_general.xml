@@ -1,0 +1,28 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        style="@style/TextViewHeaderSettings"
+        android:key="@string/pref_key_sorting_settings"
+        android:title="@string/pref_category_title_sorting">
+
+        <CheckBoxPreference
+            style="@style/TextViewBody"
+            android:defaultValue="@string/pref_sortByMostRecent_default_value"
+            android:key="@string/pref_sortByMostRecent_key"
+            android:summary="@string/pref_sortByMostRecent_summary"
+            android:title="@string/pref_sortByMostRecent_title" />
+
+        <!-- Setup for later features -->
+        <!--<ListPreference-->
+        <!--android:dialogTitle="@string/pref_sortingMethod_title"-->
+        <!--android:key="@string/pref_sortingMethod_key"-->
+        <!--android:entries="@array/pref_sortingMethod_list_titles"-->
+        <!--android:entryValues="@array/pref_sortingMethod_list_values"-->
+        <!--android:defaultValue="@string/pref_sortingMethod_default"-->
+        <!--android:negativeButtonText="@null"-->
+        <!--android:positiveButtonText="@null"-->
+        <!--android:title="@string/pref_sortingMethod_title" />-->
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

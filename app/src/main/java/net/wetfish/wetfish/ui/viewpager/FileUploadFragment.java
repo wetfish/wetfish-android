@@ -85,7 +85,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final int LARGE_SIZE_SELECTION = 1;
     private static final int MEDIUM_SIZE_SELECTION = 2;
     private static final int SMALL_SIZE_SELECTION = 3;
-    private static final double[] SELECTIONRATIO = {1, .75, .5, .2};
+    private static final double[] SELECTIONRATIO = {1, .66, .44, .22};
     private static final String IMAGE_FILE = "image/*";
     private static final String VIDEO_FILE = "video/*";
 
