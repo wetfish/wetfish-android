@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:text="@string/tv_under_construction"
-        android:textColor="@color/primary_text"
+        android:textColor="@color/primary_text_header"
         android:textSize="36sp"
         android:textStyle="bold" />
 

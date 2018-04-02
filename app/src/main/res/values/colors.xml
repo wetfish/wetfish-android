@@ -8,7 +8,7 @@
     <color name="accent">#ffea00</color>
     <color name="accent_dark">#c7b800</color>
     <color name="accent_light">#ffff56</color>
-    <color name="primary_text">#ffffff</color>
+    <color name="primary_text_header">#ffffff</color>
     <color name="primary_text_body">#c8ffffff</color>
     <color name="accent_text">#000000</color>
     <color name="divider">#BDBDBD</color>

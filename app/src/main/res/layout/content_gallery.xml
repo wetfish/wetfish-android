@@ -24,7 +24,7 @@
             android:layout_marginTop="16dp"
             android:gravity="top|center_horizontal"
             android:text="@string/tv_no_results"
-            android:textColor="@color/primary_text"
+            android:textColor="@color/primary_text_header"
             android:textSize="45sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
