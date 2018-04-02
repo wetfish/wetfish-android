@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
@@ -98,6 +99,9 @@ public class GalleryActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
+
+        // Setup the preferences
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
 
         // Reference included layout
         View includeLayout = findViewById(R.id.include_layout_gallery);
@@ -237,6 +241,8 @@ public class GalleryActivity extends AppCompatActivity implements
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);
