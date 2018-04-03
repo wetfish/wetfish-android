@@ -172,6 +172,7 @@
         <item>Resolution: Small</item>
     </string-array>
     <string name="title_activity_settings">Settings</string>
+    <string name="tv_title_activity_gallery_detail_view_pager">Gallery</string>
 
 </resources>
 

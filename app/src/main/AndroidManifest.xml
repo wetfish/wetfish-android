@@ -82,9 +82,17 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="net.wetfish.wetfish.ui.GalleryActivity" />
         </activity>
+
         <activity
             android:name=".ui.SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings">
+
+        </activity>
+
+        <activity
+            android:name=".ui.GalleryCollectionActivity"
+            android:label="@string/tv_title_activity_gallery_detail_view_pager">
+        </activity>
     </application>
 
 </manifest>
