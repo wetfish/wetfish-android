@@ -277,7 +277,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     // Storage permissions granted!
                     mFabProgressCircle.show();
                     fabUploadFile.setClickable(false);
-                    mSpinner.setEnabled(false);
+                    if (mSpinner != null) {
+                        mSpinner.setEnabled(false);
+                    }
                     uploadFile(mFileUriAbsolutePath);
                 }
 
@@ -362,7 +364,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         // Pass the Uri to the corresponding gallery item
         fileDetails.putExtra(getString(R.string.file_details_key),
-                FileUtils.getFileData(getContext(), uploadID));
+                FileUtils.getFileUri(uploadID));
 
         // Start GalleryDetailActivity with an artificial back stack
         getContext().startActivities(intents);

@@ -7,7 +7,7 @@
 
         <CheckBoxPreference
             style="@style/TextViewBody"
-            android:defaultValue="@string/pref_sortByMostRecent_default_value"
+            android:defaultValue="@bool/pref_sortByMostRecent_default_value"
             android:key="@string/pref_sortByMostRecent_key"
             android:summary="@string/pref_sortByMostRecent_summary"
             android:title="@string/pref_sortByMostRecent_title" />

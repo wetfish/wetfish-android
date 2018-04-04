@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -39,6 +41,8 @@ import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
 import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.data.FileContract.FileColumns;
+import net.wetfish.wetfish.data.FileContract.Files;
 import net.wetfish.wetfish.data.FileInfo;
 import net.wetfish.wetfish.utils.FileUtils;
 
@@ -53,7 +57,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
     // Logging Tag
     private static final String LOG_TAG = GalleryCollectionActivity.class.getSimpleName();
     // Bundle key to save instance state
-    private static final String BUNDLE_KEY = "fileInfoKey";
+    private static final String BUNDLE_KEY_FILE_URI = "fileInfoKey";
+    private static final String BUNDLE_KEY_ADAPTER_POSITION = "adapterPositionKey";
+    private static final String BUNDLE_KEY_SORTING_PREF = "sortingPreferenceKey";
 
     /* Adapter */
     /**
@@ -66,24 +72,32 @@ public class GalleryCollectionActivity extends AppCompatActivity {
     // View pager to display object collections
     ViewPager mViewPager;
 
-    public  void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery_collection);
 
         // Intent Data
         Bundle bundle = getIntent().getExtras();
         int startingInt = (int) bundle.get(getString(R.string.file_position_key));
+        Log.d(LOG_TAG, "Here's The Starting Int: " + startingInt);
+
+        // Pass preferences here to do as little work as possible within the fragments.
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        boolean sortByMostRecentSetting = sharedPref.getBoolean(getString(R.string.pref_sortByMostRecent_key),
+                getResources().getBoolean(R.bool.pref_sortByMostRecent_default_value));
 
         // Create the adapter that will return a fragment with an object in the collection.
-        mGalleryCollectionPagerAdapter = new GalleryCollectionPagerAdapter(getSupportFragmentManager(), this);
+        mGalleryCollectionPagerAdapter = new GalleryCollectionPagerAdapter(getSupportFragmentManager(), this, sortByMostRecentSetting
+        );
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-
 
         // Setup the ViewPager
         mViewPager = findViewById(R.id.pager);
         mViewPager.setAdapter(mGalleryCollectionPagerAdapter);
         mViewPager.setCurrentItem(startingInt);
+        mViewPager.setOffscreenPageLimit(1);
     }
 
     public static class GalleryCollectionPagerAdapter extends FragmentStatePagerAdapter {
@@ -93,12 +107,15 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private static final String LOG_TAG = GalleryCollectionActivity.class.getSimpleName();
         // Context
         private Context mContext;
+        // Sort By Most Recent sorting method
+        private boolean mSortByMostRecent;
         // Mitigate the 0 to lineup with the database
         private static int ADD_ONE_TO_MITIGATE_ZERO = 1;
 
-        public GalleryCollectionPagerAdapter(FragmentManager fm, Context context) {
+        public GalleryCollectionPagerAdapter(FragmentManager fm, Context context, boolean sortByMostRecentSetting) {
             super(fm);
             mContext = context;
+            mSortByMostRecent = sortByMostRecentSetting;
         }
 
         /**
@@ -115,8 +132,10 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             Bundle args = new Bundle();
 
             // Gather file info and store within bundle and bundle within fragment
-            Uri fileInfoUri = FileUtils.getFileData(mContext, position + ADD_ONE_TO_MITIGATE_ZERO);
-            args.putString(BUNDLE_KEY, fileInfoUri.toString());
+            Uri fileInfoUri = FileUtils.getFileUri(position + ADD_ONE_TO_MITIGATE_ZERO);
+            args.putString(BUNDLE_KEY_FILE_URI, fileInfoUri.toString());
+            args.putInt(BUNDLE_KEY_ADAPTER_POSITION, position);
+            args.putBoolean(BUNDLE_KEY_SORTING_PREF, mSortByMostRecent);
             fragment.setArguments(args);
 
             // Return the fragment with file data
@@ -129,15 +148,28 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Gather file data and the amount of entries within the preceding cursor
-            Cursor filesData = FileUtils.getFilesData(mContext);
-            if (filesData != null && filesData.moveToFirst() != false) {
-                int amountOfEntries = filesData.getCount();
-                filesData.close();
-                return amountOfEntries;
-            }
+            Cursor filesData = mContext.getContentResolver().query(Files.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null);
 
-            // Cursor was null, no entries
-            return 0;
+            if (filesData != null && filesData.moveToFirst() != false) {
+                // Gather amount of entries within the cursor
+                int amountOfEntries = filesData.getCount();
+
+                // Close cursor
+                filesData.close();
+
+                // Return the amount of entries
+                return amountOfEntries;
+            } else {
+                // Close cursor
+                filesData.close();
+
+                // Cursor was null, no entries
+                return 0;
+            }
         }
 
         /**
@@ -152,22 +184,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         @Nullable
         @Override
         public CharSequence getPageTitle(int position) {
-
-            Uri fileInfoUri = FileUtils.getFileData(mContext, position + ADD_ONE_TO_MITIGATE_ZERO);
-            Cursor fileData = mContext.getContentResolver().query(fileInfoUri,
-                    null,
-                    null,
-                    null,
-                    null);
-            FileInfo fileInfo = new FileInfo(fileData);
-
-            // Generate the page title depending on the position and file data
-            if (!(fileInfo.getFileTitle().isEmpty())) {
-                // Return the file's user generated title if present
-                return fileInfo.getFileTitle();
-            }
-
-            // Return a generic title if there is no user defined title
+            // Return the title of the gallery item
             return "Gallery Item " + (position + ADD_ONE_TO_MITIGATE_ZERO);
         }
     }
@@ -179,8 +196,10 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private static final String LOG_TAG = GalleryObjectFragment.class.getSimpleName();
         // Loader ID
         private static final int FILES_DETAIL_LOADER = 1;
-        // Bundle key to save instance state
-        private static final String BUNDLE_KEY = "fileInfoKey";
+        // Bundle keys
+        private static final String BUNDLE_KEY_FILE_URI = "fileInfoKey";
+        private static final String BUNDLE_KEY_ADAPTER_POSITION = "adapterPositionKey";
+        private static final String BUNDLE_KEY_SORTING_PREF = "sortingPreferenceKey";
         // Image file switch constant
         private static final String IMAGE_FILE = "image/*";
         // Video file switch constant
@@ -229,11 +248,22 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private String desiredFileStorageLink;
         // FileType string that holds the file extension type
         private String mFileType;
+        // Sorting Settings
+        private boolean mSortByMostRecent;
+
+        private int mAdapterPosition;
+        private boolean mFragmentCreated;
+        private NetworkInfo mNetworkInfo;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             mRootView = inflater.inflate(R.layout.fragment_gallery_collection, container, false);
+
+            // Network Info
+
+            ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            mNetworkInfo = cm.getActiveNetworkInfo();
 
             // FAM
             mFAM = mRootView.findViewById(R.id.fam_gallery_detail);
@@ -248,15 +278,26 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
             // Gather bundle data
             Bundle args = getArguments();
-            mUri = Uri.parse(args.getString(BUNDLE_KEY));
-
-            // Setup FileInfo
-            if (mFileInfo == null) {
-                mFileInfo = new FileInfo();
-            }
+            mAdapterPosition = args.getInt(BUNDLE_KEY_ADAPTER_POSITION);
+            mSortByMostRecent = args.getBoolean(BUNDLE_KEY_SORTING_PREF);
+            mUri = Uri.parse(args.getString(BUNDLE_KEY_FILE_URI));
 
             // Utilize FileInfo & setup interaction listeners for the views, FAM and FABs
-            getLoaderManager().initLoader(FILES_DETAIL_LOADER, null, this);
+
+            LoaderManager loaderManager = getLoaderManager();
+            Loader<Object> fileLoader = loaderManager.getLoader(FILES_DETAIL_LOADER);
+
+            if (!mFragmentCreated) {
+                // If loader doesn't exist
+                if (fileLoader == null) {
+                    // Initialize loader
+                    Log.d(LOG_TAG, "Initialize Loader");
+                    loaderManager.initLoader(FILES_DETAIL_LOADER, null, this).forceLoad();
+                } else {
+                    // Restart loader
+                    loaderManager.restartLoader(FILES_DETAIL_LOADER, null, this).forceLoad();
+                }
+            }
             return mRootView;
         }
 
@@ -285,14 +326,14 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     desiredFileStorageLink = fileInfo.getEditedFileDeviceStorageLink();
                 } else {
                     // Setup the desiredFileStorageLink to reference the correct uri and hide mViewOriginalImage FAB
-                    Log.d(LOG_TAG, "file does not exist and/or is empty");
+//                    Log.d(LOG_TAG, "file does not exist and/or is empty");
 
                     editedFilePresent = false;
                     desiredFileStorageLink = fileInfo.getFileDeviceStorageLink();
                 }
             } else {
                 // Setup the desiredFileStorageLink to reference the correct uri and hide mViewOriginalImage FAB
-                Log.d(LOG_TAG, "file does not exist and/or is empty");
+//                Log.d(LOG_TAG, "file does not exist and/or is empty");
 
                 editedFilePresent = false;
                 desiredFileStorageLink = fileInfo.getFileDeviceStorageLink();
@@ -353,16 +394,13 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
             mFileType = fileInfo.getFileExtensionType();
 
-            ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-
             // If network is connected search the device for the stored image, then wetfish if not found
-            if (networkInfo != null && networkInfo.isConnected()) {
+            if (mNetworkInfo != null && mNetworkInfo.isConnected()) {
                 // Check to see if the image is representable by glide. If not, let the user know.
                 if (FileUtils.representableByGlide(mFileType)) {
-                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
-                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
-                    Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
+//                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
+//                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
+//                    Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
 
                     Glide.with(this)
                             .load(desiredFileStorageLink)
@@ -374,9 +412,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(mFileView);
                 } else {
-                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
-                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
-                    Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
+//                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
+//                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
+//                    Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
                     // If not, let the user know
                     //TODO: Figure out a method to better illustrate errors
                     Glide.with(this)
@@ -619,12 +657,22 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                 @Override
                 public Cursor loadInBackground() {
 
+                    String sortOrder = null;
                     // Gather the cursor at location mUri within files db
-                    return getContext().getContentResolver().query(mUri,
+//                    return FileUtils.getFileData(getContext(), mUri);
+                    if (mSortByMostRecent) {
+                        // User selected for sorting of the newest first
+                        sortOrder = FileColumns.COLUMN_FILE_UPLOAD_TIME + " DESC";
+                    } else {
+                        // User selected for sorting of the oldest first
+                        sortOrder = FileColumns.COLUMN_FILE_UPLOAD_TIME + " ASC";
+                    }
+                    // Return the desired data set
+                    return getContext().getContentResolver().query(Files.CONTENT_URI,
                             null,
                             null,
                             null,
-                            null);
+                            sortOrder);
                 }
             };
         }
@@ -633,11 +681,19 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
             // Check cursor integrity
-            if (data != null) {
-                mFileInfo = new FileInfo(data);
-                displayFileDetails(mFileInfo);
-            } else {
-                //TODO: Make error page?
+            try {
+                if (data != null) {
+                    mFileInfo = new FileInfo(data, mAdapterPosition);
+                    data.close();
+                    displayFileDetails(mFileInfo);
+                    mFragmentCreated = true;
+                } else {
+                    //TODO: Make error page?
+                }
+            } finally {
+                if (data != null) {
+                    data.close();
+                }
             }
         }
 

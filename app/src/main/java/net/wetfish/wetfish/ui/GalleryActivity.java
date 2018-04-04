@@ -480,10 +480,10 @@ public class GalleryActivity extends AppCompatActivity implements
 
         // Pass the Uri to the corresponding gallery item
         fileDetails.putExtra(getString(R.string.file_details_key),
-                FileUtils.getFileData(this, id + POSITION_BUFFER));
+                FileUtils.getFileUri(id + POSITION_BUFFER));
         fileDetails.putExtra(getString(R.string.file_position_key), id);
 
-        Log.d(LOG_TAG, "Starting Gallery Collection Activity");
+        Log.d(LOG_TAG, "Starting Gallery Collection Activity: " + id);
         // Start GalleryDetailActivity
         startActivity(fileDetails);
     }

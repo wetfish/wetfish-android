@@ -115,25 +115,30 @@ public class FileUtils {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
         boolean sortByMostRecentSetting = sharedPref.getBoolean(context.getString(R.string.pref_sortByMostRecent_key),
-                Boolean.valueOf(context.getString(R.string.pref_sortByMostRecent_default_value)));
+                context.getResources().getBoolean(R.bool.pref_sortByMostRecent_default_value));
+
+        // String for the sortOrder of the cursor
+        String sortOrder = null;
+
+        Log.d("Blorp", "Settings Stuff" + sortByMostRecentSetting);
 
         if (sortByMostRecentSetting) {
-            // user wan
-            return context.getContentResolver().query(Files.CONTENT_URI,
-                    null,
-                    null,
-                    null,
-                    FileColumns.COLUMN_FILE_UPLOAD_TIME + " DESC");
+            // User selected for sorting of the newest first
+            sortOrder = FileColumns.COLUMN_FILE_UPLOAD_TIME + " DESC";
         } else {
-            return context.getContentResolver().query(Files.CONTENT_URI,
-                    null,
-                    null,
-                    null,
-                    FileColumns.COLUMN_FILE_UPLOAD_TIME + " ASC");
+            // User selected for sorting of the oldest first
+            sortOrder = FileColumns.COLUMN_FILE_UPLOAD_TIME + " ASC";
         }
+
+        // Return the desired data set
+        return context.getContentResolver().query(Files.CONTENT_URI,
+                null,
+                null,
+                null,
+                sortOrder);
     }
 
-    public static Uri getFileData(Context context, int id) {
+    public static Uri getFileUri(int id) {
         return Files.CONTENT_URI.buildUpon().appendPath(Integer.toString(id)).build();
     }
 
