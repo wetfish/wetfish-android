@@ -47,7 +47,8 @@
 
     <!-- Key Strings -->
     <string name="gallery_detail_uri_key">net.wetfish.wetfish</string>
-    <string name="file_details">fileDetailsKey</string>
+    <string name="file_details_key">fileDetailsKey</string>
+    <string name="file_position_key">filePositionKey</string>
 
     <!-- Links -->
     <string name="wetfish_base_url">https://wiki.wetfish.net/</string>

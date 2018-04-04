@@ -119,7 +119,7 @@ public class GalleryDetailActivity extends AppCompatActivity implements
 
         // Intent Data
         Bundle bundle = getIntent().getExtras();
-        mUri = (Uri) bundle.get(getString(R.string.file_details));
+        mUri = (Uri) bundle.get(getString(R.string.file_details_key));
 
         // Setup FileInfo
         if (mFileInfo == null) {

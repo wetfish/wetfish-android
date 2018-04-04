@@ -479,9 +479,11 @@ public class GalleryActivity extends AppCompatActivity implements
         Intent fileDetails = new Intent(this, GalleryCollectionActivity.class);
 
         // Pass the Uri to the corresponding gallery item
-        fileDetails.putExtra(getString(R.string.file_details),
+        fileDetails.putExtra(getString(R.string.file_details_key),
                 FileUtils.getFileData(this, id + POSITION_BUFFER));
+        fileDetails.putExtra(getString(R.string.file_position_key), id);
 
+        Log.d(LOG_TAG, "Starting Gallery Collection Activity");
         // Start GalleryDetailActivity
         startActivity(fileDetails);
     }

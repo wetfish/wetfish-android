@@ -50,6 +50,8 @@ import java.io.File;
 public class GalleryCollectionActivity extends AppCompatActivity {
 
     /* Constants */
+    // Logging Tag
+    private static final String LOG_TAG = GalleryCollectionActivity.class.getSimpleName();
     // Bundle key to save instance state
     private static final String BUNDLE_KEY = "fileInfoKey";
 
@@ -68,6 +70,10 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery_collection);
 
+        // Intent Data
+        Bundle bundle = getIntent().getExtras();
+        int startingInt = (int) bundle.get(getString(R.string.file_position_key));
+
         // Create the adapter that will return a fragment with an object in the collection.
         mGalleryCollectionPagerAdapter = new GalleryCollectionPagerAdapter(getSupportFragmentManager(), this);
 
@@ -77,12 +83,18 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         // Setup the ViewPager
         mViewPager = findViewById(R.id.pager);
         mViewPager.setAdapter(mGalleryCollectionPagerAdapter);
+        mViewPager.setCurrentItem(startingInt);
     }
 
     public static class GalleryCollectionPagerAdapter extends FragmentStatePagerAdapter {
 
         /* Constants */
+        // Logging Tag
+        private static final String LOG_TAG = GalleryCollectionActivity.class.getSimpleName();
+        // Context
         private Context mContext;
+        // Mitigate the 0 to lineup with the database
+        private static int ADD_ONE_TO_MITIGATE_ZERO = 1;
 
         public GalleryCollectionPagerAdapter(FragmentManager fm, Context context) {
             super(fm);
@@ -96,12 +108,18 @@ public class GalleryCollectionActivity extends AppCompatActivity {
          */
         @Override
         public Fragment getItem(int position) {
+            // Create our fragment
             Fragment fragment = new GalleryObjectFragment();
+
+            // Create bundle to send data in
             Bundle args = new Bundle();
 
-            Uri fileInfoUri = FileUtils.getFileData(mContext, position + 1);
+            // Gather file info and store within bundle and bundle within fragment
+            Uri fileInfoUri = FileUtils.getFileData(mContext, position + ADD_ONE_TO_MITIGATE_ZERO);
             args.putString(BUNDLE_KEY, fileInfoUri.toString());
             fragment.setArguments(args);
+
+            // Return the fragment with file data
             return fragment;
         }
 
@@ -110,12 +128,15 @@ public class GalleryCollectionActivity extends AppCompatActivity {
          */
         @Override
         public int getCount() {
+            // Gather file data and the amount of entries within the preceding cursor
             Cursor filesData = FileUtils.getFilesData(mContext);
             if (filesData != null && filesData.moveToFirst() != false) {
                 int amountOfEntries = filesData.getCount();
                 filesData.close();
                 return amountOfEntries;
             }
+
+            // Cursor was null, no entries
             return 0;
         }
 
@@ -132,19 +153,22 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         @Override
         public CharSequence getPageTitle(int position) {
 
-            Uri fileInfoUri = FileUtils.getFileData(mContext, position + 1);
+            Uri fileInfoUri = FileUtils.getFileData(mContext, position + ADD_ONE_TO_MITIGATE_ZERO);
             Cursor fileData = mContext.getContentResolver().query(fileInfoUri,
                     null,
                     null,
                     null,
                     null);
-
             FileInfo fileInfo = new FileInfo(fileData);
 
+            // Generate the page title depending on the position and file data
             if (!(fileInfo.getFileTitle().isEmpty())) {
+                // Return the file's user generated title if present
                 return fileInfo.getFileTitle();
             }
-            return "Gallery Item " + position;
+
+            // Return a generic title if there is no user defined title
+            return "Gallery Item " + position + ADD_ONE_TO_MITIGATE_ZERO;
         }
     }
 
@@ -222,11 +246,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             mVisitFileDeleteFAB = mRootView.findViewById(R.id.fab_visit_deletion_link);
             mCopyFileDeleteURLFAB = mRootView.findViewById(R.id.fab_copy_deletion_link);
 
-            // Get data
+            // Gather bundle data
             Bundle args = getArguments();
             mUri = Uri.parse(args.getString(BUNDLE_KEY));
-
-            Log.d("Blah blah, ", " BOOM BOOM BOOM ++++++++++ \n +++++++++++ \n " + mUri.toString());
 
             // Setup FileInfo
             if (mFileInfo == null) {

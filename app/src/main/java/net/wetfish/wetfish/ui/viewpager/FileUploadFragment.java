@@ -361,7 +361,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         backStackIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         // Pass the Uri to the corresponding gallery item
-        fileDetails.putExtra(getString(R.string.file_details),
+        fileDetails.putExtra(getString(R.string.file_details_key),
                 FileUtils.getFileData(getContext(), uploadID));
 
         // Start GalleryDetailActivity with an artificial back stack
