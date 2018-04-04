@@ -168,7 +168,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             }
 
             // Return a generic title if there is no user defined title
-            return "Gallery Item " + position + ADD_ONE_TO_MITIGATE_ZERO;
+            return "Gallery Item " + (position + ADD_ONE_TO_MITIGATE_ZERO);
         }
     }
 
@@ -201,7 +201,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private FloatingActionButton mViewOriginalFile;
 
         /* Views */
-        // File image view TODO: Impelemnt exoplayer later if video playback is desired
+        // File image view TODO: Implement exoplayer later if video playback is desired
         private ImageView mFileView;
         // File name text view
         private TextView mFileTitleTextView;
