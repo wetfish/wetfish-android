@@ -105,12 +105,12 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         /* Constants */
         // Logging Tag
         private static final String LOG_TAG = GalleryCollectionActivity.class.getSimpleName();
+        // Mitigate the 0 to lineup with the database
+        private static int ADD_ONE_TO_MITIGATE_ZERO = 1;
         // Context
         private Context mContext;
         // Sort By Most Recent sorting method
         private boolean mSortByMostRecent;
-        // Mitigate the 0 to lineup with the database
-        private static int ADD_ONE_TO_MITIGATE_ZERO = 1;
 
         public GalleryCollectionPagerAdapter(FragmentManager fm, Context context, boolean sortByMostRecentSetting) {
             super(fm);
@@ -148,27 +148,36 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Gather file data and the amount of entries within the preceding cursor
-            Cursor filesData = mContext.getContentResolver().query(Files.CONTENT_URI,
-                    null,
-                    null,
-                    null,
-                    null);
+            Cursor filesData = null;
 
-            if (filesData != null && filesData.moveToFirst() != false) {
-                // Gather amount of entries within the cursor
-                int amountOfEntries = filesData.getCount();
+            try {
+                filesData = mContext.getContentResolver().query(Files.CONTENT_URI,
+                        null,
+                        null,
+                        null,
+                        null);
 
-                // Close cursor
-                filesData.close();
+                if (filesData != null) {
+                    // Gather amount of entries within the cursor
+                    int amountOfEntries = filesData.getCount();
 
-                // Return the amount of entries
-                return amountOfEntries;
-            } else {
-                // Close cursor
-                filesData.close();
+                    // Close cursor
+                    filesData.close();
 
-                // Cursor was null, no entries
-                return 0;
+                    // Return the amount of entries
+                    return amountOfEntries;
+                } else {
+                    // Close cursor
+                    filesData.close();
+
+                    // Cursor was null, no entries
+                    return 0;
+                }
+            } finally {
+                if (filesData != null) {
+                    filesData.close();
+                    return 0;
+                }
             }
         }
 
