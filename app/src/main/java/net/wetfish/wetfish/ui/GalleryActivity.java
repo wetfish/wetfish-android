@@ -484,7 +484,7 @@ public class GalleryActivity extends AppCompatActivity implements
         fileDetails.putExtra(getString(R.string.file_position_key), id);
 
         Log.d(LOG_TAG, "Starting Gallery Collection Activity: " + id);
-        // Start GalleryDetailActivity
+        // Start GalleryCollectionActivity
         startActivity(fileDetails);
     }
 

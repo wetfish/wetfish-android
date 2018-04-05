@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    tools:context="net.wetfish.wetfish.ui.GalleryDetailActivity">
+    tools:context="net.wetfish.wetfish.ui.GalleryCollectionActivity">
 
     <!-- This will be shown for images and hidden for videos-->
     <include
