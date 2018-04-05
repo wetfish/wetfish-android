@@ -73,13 +73,16 @@
 
         <activity
             android:name=".ui.SettingsActivity"
-            android:label="@string/title_activity_settings">
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".ui.SettingsActivity">
 
         </activity>
 
         <activity
             android:name=".ui.GalleryCollectionActivity"
-            android:label="@string/tv_title_activity_gallery_detail_view_pager">
+            android:label="@string/tv_title_activity_gallery_detail_view_pager"
+            android:parentActivityName=".ui.GalleryActivity">
+
         </activity>
     </application>
 
