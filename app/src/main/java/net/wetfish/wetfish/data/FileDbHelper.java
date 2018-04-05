@@ -9,11 +9,11 @@ import static net.wetfish.wetfish.data.FileContract.Files;
 
 /**
  * DB Helper for Wetfish DB
- *
+ * <p>
  * Created by ${Michael} on 12/9/2017.
  */
 
-public class FileDbHelper extends SQLiteOpenHelper{
+public class FileDbHelper extends SQLiteOpenHelper {
 
     //Database File Name
     public static final String DATABASE_NAME = "file.db";
@@ -21,8 +21,20 @@ public class FileDbHelper extends SQLiteOpenHelper{
     // Current version of the database schema
     public static final int DATABASE_VERSION = 2;
 
-    // Database upgrade nummber
+    // Database upgrade number
     public static final int DATABASE_VERSION_2 = 2;
+
+    /**
+     * Create a helper object to create, open, and/or manage a database.
+     * This method always returns very quickly.  The database is not actually
+     * created or opened until one of {@link #getWritableDatabase} or
+     * {@link #getReadableDatabase} is called.
+     *
+     * @param context to use to open or create the database
+     */
+    public FileDbHelper(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
 
     /**
      * Called when the database is created for the first time. This is where the
@@ -43,35 +55,23 @@ public class FileDbHelper extends SQLiteOpenHelper{
                         FileColumns.COLUMN_FILE_TYPE_EXTENSION + " TEXT NOT NULL, " +
                         FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK + " TEXT NOT NULL, " +
                         FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK + " TEXT NOT NULL, " +
-                        FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK + " TEXT NOT NULL);";
+                        FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK + " TEXT NOT NULL," +
+                        FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK + " TEXT);";
 
         db.execSQL(SQL_CREATE_FILES_TABLE);
-    }
-
-    /**
-     * Create a helper object to create, open, and/or manage a database.
-     * This method always returns very quickly.  The database is not actually
-     * created or opened until one of {@link #getWritableDatabase} or
-     * {@link #getReadableDatabase} is called.
-     *
-     * @param context to use to open or create the database
-     */
-    public FileDbHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     /**
      * Called when the database needs to be upgraded. The implementation
      * should use this method to drop tables, add tables, or do anything else it
      * needs to upgrade to the new schema version.
-     *
+     * <p>
      * If you add new columns you can use ALTER TABLE to insert them into a live table.
      * If you rename or remove columns you can use ALTER TABLE to rename the old table,
      * then create the new table and then populate the new table with the contents of the old table.
-     *
+     * <p>
      * This method executes within a transaction.  If an exception is thrown, all changes
      * will automatically be rolled back.
-     *
      *
      * @param db         The database.
      * @param oldVersion The old database version.

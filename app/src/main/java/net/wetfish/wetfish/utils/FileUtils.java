@@ -2,11 +2,13 @@ package net.wetfish.wetfish.utils;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -59,7 +61,15 @@ public class FileUtils {
                 int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
                 cursor.moveToFirst();
                 Log.d("FileUtils[gRPFU]: ", cursor.getString(column_index));
-                return cursor.getString(column_index);
+
+                // Use cursor to store column_index string
+                String columnIndex = cursor.getString(column_index);
+
+                // Close Cursor
+                cursor.close();
+
+                // Return value
+                return columnIndex;
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -99,6 +109,7 @@ public class FileUtils {
             Log.d("FileUtils[gFEFU]: ", "Cursor try lewppp");
 
             String[] tokens = cursor.getString(column_index).split("\\.(?=[^\\.]+$)");
+            cursor.close();
             return "." + tokens[1];
         } finally {
             if (cursor != null) {
@@ -109,14 +120,34 @@ public class FileUtils {
 
     public static Cursor getFilesData(Context context) {
         // Used within loader to obtain cursor data
+        // Read the current preferences of the user to determine which cursor to provide back to the user
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean sortByMostRecentSetting = sharedPref.getBoolean(context.getString(R.string.pref_sortByMostRecent_key),
+                context.getResources().getBoolean(R.bool.pref_sortByMostRecent_default_value));
+
+        // String for the sortOrder of the cursor
+        String sortOrder = null;
+
+        Log.d("Blorp", "Settings Stuff" + sortByMostRecentSetting);
+
+        if (sortByMostRecentSetting) {
+            // User selected for sorting of the newest first
+            sortOrder = FileColumns.COLUMN_FILE_UPLOAD_TIME + " DESC";
+        } else {
+            // User selected for sorting of the oldest first
+            sortOrder = FileColumns.COLUMN_FILE_UPLOAD_TIME + " ASC";
+        }
+
+        // Return the desired data set
         return context.getContentResolver().query(Files.CONTENT_URI,
                 null,
                 null,
                 null,
-                null);
+                sortOrder);
     }
 
-    public static Uri getFileData(Context context, int id) {
+    public static Uri getFileUri(int id) {
         return Files.CONTENT_URI.buildUpon().appendPath(Integer.toString(id)).build();
     }
 
@@ -217,7 +248,7 @@ public class FileUtils {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
             // Compress to the desired format, JPEG, at full quality
-            boolean successfulDownscale = bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            boolean successfulDownscale = bitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
 
             if (successfulDownscale) {
                 // File Output Stream for the downscaledBitmapFile

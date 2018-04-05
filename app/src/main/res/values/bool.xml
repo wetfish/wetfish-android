@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Checkbox - Sorting By Most Recent -->
+    <bool name="pref_sortByMostRecent_default_value">true</bool>
+
+</resources>

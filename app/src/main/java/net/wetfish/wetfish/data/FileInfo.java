@@ -29,8 +29,6 @@ public class FileInfo {
 
     }
 
-
-
     /**
      * Constructor that will take the cursor and populate a
      *
@@ -53,6 +51,36 @@ public class FileInfo {
         fileWetfishStorageLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK));
         fileWetfishDeletionLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK));
         editedFileDeviceStorageLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK));
+
+        // Close cursor
+        cursor.close();
+    }
+
+    /**
+     * Constructor that will take the cursor and populate a
+     *
+     * @param cursor of files database to a single position
+     */
+    public FileInfo(Cursor cursor, int integer) {
+        // Initialize file
+        fileInfoInitialized = true;
+
+        // Move cursor to the available row
+        cursor.moveToPosition(integer);
+
+        // Populate data fields
+        fileTitle = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_TITLE));
+        fileTags = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_TAGS));
+        fileDescription = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_DESCRIPTION));
+        fileUploadTime = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_UPLOAD_TIME));
+        fileExtensionType = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_TYPE_EXTENSION));
+        fileDeviceStorageLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
+        fileWetfishStorageLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK));
+        fileWetfishDeletionLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK));
+        editedFileDeviceStorageLink = cursor.getString(cursor.getColumnIndex(FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK));
+
+        // Close cursor
+        cursor.close();
     }
 
     public String getFileTitle() {
