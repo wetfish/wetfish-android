@@ -72,19 +72,18 @@
         </provider>
 
         <activity
-            android:name=".ui.GalleryDetailActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:label="@string/tv_title_activity_gallery_detail"
-            android:parentActivityName=".ui.GalleryActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="net.wetfish.wetfish.ui.GalleryActivity" />
-        </activity>
-        <activity
             android:name=".ui.SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".ui.SettingsActivity">
+
+        </activity>
+
+        <activity
+            android:name=".ui.GalleryCollectionActivity"
+            android:label="@string/tv_title_activity_gallery_detail_view_pager"
+            android:parentActivityName=".ui.GalleryActivity">
+
+        </activity>
     </application>
 
 </manifest>

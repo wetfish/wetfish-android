@@ -74,7 +74,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="start"/>
+                        android:gravity="start" />
 
                     <android.support.v7.widget.AppCompatTextView
                         android:id="@+id/tv_image_size"
@@ -82,8 +82,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:paddingEnd="8dp"
-                        android:gravity="end" />
+                        android:gravity="end"
+                        android:paddingEnd="8dp" />
 
                 </android.support.v7.widget.LinearLayoutCompat>
 
@@ -120,6 +120,7 @@
                     style="@style/EditTextVariation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:hint="@string/et_description_hint"

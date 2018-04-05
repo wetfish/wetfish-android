@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -40,7 +42,7 @@ import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.retrofit.RESTInterface;
 import net.wetfish.wetfish.retrofit.RetrofitClient;
 import net.wetfish.wetfish.ui.GalleryActivity;
-import net.wetfish.wetfish.ui.GalleryDetailActivity;
+import net.wetfish.wetfish.ui.GalleryCollectionActivity;
 import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
 
@@ -86,6 +88,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final int MEDIUM_SIZE_SELECTION = 2;
     private static final int SMALL_SIZE_SELECTION = 3;
     private static final double[] SELECTIONRATIO = {1, .66, .44, .22};
+    private int START_AT_MOST_RECENT_FIRST_INTEGER = 0;
     private static final String IMAGE_FILE = "image/*";
     private static final String VIDEO_FILE = "video/*";
 
@@ -277,7 +280,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     // Storage permissions granted!
                     mFabProgressCircle.show();
                     fabUploadFile.setClickable(false);
-                    mSpinner.setEnabled(false);
+                    if (mSpinner != null) {
+                        mSpinner.setEnabled(false);
+                    }
                     uploadFile(mFileUriAbsolutePath);
                 }
 
@@ -350,7 +355,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         Snackbar.make(mFabProgressCircle, getContext().getString(R.string.tv_cloud_upload_complete), Snackbar.LENGTH_SHORT)
                 .show();
         // Create file detail activity intent
-        Intent fileDetails = new Intent(getContext(), GalleryDetailActivity.class);
+        Intent fileDetails = new Intent(getContext(), GalleryCollectionActivity.class);
 
         // Create artificial backstack to populate the intent
         Intent backStackIntent = new Intent(getContext(), GalleryActivity.class);
@@ -361,10 +366,23 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         backStackIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         // Pass the Uri to the corresponding gallery item
-        fileDetails.putExtra(getString(R.string.file_details),
-                FileUtils.getFileData(getContext(), uploadID));
+        fileDetails.putExtra(getString(R.string.file_details_key),
+                FileUtils.getFileUri(uploadID));
 
-        // Start GalleryDetailActivity with an artificial back stack
+        // Read the current preferences of the user to determine which integer to pass
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+        boolean sortByMostRecentSetting = sharedPref.getBoolean(getContext().getString(R.string.pref_sortByMostRecent_key),
+                getContext().getResources().getBoolean(R.bool.pref_sortByMostRecent_default_value));
+        if (sortByMostRecentSetting) {
+            // Sorting method is most recent so it will always be the first.
+            fileDetails.putExtra(getString(R.string.file_position_key), START_AT_MOST_RECENT_FIRST_INTEGER);
+        } else {
+            // The file will be the last file since the sorting method is newest last
+            fileDetails.putExtra(getString(R.string.file_position_key), uploadID);
+        }
+
+        // Start GalleryCollectionActivity with an artificial back stack
         getContext().startActivities(intents);
     }
 
@@ -436,7 +454,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 }
 
                 // Setup the file stats
-                setupFileStats(mDownscaledImageCreated);
+                setupFileStats();
 
                 break;
             case LARGE_SIZE_SELECTION:
@@ -450,7 +468,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 createDownscaledFile(position);
 
                 // Setup the file stats
-                setupFileStats(mDownscaledImageCreated);
+                setupFileStats();
 
                 break;
             case MEDIUM_SIZE_SELECTION:
@@ -464,7 +482,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 createDownscaledFile(position);
 
                 // Setup the file stats
-                setupFileStats(mDownscaledImageCreated);
+                setupFileStats();
 
                 break;
             case SMALL_SIZE_SELECTION:
@@ -478,7 +496,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 createDownscaledFile(position);
 
                 // Setup the file stats
-                setupFileStats(mDownscaledImageCreated);
+                setupFileStats();
 
                 break;
             default:
@@ -489,9 +507,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     /**
      * Sets up the given file's stats
      *
-     * @param determineDesiredFileUri
      */
-    private void setupFileStats(Boolean determineDesiredFileUri) {
+    private void setupFileStats() {
         if (mDownscaledImageCreated) {
             mFileViewSize.setText(FileUtils.getFileSize(mDownscaledImageAbsolutePath, getContext()));
             mFileViewResolution.setText(FileUtils.getImageResolution(mDownscaledImageAbsolutePath, getContext()));

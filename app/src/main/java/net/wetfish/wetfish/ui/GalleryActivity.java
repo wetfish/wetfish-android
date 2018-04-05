@@ -476,13 +476,15 @@ public class GalleryActivity extends AppCompatActivity implements
     @Override
     public void onListItemClick(int id) {
         // Create file detail activity intent
-        Intent fileDetails = new Intent(this, GalleryDetailActivity.class);
+        Intent fileDetails = new Intent(this, GalleryCollectionActivity.class);
 
         // Pass the Uri to the corresponding gallery item
-        fileDetails.putExtra(getString(R.string.file_details),
-                FileUtils.getFileData(this, id + POSITION_BUFFER));
+        fileDetails.putExtra(getString(R.string.file_details_key),
+                FileUtils.getFileUri(id + POSITION_BUFFER));
+        fileDetails.putExtra(getString(R.string.file_position_key), id);
 
-        // Start GalleryDetailActivity
+        Log.d(LOG_TAG, "Starting Gallery Collection Activity: " + id);
+        // Start GalleryCollectionActivity
         startActivity(fileDetails);
     }
 
