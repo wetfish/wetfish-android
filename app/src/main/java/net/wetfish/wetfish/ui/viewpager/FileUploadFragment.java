@@ -438,7 +438,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 }
 
                 // Setup the file stats
-                setupFileStats(mDownscaledImageCreated);
+                setupFileStats();
 
                 break;
             case LARGE_SIZE_SELECTION:
@@ -452,7 +452,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 createDownscaledFile(position);
 
                 // Setup the file stats
-                setupFileStats(mDownscaledImageCreated);
+                setupFileStats();
 
                 break;
             case MEDIUM_SIZE_SELECTION:
@@ -466,7 +466,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 createDownscaledFile(position);
 
                 // Setup the file stats
-                setupFileStats(mDownscaledImageCreated);
+                setupFileStats();
 
                 break;
             case SMALL_SIZE_SELECTION:
@@ -480,7 +480,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 createDownscaledFile(position);
 
                 // Setup the file stats
-                setupFileStats(mDownscaledImageCreated);
+                setupFileStats();
 
                 break;
             default:
@@ -491,9 +491,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     /**
      * Sets up the given file's stats
      *
-     * @param determineDesiredFileUri
      */
-    private void setupFileStats(Boolean determineDesiredFileUri) {
+    private void setupFileStats() {
         if (mDownscaledImageCreated) {
             mFileViewSize.setText(FileUtils.getFileSize(mDownscaledImageAbsolutePath, getContext()));
             mFileViewResolution.setText(FileUtils.getImageResolution(mDownscaledImageAbsolutePath, getContext()));

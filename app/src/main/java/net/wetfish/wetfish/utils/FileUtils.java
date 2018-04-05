@@ -61,7 +61,15 @@ public class FileUtils {
                 int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
                 cursor.moveToFirst();
                 Log.d("FileUtils[gRPFU]: ", cursor.getString(column_index));
-                return cursor.getString(column_index);
+
+                // Use cursor to store column_index string
+                String columnIndex = cursor.getString(column_index);
+
+                // Close Cursor
+                cursor.close();
+
+                // Return value
+                return columnIndex;
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -101,6 +109,7 @@ public class FileUtils {
             Log.d("FileUtils[gFEFU]: ", "Cursor try lewppp");
 
             String[] tokens = cursor.getString(column_index).split("\\.(?=[^\\.]+$)");
+            cursor.close();
             return "." + tokens[1];
         } finally {
             if (cursor != null) {

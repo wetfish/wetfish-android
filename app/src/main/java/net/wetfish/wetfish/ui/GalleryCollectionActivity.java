@@ -88,8 +88,8 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                 getResources().getBoolean(R.bool.pref_sortByMostRecent_default_value));
 
         // Create the adapter that will return a fragment with an object in the collection.
-        mGalleryCollectionPagerAdapter = new GalleryCollectionPagerAdapter(getSupportFragmentManager(), this, sortByMostRecentSetting
-        );
+        mGalleryCollectionPagerAdapter = new GalleryCollectionPagerAdapter(getSupportFragmentManager(),
+                this, sortByMostRecentSetting);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
 
@@ -175,8 +175,19 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                 }
             } finally {
                 if (filesData != null) {
+                    // Gather amonut of entries
+                    int amountOfEntries = filesData.getCount();
+
+                    // Close cursor
                     filesData.close();
-                    return 0;
+
+                    // Return entries if there are more than 0, otherwise, 0.
+                    if (amountOfEntries > 0) {
+                        return amountOfEntries;
+                    } else {
+                        return 0;
+
+                    }
                 }
             }
         }
@@ -259,9 +270,11 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private String mFileType;
         // Sorting Settings
         private boolean mSortByMostRecent;
-
+        // Starting position of adapter
         private int mAdapterPosition;
+        // Has this fragment been created? if so, keep from creating another async task
         private boolean mFragmentCreated;
+        // Network Info
         private NetworkInfo mNetworkInfo;
 
         @Override
@@ -270,7 +283,6 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             mRootView = inflater.inflate(R.layout.fragment_gallery_collection, container, false);
 
             // Network Info
-
             ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             mNetworkInfo = cm.getActiveNetworkInfo();
 
@@ -667,8 +679,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                 public Cursor loadInBackground() {
 
                     String sortOrder = null;
-                    // Gather the cursor at location mUri within files db
-//                    return FileUtils.getFileData(getContext(), mUri);
+                    // Gather the cursor at location mUri within files db with the current sorting mechanism
                     if (mSortByMostRecent) {
                         // User selected for sorting of the newest first
                         sortOrder = FileColumns.COLUMN_FILE_UPLOAD_TIME + " DESC";
@@ -676,6 +687,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         // User selected for sorting of the oldest first
                         sortOrder = FileColumns.COLUMN_FILE_UPLOAD_TIME + " ASC";
                     }
+
                     // Return the desired data set
                     return getContext().getContentResolver().query(Files.CONTENT_URI,
                             null,
