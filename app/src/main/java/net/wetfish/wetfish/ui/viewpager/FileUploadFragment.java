@@ -668,7 +668,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     determineFileViewContent(mDownscaledImageAbsolutePath);
 
                     // Write the appropriate EXIF data to the image
-                    FileUtils.transferExifData(mFileUriAbsolutePath, mDownscaledImageAbsolutePath);
+
+                    // Check if the image is a jpeg
+                    if (FileUtils.getFileExtensionFromUri(getContext(), mFileUriAbsolutePath).matches("(?i).jpeg|.jpg(?-i)")) {
+                        FileUtils.transferExifData(mFileUriAbsolutePath, mDownscaledImageAbsolutePath);
+                    }
 
                     // Let the user know the image was successfully downscaled
                     Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
