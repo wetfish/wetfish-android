@@ -1,0 +1,36 @@
+package net.wetfish.wetfish.data;
+
+import android.content.Context;
+
+import net.wetfish.wetfish.R;
+
+/**
+ * Created by ${Michael} on 5/24/2018.
+ */
+public class FileExifDataHeader {
+
+    private String mExifDataStringHeader;
+
+    private boolean mIsExifDataSensitive;
+
+    public FileExifDataHeader (Boolean isExifDataSensitive, Context context) {
+
+        // Determine whether EXIF data is sensitive or not
+        mIsExifDataSensitive = isExifDataSensitive;
+
+        // Set the appropriate title regarding the EXIF data
+        if (mIsExifDataSensitive) {
+            mExifDataStringHeader = context.getString(R.string.exif_data_header_sensitive);
+        } else {
+            mExifDataStringHeader = context.getString(R.string.exif_data_header_general);
+        }
+    }
+
+    public String getExifDataStringHeader() {
+        return mExifDataStringHeader;
+    }
+
+    public boolean getIsExifDataSensitive() {
+        return mIsExifDataSensitive;
+    }
+}
