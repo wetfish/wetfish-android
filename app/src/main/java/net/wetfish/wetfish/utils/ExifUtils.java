@@ -391,7 +391,7 @@ public class ExifUtils {
      * @param context
      * @return
      */
-    private ArrayList<Object> gatherExifData(Uri originalFile, Context context) {
+    public static ArrayList<Object> gatherExifData(Uri originalFile, Context context) {
         ArrayList<Object> exifDataArrayList = new ArrayList<>();
 
 
