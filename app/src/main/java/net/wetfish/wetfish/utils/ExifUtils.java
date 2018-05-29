@@ -7,6 +7,7 @@ import android.os.Build;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileExifData;
+import net.wetfish.wetfish.data.FileExifDataBlank;
 import net.wetfish.wetfish.data.FileExifDataHeader;
 
 import java.io.IOException;
@@ -392,7 +393,17 @@ public class ExifUtils {
      * @return
      */
     public static ArrayList<Object> gatherExifData(Uri originalFile, Context context) {
+        // Logging Tag
+        final String LOG_TAG = ExifUtils.class.getSimpleName();
+
+        // Array List of EXIF data objects
         ArrayList<Object> exifDataArrayList = new ArrayList<>();
+
+        // boolean value to track if a header has been created
+        boolean exifHeaderCreated = false;
+
+        // Tracker to see how many tags were stored
+        int exifValueTagPairsStored = 0;
 
 
         try {
@@ -407,9 +418,8 @@ public class ExifUtils {
                 String[] exifTagsV24AndAboveGeneral = context.getResources().getStringArray(R.array.exif_attributes_v24_and_above_general_array);
 
                 // Boolean to check if a header is needed and created;
-                boolean exifHeader = false;
 
-                // Run through sensitive tags and store them
+                // Run through sensitive tags and store them if they exist
                 for (int i = 0; i < EXIF_ATTRIBUTES_VERSION_24_ABOVE_SENSITIVE.length; i++) {
 
                     // Gather the attribute value at location i and store it if it is present
@@ -417,16 +427,25 @@ public class ExifUtils {
                     if (exifAttributeValue != null) {
 
                         // Check to see if a sensitive header has been added
-                        if (!(exifHeader)) {
-                            exifDataArrayList.add(new FileExifDataHeader(true, context));
-                            exifHeader = true;
+                        if (!(exifHeaderCreated)) {
+                            exifHeaderCreated = true;
                         }
 
-                        // Add Exif data
+                        // Add Exif data and increment
                         exifDataArrayList.add(new FileExifData(exifTagsV24AndAboveSensitive[i], exifAttributeValue));
+                        exifValueTagPairsStored++;
                     }
-                    exifHeader = false;
+
+                    // If no exif tags were stored, represent this
+                    if (exifValueTagPairsStored == 0) {
+                        exifDataArrayList.add(new FileExifDataHeader(true, context));
+                        exifDataArrayList.add(new FileExifDataBlank(true));
+                    }
                 }
+
+                // Reset the header and value tag pairs added for general security level exif tags
+                exifHeaderCreated = false;
+                exifValueTagPairsStored = 0;
 
                 // Run through general tags and store them
                 for (int i = 0; i < EXIF_ATTRIBUTES_VERSION_24_ABOVE_GENERAL.length; i++) {
@@ -436,18 +455,25 @@ public class ExifUtils {
                     if (exifAttributeValue != null) {
 
                         // Check to see if a general header has been added
-                        if (!(exifHeader)) {
-                            exifDataArrayList.add(new FileExifDataHeader(true, context));
-                            exifHeader = true;
+                        if (!(exifHeaderCreated)) {
+                            exifDataArrayList.add(new FileExifDataHeader(false, context));
+                            exifHeaderCreated = true;
                         }
 
-                        // Add Exif data
+                        // Add Exif data and increment
                         exifDataArrayList.add(new FileExifData(exifTagsV24AndAboveGeneral[i], exifAttributeValue));
+                        exifValueTagPairsStored++;
                     }
-                    exifHeader = false;
+
+                    // If no exif tags were stored, represent this
+                    if (exifValueTagPairsStored == 0) {
+                        exifDataArrayList.add(new FileExifDataHeader(false, context));
+                        exifDataArrayList.add(new FileExifDataBlank(false));
+                    }
                 }
 
                 return exifDataArrayList;
+
             } else {
                 // Create an ExifInterface object to interact with the original file's exif data.
                 ExifInterface originalFileExif = new ExifInterface(originalFile.toString());
@@ -455,9 +481,6 @@ public class ExifUtils {
                 // Gather necessary references to Exif Tag names
                 String[] exifTagsV23AndBelowSensitive = context.getResources().getStringArray(R.array.exif_attributes_v23_and_below_sensitive_array);
                 String[] exifTagsV23AndBelowGeneral = context.getResources().getStringArray(R.array.exif_attributes_v23_and_below_general_array);
-
-                // Boolean to check if a header is needed and created;
-                boolean exifHeader = false;
 
                 // Run through sensitive tags and store them
                 for (int i = 0; i < EXIF_ATTRIBUTES_VERSION_23_BELOW_SENSITIVE.length; i++) {
@@ -467,16 +490,26 @@ public class ExifUtils {
                     if (exifAttributeValue != null) {
 
                         // Check to see if a sensitive header has been added
-                        if (!(exifHeader)) {
+                        if (!(exifHeaderCreated)) {
                             exifDataArrayList.add(new FileExifDataHeader(true, context));
-                            exifHeader = true;
+                            exifHeaderCreated = true;
                         }
 
-                        // Add Exif data
+                        // Add Exif data and increment
                         exifDataArrayList.add(new FileExifData(exifTagsV23AndBelowSensitive[i], exifAttributeValue));
+                        exifValueTagPairsStored++;
                     }
-                    exifHeader = false;
+
+                    // If no exif tags were stored, represent this
+                    if (exifValueTagPairsStored == 0) {
+                        exifDataArrayList.add(new FileExifDataHeader(true, context));
+                        exifDataArrayList.add(new FileExifDataBlank(true));
+                    }
                 }
+
+                // Reset the header and value tag pairs added for general security level exif tags
+                exifHeaderCreated = false;
+                exifValueTagPairsStored = 0;
 
                 // Run through general tags and store them
                 for (int i = 0; i < EXIF_ATTRIBUTES_VERSION_23_BELOW_GENERAL.length; i++) {
@@ -486,15 +519,21 @@ public class ExifUtils {
                     if (exifAttributeValue != null) {
 
                         // Check to see if a general header has been added
-                        if (!(exifHeader)) {
-                            exifDataArrayList.add(new FileExifDataHeader(true, context));
-                            exifHeader = true;
+                        if (!(exifHeaderCreated)) {
+                            exifDataArrayList.add(new FileExifDataHeader(false, context));
+                            exifHeaderCreated = true;
                         }
 
-                        // Add Exif data
+                        // Add Exif data and increment
                         exifDataArrayList.add(new FileExifData(exifTagsV23AndBelowGeneral[i], exifAttributeValue));
+                        exifValueTagPairsStored++;
                     }
-                    exifHeader = false;
+
+                    // If no exif tags were stored, represent this
+                    if (exifValueTagPairsStored == 0) {
+                        exifDataArrayList.add(new FileExifDataHeader(false, context));
+                        exifDataArrayList.add(new FileExifDataBlank(false));
+                    }
                 }
 
                 return exifDataArrayList;

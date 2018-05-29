@@ -5,6 +5,8 @@ import android.content.Context;
 import net.wetfish.wetfish.R;
 
 /**
+ * Class that is created when EXIf data is found for either General or Sensitive EXIF tags
+ *
  * Created by ${Michael} on 5/24/2018.
  */
 public class FileExifDataHeader {

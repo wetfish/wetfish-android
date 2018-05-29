@@ -1,6 +1,8 @@
 package net.wetfish.wetfish.data;
 
 /**
+ * Class that is created when EXIF data is found within General and/or Sensitive EXIF tags
+ *
  * Created by ${Michael} on 4/29/2018.
  */
 public class FileExifData {

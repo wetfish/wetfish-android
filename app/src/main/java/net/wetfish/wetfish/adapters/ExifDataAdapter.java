@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileExifData;
+import net.wetfish.wetfish.data.FileExifDataBlank;
 import net.wetfish.wetfish.data.FileExifDataHeader;
 
 import java.util.ArrayList;
@@ -26,8 +27,10 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final String LOG_TAG = FilesAdapter.class.getSimpleName();
 
     // ViewType tags
-    private static final int VIEW_TYPE_EXIF_DATA_HEADER = 0;
-    private static final int VIEW_TYPE_EXIF_DATA = 1;
+    private static final int VIEW_TYPE_EXIF_DATA = 0;
+    private static final int VIEW_TYPE_EXIF_DATA_BLANK = 1;
+    private static final int VIEW_TYPE_EXIF_DATA_HEADER = 2;
+
     // Click handler?
     private final ExifDataAdapterOnClickHandler mClickHandler;
     // List of EXIF data objects
@@ -83,21 +86,27 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         //TODO: Can be simplified
         // Setup a switch to decide on the correct view for this layout
         switch (viewType) {
-            case VIEW_TYPE_EXIF_DATA_HEADER:
-                // Populate the view with the sensitive EXIF data header
-                layoutView = inflater.inflate(R.layout.exif_item_header, parent, false);
-                viewHolder = new ExifDataViewHolder(layoutView);
-                break;
+
             case VIEW_TYPE_EXIF_DATA:
                 // Populate the view with the EXIF data layout
                 layoutView = inflater.inflate(R.layout.exif_item, parent, false);
                 viewHolder = new ExifDataViewHolder(layoutView);
                 break;
+            case VIEW_TYPE_EXIF_DATA_BLANK:
+                // Populate the view with the EXIF blank data layout
+                layoutView = inflater.inflate(R.layout.exif_item_blank, parent, false);
+                viewHolder = new ExifDataBlankViewHolder(layoutView);
+                break;
+            case VIEW_TYPE_EXIF_DATA_HEADER:
+                // Populate the view with the sensitive EXIF data header
+                layoutView = inflater.inflate(R.layout.exif_item_header, parent, false);
+                viewHolder = new ExifHeaderViewHolder(layoutView);
+                break;
             default:
                 viewHolder = null;
         }
 
-        return (ExifDataViewHolder) viewHolder;
+        return viewHolder;
     }
 
     /**
@@ -123,14 +132,19 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         switch (holder.getItemViewType()) {
-            case VIEW_TYPE_EXIF_DATA_HEADER:
-                ExifHeaderViewHolder exifHeaderViewHolder = (ExifHeaderViewHolder) holder;
-                ((ExifHeaderViewHolder) holder).bind((FileExifDataHeader) mExifDataList.get(position));
-                break;
+
             case VIEW_TYPE_EXIF_DATA:
                 ExifDataViewHolder exifDataViewHolder = (ExifDataViewHolder) holder;
-                ((ExifDataViewHolder) holder).bind((FileExifData) mExifDataList.get(position));
+                exifDataViewHolder.bind((FileExifData) mExifDataList.get(position));
                 break;
+            case VIEW_TYPE_EXIF_DATA_BLANK:
+                ExifDataBlankViewHolder exifDataBlankViewHolder = (ExifDataBlankViewHolder) holder;
+                exifDataBlankViewHolder.bind((FileExifDataBlank) mExifDataList.get(position));
+            case VIEW_TYPE_EXIF_DATA_HEADER:
+                ExifHeaderViewHolder exifHeaderViewHolder = (ExifHeaderViewHolder) holder;
+                exifHeaderViewHolder.bind((FileExifDataHeader) mExifDataList.get(position));
+                break;
+
         }
     }
 
@@ -165,10 +179,12 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         Object object = mExifDataList.get(position);
 
         // If a header check to deliver the appropriate header, otherwise return EXIF data
-        if (object instanceof FileExifDataHeader) {
-            return VIEW_TYPE_EXIF_DATA_HEADER;
-        } else {
+        if (object instanceof FileExifData) {
             return VIEW_TYPE_EXIF_DATA;
+        } else if (object instanceof FileExifDataBlank){
+            return VIEW_TYPE_EXIF_DATA_BLANK;
+        } else {
+            return VIEW_TYPE_EXIF_DATA_HEADER;
         }
     }
 
@@ -212,6 +228,38 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+    public class ExifDataBlankViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        // EXIF header TextView
+        public TextView mExifDataBlank;
+
+        /**
+         * Constructor for FileViewHolder. Obtain a reference to the layout.
+         *
+         * @param itemView The view for a specific item
+         */
+        public ExifDataBlankViewHolder(View itemView) {
+            super(itemView);
+
+            // EXIF header text view reference
+            mExifDataBlank = (TextView) itemView.findViewById(R.id.tv_exif_data_blank);
+            itemView.setOnClickListener(this);
+        }
+
+        public void bind(FileExifDataBlank exifDataBlank) {
+            if (mExifDataBlank != null) {
+                mExifDataBlank.setText(exifDataBlank.getNoExifDataFoundString());
+            }
+        }
+
+        @Override
+        public void onClick(View view) {
+            //TODO: Potentially remove
+//            int adapterPosition = getAdapterPosition();
+//            mClickHandler.onListItemClick(adapterPosition);
+        }
+    }
+
     public class ExifHeaderViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         // EXIF header TextView
@@ -243,4 +291,5 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 //            mClickHandler.onListItemClick(adapterPosition);
         }
     }
+
 }

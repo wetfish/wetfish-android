@@ -37,6 +37,18 @@
         <item name="android:layout_marginStart">8dp</item>
     </style>
 
+    <!-- Text View variation style for Headers in EXIF settings-->
+    <style name="TextViewHeaderExif">
+        <item name="android:textColor">@color/primary_text_header</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <!-- Text View variation style for content bodies in EXIF settings -->
+    <style name="TextViewBodyExif">
+        <item name="android:textColor">@color/primary_text_body</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
     <!-- Text View variation style for Headers -->
     <style name="TextViewHeaderSettings">
         <item name="android:textColor">@color/primary_text_header</item>
