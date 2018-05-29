@@ -207,7 +207,7 @@ public class GalleryActivity extends AppCompatActivity implements
         if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
             // If the user has previously denied granting the permission, offer the rationale
-            Snackbar.make(findViewById(android.R.id.content), R.string.sb_permission_storage_rationale,
+            Snackbar.make(findViewById(R.id.gallery_container), R.string.sb_permission_storage_rationale,
                     Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.ok, new View.OnClickListener() {
                         @RequiresApi(api = Build.VERSION_CODES.M)
@@ -411,7 +411,7 @@ public class GalleryActivity extends AppCompatActivity implements
         super.onActivityResult(reqCode, resultCode, data);
 
         // Close FAM.
-        mFAM.close(true);
+//        mFAM.close(true);
 
         // Determine the result of the activity.
         if (resultCode == RESULT_OK) {
@@ -453,7 +453,7 @@ public class GalleryActivity extends AppCompatActivity implements
                             .setDataAndType(Uri.parse(mCurrentVideoPath), getString(R.string.video_mime_type)));
                     break;
                 default:
-                    Snackbar.make(findViewById(android.R.id.content), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(R.id.gallery_container), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
 
                     Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
                     break;

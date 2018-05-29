@@ -37,6 +37,7 @@ public class FileUtils {
     private static final double UNIT_CONVERSION = 1000;
     private static final double ROUNDING_NUMBER = 100.0;
 
+
     // TODO: Might want to rename this
     public static String getAbsolutePathFromUri(Context context, Uri contentUri) {
         String fileProviderString = "(/net.wetfish.wetfish/)";
@@ -193,12 +194,12 @@ public class FileUtils {
      */
     public static String getMimeType(String fileType, Context context) {
         Log.d("FileUtils[dMT]: ", "CHECK IT: " + fileType);
-        if (fileType.matches(".jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg")) {
+        if (fileType.matches("(?i).jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg(?-i)")) {
             Log.d("Ehyo", "image/*");
             return context.getString(R.string.image_mime_type);
-        } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
+        } else if (fileType.matches("(?i).flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
                 "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
-                "|.mkv|.webm|.mp3|.mp4")) {
+                "|.mkv|.webm|.mp3|.mp4(?-i)")) {
             Log.d("FileUtils[dMT]: ", "video/*");
             return context.getString(R.string.video_mime_type);
         } else {
@@ -211,12 +212,12 @@ public class FileUtils {
 
     public static boolean representableByGlide(String fileType) {
         Log.d("FileUtils[rBG]: ", "CHECK IT: " + fileType);
-        if (fileType.matches(".jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg")) {
+        if (fileType.matches("(?i).jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg(?-i)")) {
             Log.d("FileUtils[rBG]: ", "image/*");
             return true;
-        } else if (fileType.matches(".flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
+        } else if (fileType.matches("(?i).flv|.f4v|.f4p|.f4a|.f4b|.3gp|.3g2|.m4v|.svi|.mpg|.mpeg" +
                 "|.m2v|.mpe|.mp2|.mpv|.amv|.asf|.mvb|.rm|.yuv|.wmv|.mov|.qt|.avi|.mng|.gifv|.ogg|.vob|.ogv" +
-                "|.mkv|.webm|.mp3|.mp4")) {
+                "|.mkv|.webm|.mp3|.mp4(?-i)")) {
             Log.d("FileUtils[rBG]", "video/*");
             return true;
         } else {
@@ -337,6 +338,5 @@ public class FileUtils {
         } else {
             return context.getString(R.string.tv_video_length_above_ten_seconds, minutes, seconds);
         }
-
     }
 }

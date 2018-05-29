@@ -43,6 +43,7 @@ import net.wetfish.wetfish.retrofit.RESTInterface;
 import net.wetfish.wetfish.retrofit.RetrofitClient;
 import net.wetfish.wetfish.ui.GalleryActivity;
 import net.wetfish.wetfish.ui.GalleryCollectionActivity;
+import net.wetfish.wetfish.utils.ExifUtils;
 import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
 
@@ -172,7 +173,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 mRootLayout = inflater.inflate(R.layout.fragment_file_upload_image_view_pager, container, false);
 
                 // Reference to file upload layout content
-                fileUploadContent = mRootLayout.findViewById(R.id.file_upload_content_container);
+                fileUploadContent = mRootLayout.findViewById(R.id.cl_file_upload_content_container);
 
                 // File Views
                 mFileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
@@ -202,7 +203,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 mRootLayout = inflater.inflate(R.layout.fragment_file_upload_video_view_pager, container, false);
 
                 // Reference to file upload layout content
-                fileUploadContent = mRootLayout.findViewById(R.id.file_upload_content_container);
+                fileUploadContent = mRootLayout.findViewById(R.id.cl_file_upload_content_container);
 
                 // File views
                 mFileView = mRootLayout.findViewById(R.id.iv_fragment_file_upload);
@@ -666,6 +667,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 if (mDownscaledImageCreated) {
                     // Change the file to be opened accordingly
                     determineFileViewContent(mDownscaledImageAbsolutePath);
+
+                    // Write the appropriate EXIF data to the image
+
+                    // Check if the image is a jpeg
+                    if (FileUtils.getFileExtensionFromUri(getContext(), mFileUriAbsolutePath).matches("(?i).jpeg|.jpg(?-i)")) {
+                        ExifUtils.transferExifData(mFileUriAbsolutePath, mDownscaledImageAbsolutePath);
+                    }
 
                     // Let the user know the image was successfully downscaled
                     Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),

@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    //TOOD: Move string arrays here
+    <!-- EXIF Data Values Array v23 and below -->
+    <string-array name="exif_attributes_v23_and_below_array">
+        <item>Aperture</item>
+        <item>Datetime</item>
+        <item>Exposure Time</item>
+        <item>Flash</item>
+        <item>Focal Length</item>
+        <item>GPS Altitude</item>
+        <item>GPS Altitude Ref</item>
+        <item>GPS Datestamp</item>
+        <item>GPS Dest Latitude</item>
+        <item>GPS Dest Latitude Ref</item>
+        <item>GPS Dest Longitude</item>
+        <item>GPS Dest Longitude Ref</item>
+        <item>GPS Timestamp</item>
+        <item>Image Length</item>
+        <item>Image Width</item>
+        <item>ISO</item>
+        <item>Make</item>
+        <item>Model</item>
+        <item>Orientation</item>
+        <item>White Balance</item>
+        <item>White Balance Auto</item>
+        <item>White Balance Manual</item>
+    </string-array>
+
+
+    <!-- EXIF Data Values Array v23 and below -->
+    <string-array name="exif_attributes_v23_and_below_sensitive_array">
+        <item>GPS Altitude</item>
+        <item>GPS Altitude Ref</item>
+        <item>GPS Datestamp</item>
+        <item>GPS Dest Latitude</item>
+        <item>GPS Dest Latitude Ref</item>
+        <item>GPS Dest Longitude</item>
+        <item>GPS Dest Longitude Ref</item>
+        <item>GPS Timestamp</item>
+        <item>Make</item>
+        <item>Model</item>
+    </string-array>
+
+    <!-- EXIF Data Values Array v23 and below -->
+    <string-array name="exif_attributes_v23_and_below_general_array">
+        <item>Aperture</item>
+        <item>Datetime</item>
+        <item>Exposure Time</item>
+        <item>Flash</item>
+        <item>Focal Length</item>
+        <item>Image Length</item>
+        <item>Image Width</item>
+        <item>ISO</item>
+        <item>Orientation</item>
+        <item>White Balance</item>
+        <item>White Balance Auto</item>
+        <item>White Balance Manual</item>
+    </string-array>
+
+    <!-- EXIF Data Values Array v24 and above -->
+    <string-array name="exif_attributes_v24_and_above_array">
+        <item>Aperture</item>
+        <item>Aperture Value</item>
+        <item>Artist</item>
+        <item>Bits Per Sample</item>
+        <item>Brightness Value</item>
+        <item>CFA Pattern</item>
+        <item>Color Space</item>
+        <item>Components Configuration</item>
+        <item>Compressed Bits Per Pixel</item>
+        <item>Compression</item>
+        <item>Contrast</item>
+        <item>Copyright</item>
+        <item>Custom Rendered</item>
+        <item>Datetime</item>
+        <item>Datetime Digitized</item>
+        <item>Datetime Original</item>
+        <item>Default Crop Size</item>
+        <item>Device Setting Description</item>
+        <item>Digital Zoom Ratio</item>
+        <item>DNG Version</item>
+        <item>EXIF Version</item>
+        <item>Exposure Bias Value</item>
+        <item>Exposure Index</item>
+        <item>Exposure Mode</item>
+        <item>Exposure Program</item>
+        <item>Exposure Time</item>
+        <item>F Number</item>
+        <item>File Source</item>
+        <item>Flash</item>
+        <item>Flashpix Version</item>
+        <item>Flash Energy</item>
+        <item>Focal Length</item>
+        <item>Focal Length in 35MM Film</item>
+        <item>Focal Plane Resolution Unit</item>
+        <item>Focal Plane x Resolution</item>
+        <item>Focal Plane y Resolution</item>
+        <item>Gain Control</item>
+        <item>GPS Altitude</item>
+        <item>GPS Altitude Ref</item>
+        <item>GPS Area Information</item>
+        <item>GPS Datestamp</item>
+        <item>GPS Dest Bearing</item>
+        <item>GPS Dest Bearing Ref</item>
+        <item>GPS Dest Distance</item>
+        <item>GPS Dest Distance Ref</item>
+        <item>GPS Dest Latitude</item>
+        <item>GPS Dest Latitude Ref</item>
+        <item>GPS Dest Longitude</item>
+        <item>GPS Dest Longitude Ref</item>
+        <item>GPS Map Datum</item>
+        <item>GPS Measure Mode</item>
+        <item>GPS Processing Method</item>
+        <item>GPS Satellites</item>
+        <item>GPS Speed</item>
+        <item>GPS Speed Ref</item>
+        <item>GPS Status</item>
+        <item>GPS Timestamp</item>
+        <item>GPS Track</item>
+        <item>GPS Track Ref</item>
+        <item>GPS Version ID</item>
+        <item>Imagae Description</item>
+        <item>Image Length</item>
+        <item>Image Unique ID</item>
+        <item>Image Width</item>
+        <item>Interoperability Index</item>
+        <item>ISO</item>
+        <item>ISO Speed Ratings</item>
+        <item>JPEG Interchange Format</item>
+        <item>JPEG Interchange Format Length</item>
+        <item>Light Source</item>
+        <item>Make</item>
+        <item>Maker Note</item>
+        <item>Max Aperture Value</item>
+        <item>Metering Mode</item>
+        <item>Model</item>
+        <item>New Subfile Type</item>
+        <item>OECF</item>
+        <item>ORF Aspect Frame</item>
+        <item>ORF Preview Image Length</item>
+        <item>ORF Preview Image Start</item>
+        <item>ORF Thumbnail Image</item>
+        <item>Orientation</item>
+        <item>Photometric Interpretation</item>
+        <item>Pixel X Dimension</item>
+        <item>Pixel Y Dimension</item>
+        <item>Planar Configuration</item>
+        <item>Primary Chromaticities</item>
+        <item>Reference Black White</item>
+        <item>Related Sound File</item>
+        <item>Resolution Unit</item>
+        <item>Rows Per Strip</item>
+        <item>RW2 ISO</item>
+        <item>RW2 JPG From Raw</item>
+        <item>RW2 Sensor Bottom Border</item>
+        <item>RW2 Sensor Left Border</item>
+        <item>RW2 Sensor Right Border</item>
+        <item>RW2 Sensor Top Border</item>
+        <item>Samples Per Pixel</item>
+        <item>Saturation</item>
+        <item>Scene Capture Type</item>
+        <item>Scene Type</item>
+        <item>Sensing Method</item>
+        <item>Sharpness</item>
+        <item>Shutter Speed Value</item>
+        <item>Software</item>
+        <item>Spatial Frequency Response</item>
+        <item>Spectral Sensitivity</item>
+        <item>Strip Byte Counts</item>
+        <item>Strip Offsets</item>
+        <item>Subfile Type</item>
+        <item>Subject Area</item>
+        <item>Subject Distance</item>
+        <item>Subject Distance Range</item>
+        <item>Subject Location</item>
+        <item>Subsec Time</item>
+        <item>Subsec Time Dig</item>
+        <item>Subsec Time Original</item>
+        <item>Thumbnail Image Length</item>
+        <item>Thumbnail Image Width</item>
+        <item>Transfer Function</item>
+        <item>User Comment</item>
+        <item>White Balance</item>
+        <item>White Point</item>
+        <item>X Resolution</item>
+        <item>Y CB CR Coefficients</item>
+        <item>Y CB CR Positioning</item>
+        <item>Y CB CR Sub Sampling</item>
+        <item>Y Resolution</item>
+        <item>Whitebalance Auto</item>
+        <item>Whitebalance Manual</item>
+    </string-array>
+
+    <!-- EXIF Data Values Array v24 and above -->
+    <string-array name="exif_attributes_v24_and_above_sensitive_array">
+        <item>Artist</item>
+        <item>Datetime</item>
+        <item>Datetime Digitized</item>
+        <item>Datetime Original</item>
+        <item>GPS Altitude</item>
+        <item>GPS Altitude Ref</item>
+        <item>GPS Area Information</item>
+        <item>GPS Datestamp</item>
+        <item>GPS Dest Bearing</item>
+        <item>GPS Dest Bearing Ref</item>
+        <item>GPS Dest Distance</item>
+        <item>GPS Dest Distance Ref</item>
+        <item>GPS Dest Latitude</item>
+        <item>GPS Dest Latitude Ref</item>
+        <item>GPS Dest Longitude</item>
+        <item>GPS Dest Longitude Ref</item>
+        <item>GPS Map Datum</item>
+        <item>GPS Measure Mode</item>
+        <item>GPS Processing Method</item>
+        <item>GPS Satellites</item>
+        <item>GPS Speed</item>
+        <item>GPS Speed Ref</item>
+        <item>GPS Status</item>
+        <item>GPS Timestamp</item>
+        <item>GPS Track</item>
+        <item>GPS Track Ref</item>
+        <item>GPS Version ID</item>
+        <item>Imagae Description</item>
+        <item>Make</item>
+        <item>Maker Note</item>
+        <item>Model</item>
+    </string-array>
+
+    <!-- EXIF Data Values Array v24 and above -->
+    <string-array name="exif_attributes_v24_and_above_general_array">
+        <item>Aperture</item>
+        <item>Aperture Value</item>
+        <item>Bits Per Sample</item>
+        <item>Brightness Value</item>
+        <item>CFA Pattern</item>
+        <item>Color Space</item>
+        <item>Components Configuration</item>
+        <item>Compressed Bits Per Pixel</item>
+        <item>Compression</item>
+        <item>Contrast</item>
+        <item>Copyright</item>
+        <item>Custom Rendered</item>
+        <item>Default Crop Size</item>
+        <item>Device Setting Description</item>
+        <item>Digital Zoom Ratio</item>
+        <item>DNG Version</item>
+        <item>EXIF Version</item>
+        <item>Exposure Bias Value</item>
+        <item>Exposure Index</item>
+        <item>Exposure Mode</item>
+        <item>Exposure Program</item>
+        <item>Exposure Time</item>
+        <item>F Number</item>
+        <item>File Source</item>
+        <item>Flash</item>
+        <item>Flashpix Version</item>
+        <item>Flash Energy</item>
+        <item>Focal Length</item>
+        <item>Focal Length in 35MM Film</item>
+        <item>Focal Plane Resolution Unit</item>
+        <item>Focal Plane x Resolution</item>
+        <item>Focal Plane y Resolution</item>
+        <item>Gain Control</item>
+        <item>Image Length</item>
+        <item>Image Unique ID</item>
+        <item>Image Width</item>
+        <item>Interoperability Index</item>
+        <item>ISO</item>
+        <item>ISO Speed Ratings</item>
+        <item>JPEG Interchange Format</item>
+        <item>JPEG Interchange Format Length</item>
+        <item>Light Source</item>
+        <item>Max Aperture Value</item>
+        <item>Metering Mode</item>
+        <item>New Subfile Type</item>
+        <item>OECF</item>
+        <item>ORF Aspect Frame</item>
+        <item>ORF Preview Image Length</item>
+        <item>ORF Preview Image Start</item>
+        <item>ORF Thumbnail Image</item>
+        <item>Orientation</item>
+        <item>Photometric Interpretation</item>
+        <item>Pixel X Dimension</item>
+        <item>Pixel Y Dimension</item>
+        <item>Planar Configuration</item>
+        <item>Primary Chromaticities</item>
+        <item>Reference Black White</item>
+        <item>Related Sound File</item>
+        <item>Resolution Unit</item>
+        <item>Rows Per Strip</item>
+        <item>RW2 ISO</item>
+        <item>RW2 JPG From Raw</item>
+        <item>RW2 Sensor Bottom Border</item>
+        <item>RW2 Sensor Left Border</item>
+        <item>RW2 Sensor Right Border</item>
+        <item>RW2 Sensor Top Border</item>
+        <item>Samples Per Pixel</item>
+        <item>Saturation</item>
+        <item>Scene Capture Type</item>
+        <item>Scene Type</item>
+        <item>Sensing Method</item>
+        <item>Sharpness</item>
+        <item>Shutter Speed Value</item>
+        <item>Software</item>
+        <item>Spatial Frequency Response</item>
+        <item>Spectral Sensitivity</item>
+        <item>Strip Byte Counts</item>
+        <item>Strip Offsets</item>
+        <item>Subfile Type</item>
+        <item>Subject Area</item>
+        <item>Subject Distance</item>
+        <item>Subject Distance Range</item>
+        <item>Subject Location</item>
+        <item>Subsec Time</item>
+        <item>Subsec Time Dig</item>
+        <item>Subsec Time Original</item>
+        <item>Thumbnail Image Length</item>
+        <item>Thumbnail Image Width</item>
+        <item>Transfer Function</item>
+        <item>User Comment</item>
+        <item>White Balance</item>
+        <item>White Point</item>
+        <item>X Resolution</item>
+        <item>Y CB CR Coefficients</item>
+        <item>Y CB CR Positioning</item>
+        <item>Y CB CR Sub Sampling</item>
+        <item>Y Resolution</item>
+        <item>Whitebalance Auto</item>
+        <item>Whitebalance Manual</item>
+    </string-array>
+</resources>

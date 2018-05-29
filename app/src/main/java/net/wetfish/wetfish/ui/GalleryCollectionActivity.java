@@ -281,7 +281,6 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             mRootView = inflater.inflate(R.layout.fragment_gallery_collection, container, false);
-
             // Network Info
             ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             mNetworkInfo = cm.getActiveNetworkInfo();
