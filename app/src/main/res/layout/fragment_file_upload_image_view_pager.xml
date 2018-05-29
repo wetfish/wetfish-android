@@ -24,7 +24,7 @@
             android:focusableInTouchMode="true">
 
             <android.support.constraint.ConstraintLayout
-                android:id="@+id/file_upload_content_container"
+                android:id="@+id/cl_file_upload_content_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 

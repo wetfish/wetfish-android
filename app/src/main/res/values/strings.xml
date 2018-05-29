@@ -129,6 +129,7 @@
         <item>6 hours</item>
         <item>Never</item>
     </string-array>
+
     <string-array name="pref_sync_frequency_values">
         <item>15</item>
         <item>30</item>
@@ -171,8 +172,147 @@
         <item>Resolution: Medium</item>
         <item>Resolution: Small</item>
     </string-array>
+
     <string name="title_activity_settings">Settings</string>
     <string name="tv_title_activity_gallery_detail_view_pager">Gallery</string>
+
+    //EXIF Data layout
+    <string name="exif_data_header_sensitive">Sensitive Exif Data</string>
+    <string name="exif_data_header_general">General Exif Data</string>
+
+    <string name="exif_orientation">Orientation</string>
+    <string name="exif_tag_f_number">F Number</string>
+    <string name="exif_tag_aperture">Aperture</string>
+    <string name="exif_tag_aperture_value">Aperture Value</string>
+    <string name="exif_tag_artist">Artist</string>
+    <string name="exif_tag_bits_per_sample">Bits Per Sample</string>
+    <string name="exif_tag_brightness_value">Brightness Value</string>
+    <string name="exif_tag_cfa_pattern">CFA Pattern</string>
+    <string name="exif_tag_color_space">Color Space</string>
+    <string name="exif_tag_components_configuration">Components Configuration</string>
+    <string name="exif_tag_compressed_bits_per_pixel">Compressed Bits Per Pixel</string>
+    <string name="exif_tag_compression">Compression</string>
+    <string name="exif_tag_contrast">Contrast</string>
+    <string name="exif_tag_copyright">Copyright</string>
+    <string name="exif_tag_custom_rendered">Custom Rendered</string>
+    <string name="exif_tag_datetime">Datetime</string>
+    <string name="exif_tag_datetime_digitized">Dateime Digitized</string>
+    <string name="exif_tag_datetime_original">Datetime Original</string>
+    <string name="exif_tag_default_crop_size">Default Crop Size</string>
+    <string name="exif_tag_device_setting_description">Device Setting Description</string>
+    <string name="exif_tag_digital_zoom_ratio">Digital Zoom Ratio</string>
+    <string name="exif_tag_dng_version">DNG Version</string>
+    <string name="exif_tag_exif_version">EXIF Version</string>
+    <string name="exif_tag_exposure_bias_value">Exposure Bias Value</string>
+    <string name="exif_tag_exposure_index">Exposure Index</string>
+    <string name="exif_tag_exposure_mode">Exposure Mode</string>
+    <string name="exif_tag_exposure_program">Exposure Program</string>
+    <string name="exif_tag_exposure_time">Exposure Time</string>
+    <string name="exif_tag_file_source">File Source</string>
+    <string name="exif_tag_flash">Flash</string>
+    <string name="exif_tag_flashpix_version">Flashpix Version</string>
+    <string name="exif_tag_flash_energy">Flash Energy</string>
+    <string name="exif_tag_focal_length">Focal Length</string>
+    <string name="exif_tag_focal_length_in_35mm_film">Focal Length in 35MM Film</string>
+    <string name="exif_tag_focal_plane_resolution_unit">Focal Plane Resolution Unit</string>
+    <string name="exif_tag_focal_plane_x_resolution">Focal Plane x Resolution</string>
+    <string name="exif_tag_focal_plane_y_resolution">Focal Plane y Resolution</string>
+    <string name="exif_tag_gain_control">Gain Control</string>
+    <string name="exif_tag_gps_altitude">GPS Altitude</string>
+    <string name="exif_tag_gps_altitude_ref">GPS Altitude Ref</string>
+    <string name="exif_tag_gps_area_information">GPS Area Information</string>
+    <string name="exif_tag_gps_datestamp">GPS Datestamp</string>
+    <string name="exif_tag_gps_dest_bearing">Dest Bearing</string>
+    <string name="exif_tag_gps_dest_bearing_ref">Dest Bearing Ref</string>
+    <string name="exif_tag_gps_dest_distance">Dest Distance</string>
+    <string name="exif_tag_gps_dest_distance_ref">Dest Distance Ref</string>
+    <string name="exif_tag_gps_dest_latitude">GPS Dest Latitude</string>
+    <string name="exif_tag_gps_dest_latitude_ref">GPS Dest Latitude Ref</string>
+    <string name="exif_tag_gps_dest_longitude">GPS Dest Longitude</string>
+    <string name="exif_tag_gps_dest_longitude_ref">GPS Dest Longitude Ref</string>
+    <string name="exif_tag_gps_map_datum">GPS Map Datum</string>
+    <string name="exif_tag_gps_measure_mode">GPS Measure Mode</string>
+    <string name="exif_tag_gps_processing_method">GPS Processing Method</string>
+    <string name="exif_tag_gps_satellites">GPS Satellites</string>
+    <string name="exif_tag_gps_speed">GPS Speed</string>
+    <string name="exif_tag_gps_speed_ref">GPS Speed Ref</string>
+    <string name="exif_tag_gps_status">GPS Status</string>
+    <string name="exif_tag_gps_timestamp">GPS Timestamp</string>
+    <string name="exif_tag_gps_track">GPS Track</string>
+    <string name="exif_tag_gps_track_ref">GPS Track Ref</string>
+    <string name="exif_tag_gps_version_id">GPS Version ID</string>
+    <string name="exif_tag_image_description">Imagae Description</string>
+    <string name="exif_tag_image_length">Image Length</string>
+    <string name="exif_tag_image_unique_id">Image Unique ID</string>
+    <string name="exif_tag_image_width">Image Width</string>
+    <string name="exif_tag_interoperability_index">Interoperability Index</string>
+    <string name="exif_tag_iso">ISO</string>
+    <string name="exif_tag_iso_speed_ratings">ISO Speed Ratings</string>
+    <string name="exif_tag_jpeg_interchange_format">JPEG Interchange Format</string>
+    <string name="exif_tag_jpeg_interchange_format_length">JPEG Interchange Format Length</string>
+    <string name="exif_tag_light_source">Light Source</string>
+    <string name="exif_tag_make">Make</string>
+    <string name="exif_tag_maker_note">Maker Note</string>
+    <string name="exif_tag_max_aperture_value">Max Aperature Value</string>
+    <string name="exif_tag_metering_mode">Metering MOde</string>
+    <string name="exif_tag_model">Model</string>
+    <string name="exif_tag_new_subfile_type">New Subfile Type</string>
+    <string name="exif_tag_oecf">OECF</string>
+    <string name="exif_tag_orf_aspect_frame">ORF Aspect Frame</string>
+    <string name="exif_tag_orf_preview_image_length">ORF Preview Image Length</string>
+    <string name="exif_tag_orf_preview_image_start">ORF Preview Image Start</string>
+    <string name="exif_tag_orf_thumbnail_image">ORF Thumbnail Image</string>
+    <string name="exif_tag_orientation">Orientation</string>
+    <string name="exif_tag_photometric_interpretation">Photometric Interpretation</string>
+    <string name="exif_tag_pixel_x_dimension">Pixel X Dimension</string>
+    <string name="exif_tag_pixel_y_dimension">Pixel Y Dimension</string>
+    <string name="exif_tag_planar_configuration">Planar Configuration</string>
+    <string name="exif_tag_primary_chromaticities">Primary Chromaticities</string>
+    <string name="exif_tag_reference_black_white">Reference Black White</string>
+    <string name="exif_tag_related_sound_file">Related Sound File</string>
+    <string name="exif_tag_resolution_unit">Resolution Unit</string>
+    <string name="exif_tag_rows_per_strip">Rows Per Strip</string>
+    <string name="exif_tag_rw2_iso">RW2 ISO</string>
+    <string name="exif_tag_rw2_jpg_from_raw">RW2 JPG From Raw</string>
+    <string name="exif_tag_rw2_sensor_bottom_border">RW2 Sensor Bottom Border</string>
+    <string name="exif_tag_rw2_sensor_left_border">RW2 Sensor Left Border</string>
+    <string name="exif_tag_rw2_sensor_right_border">RW2 Sensor Right Border</string>
+    <string name="exif_tag_rw2_sensor_top_border">RW2 Sensor Top Border</string>
+    <string name="exif_tag_samples_per_pixel">Samples Per Pixel</string>
+    <string name="exif_tag_saturation">Saturation</string>
+    <string name="exif_tag_scene_capture_type">Scene Capture Type</string>
+    <string name="exif_tag_scene_type">Scene Type</string>
+    <string name="exif_tag_sensing_method">Sensing Method</string>
+    <string name="exif_tag_sharpness">Sharpness</string>
+    <string name="exif_tag_shutter_speed_value">Shutter Speed Value</string>
+    <string name="exif_tag_software">Software</string>
+    <string name="exif_tag_spatial_frequency_response">Spatial Frequency Response</string>
+    <string name="exif_tag_spectral_sensitivity">Spectral Sensitivty</string>
+    <string name="exif_tag_strip_byte_counts">Strip Byte Counts</string>
+    <string name="exif_tag_strip_offsets">Strip Offsets</string>
+    <string name="exif_tag_subfile_type">Subfile Type</string>
+    <string name="exif_tag_subject_area">Subject Area</string>
+    <string name="exif_tag_subject_distance">Subject Distance</string>
+    <string name="exif_tag_subject_distance_range">Subject Distance Range</string>
+    <string name="exif_tag_subject_location">Subject Location</string>
+    <string name="exif_tag_subsec_time">Subsec Time</string>
+    <string name="exif_tag_subsec_time_dig">Subsec Time Dig</string>
+    <string name="exif_tag_subsec_time_digitized">Subsec Time Digitized</string>
+    <string name="exif_tag_subsec_time_orig">Time Orig</string>
+    <string name="exif_tag_subsec_time_original">Time Original</string>
+    <string name="exif_tag_thumbnail_image_length">Thumbnail Image Length</string>
+    <string name="exif_tag_thumbnail_image_width">Thumbnail Image Width</string>
+    <string name="exif_tag_transfer_function">Transfer Function</string>
+    <string name="exif_tag_user_comment">User Comment</string>
+    <string name="exif_tag_white_balance">White Balance</string>
+    <string name="exif_tag_white_point">White Point</string>
+    <string name="exif_tag_x_resolution">X Resolution</string>
+    <string name="exif_tag_y_cb_cr_coefficients">Y CB CR Coeffecients</string>
+    <string name="exif_tag_y_cb_cr_positioning">Y CB CR Positioning</string>
+    <string name="exif_tag_y_cb_cr_sub_sampling">Y CB CR Sub Sampling</string>
+    <string name="exif_tag_y_resolution">Y Resolution</string>
+    <string name="exif_whitebalance_auto">Whitebalance Auto</string>
+    <string name="exif_whitebalance_manual">Whitebalance Manual</string>
 
 </resources>
 
