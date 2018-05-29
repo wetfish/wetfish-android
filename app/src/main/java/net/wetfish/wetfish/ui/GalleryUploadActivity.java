@@ -186,7 +186,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
                     return FileUploadFragment.newInstance(position + 1, fileUri);
                 case 1:
                     //TODO: Implement EXIF editing
-                    return EditExifFragment.newInstance("Cat", "Cat");
+                    return EditExifFragment.newInstance("TBA", fileUri);
                 case 2:
                     //TODO: Implement File editing
                     return EditFileFragment.newInstance("Cat", "Cat");
