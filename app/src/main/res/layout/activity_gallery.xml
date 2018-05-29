@@ -57,6 +57,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             fab:menu_animationDelayPerItem="55"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="16dp"
             fab:menu_backgroundColor="@android:color/transparent"
             fab:menu_buttonSpacing="0dp"
             fab:menu_colorNormal="@color/accent"
