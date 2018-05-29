@@ -3,6 +3,7 @@ package net.wetfish.wetfish.adapters;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,7 @@ import java.util.List;
 public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     // Logging Tag
-    private static final String LOG_TAG = FilesAdapter.class.getSimpleName();
+    private static final String LOG_TAG = ExifDataAdapter.class.getSimpleName();
 
     // ViewType tags
     private static final int VIEW_TYPE_EXIF_DATA = 0;
@@ -140,6 +141,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             case VIEW_TYPE_EXIF_DATA_BLANK:
                 ExifDataBlankViewHolder exifDataBlankViewHolder = (ExifDataBlankViewHolder) holder;
                 exifDataBlankViewHolder.bind((FileExifDataBlank) mExifDataList.get(position));
+                break;
             case VIEW_TYPE_EXIF_DATA_HEADER:
                 ExifHeaderViewHolder exifHeaderViewHolder = (ExifHeaderViewHolder) holder;
                 exifHeaderViewHolder.bind((FileExifDataHeader) mExifDataList.get(position));
@@ -183,8 +185,10 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return VIEW_TYPE_EXIF_DATA;
         } else if (object instanceof FileExifDataBlank){
             return VIEW_TYPE_EXIF_DATA_BLANK;
-        } else {
+        } else if (object instanceof FileExifDataHeader){
             return VIEW_TYPE_EXIF_DATA_HEADER;
+        } else {
+            return 2;
         }
     }
 

@@ -428,6 +428,7 @@ public class ExifUtils {
 
                         // Check to see if a sensitive header has been added
                         if (!(exifHeaderCreated)) {
+                            exifDataArrayList.add(new FileExifDataHeader(true, context));
                             exifHeaderCreated = true;
                         }
 
@@ -435,12 +436,12 @@ public class ExifUtils {
                         exifDataArrayList.add(new FileExifData(exifTagsV24AndAboveSensitive[i], exifAttributeValue));
                         exifValueTagPairsStored++;
                     }
+                }
 
-                    // If no exif tags were stored, represent this
-                    if (exifValueTagPairsStored == 0) {
-                        exifDataArrayList.add(new FileExifDataHeader(true, context));
-                        exifDataArrayList.add(new FileExifDataBlank(true));
-                    }
+                // If no exif tags were stored, represent this
+                if (exifValueTagPairsStored == 0) {
+                    exifDataArrayList.add(new FileExifDataHeader(true, context));
+                    exifDataArrayList.add(new FileExifDataBlank(true));
                 }
 
                 // Reset the header and value tag pairs added for general security level exif tags
@@ -464,12 +465,12 @@ public class ExifUtils {
                         exifDataArrayList.add(new FileExifData(exifTagsV24AndAboveGeneral[i], exifAttributeValue));
                         exifValueTagPairsStored++;
                     }
+                }
 
-                    // If no exif tags were stored, represent this
-                    if (exifValueTagPairsStored == 0) {
-                        exifDataArrayList.add(new FileExifDataHeader(false, context));
-                        exifDataArrayList.add(new FileExifDataBlank(false));
-                    }
+                // If no exif tags were stored, represent this
+                if (exifValueTagPairsStored == 0) {
+                    exifDataArrayList.add(new FileExifDataHeader(false, context));
+                    exifDataArrayList.add(new FileExifDataBlank(false));
                 }
 
                 return exifDataArrayList;
@@ -499,12 +500,12 @@ public class ExifUtils {
                         exifDataArrayList.add(new FileExifData(exifTagsV23AndBelowSensitive[i], exifAttributeValue));
                         exifValueTagPairsStored++;
                     }
+                }
 
-                    // If no exif tags were stored, represent this
-                    if (exifValueTagPairsStored == 0) {
-                        exifDataArrayList.add(new FileExifDataHeader(true, context));
-                        exifDataArrayList.add(new FileExifDataBlank(true));
-                    }
+                // If no exif tags were stored, represent this
+                if (exifValueTagPairsStored == 0) {
+                    exifDataArrayList.add(new FileExifDataHeader(true, context));
+                    exifDataArrayList.add(new FileExifDataBlank(true));
                 }
 
                 // Reset the header and value tag pairs added for general security level exif tags
@@ -518,6 +519,7 @@ public class ExifUtils {
                     String exifAttributeValue = originalFileExif.getAttribute(EXIF_ATTRIBUTES_VERSION_23_BELOW_GENERAL[i]);
                     if (exifAttributeValue != null) {
 
+
                         // Check to see if a general header has been added
                         if (!(exifHeaderCreated)) {
                             exifDataArrayList.add(new FileExifDataHeader(false, context));
@@ -528,12 +530,12 @@ public class ExifUtils {
                         exifDataArrayList.add(new FileExifData(exifTagsV23AndBelowGeneral[i], exifAttributeValue));
                         exifValueTagPairsStored++;
                     }
+                }
 
-                    // If no exif tags were stored, represent this
-                    if (exifValueTagPairsStored == 0) {
-                        exifDataArrayList.add(new FileExifDataHeader(false, context));
-                        exifDataArrayList.add(new FileExifDataBlank(false));
-                    }
+                // If no exif tags were stored, represent this
+                if (exifValueTagPairsStored == 0) {
+                    exifDataArrayList.add(new FileExifDataHeader(false, context));
+                    exifDataArrayList.add(new FileExifDataBlank(false));
                 }
 
                 return exifDataArrayList;

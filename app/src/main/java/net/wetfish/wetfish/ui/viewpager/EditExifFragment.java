@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * create an instance of this fragment.
  */
 public class EditExifFragment extends Fragment implements
-        ExifDataAdapter.ExifDataAdapterOnClickHandler{
+        ExifDataAdapter.ExifDataAdapterOnClickHandler {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
@@ -35,20 +35,15 @@ public class EditExifFragment extends Fragment implements
     private static final String LOG_TAG = EditExifFragment.class.getSimpleName();
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_FILE_URI = "file_uri";
-
+    ArrayList<Object> exifDataArrayList;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
     /* Views */
     private RecyclerView mRecyclerView;
     private ExifDataAdapter mExifDataAdapter;
-
     /* Data */
     private Uri mFileUriAbsolutePath;
-    ArrayList<Object> exifDataArrayList;
-
-
     private OnFragmentInteractionListener mListener;
 
     public EditExifFragment() {
@@ -59,7 +54,7 @@ public class EditExifFragment extends Fragment implements
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
+     * @param param1  Parameter 1.
      * @param fileUri Parameter 2.
      * @return A new instance of fragment EditExifFragment.
      */
@@ -91,13 +86,14 @@ public class EditExifFragment extends Fragment implements
         // Recycler View for Files
         mRecyclerView = rootView.findViewById(R.id.rv_exif_data);
 
+        // Create an adapter
+        mExifDataAdapter = new ExifDataAdapter(getContext(), this);
+
+
         // Setup layout for the Recycler View
 //        TODO: Possibly set up a grid
 //        mGridLayoutManager = new GridLayoutManager(this, 3);
 //        mRecyclerView.setLayoutManager(mGridLayoutManager);
-
-        // Setup adapter for Recycler View
-        exifDataArrayList = ExifUtils.gatherExifData(mFileUriAbsolutePath, getContext());
 
 
         return rootView;
@@ -117,8 +113,10 @@ public class EditExifFragment extends Fragment implements
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Create an adapter and populate it with our harvested image data
-        mExifDataAdapter = new ExifDataAdapter(getContext(), this);
+        // Setup adapter data for Recycler View
+        exifDataArrayList = ExifUtils.gatherExifData(mFileUriAbsolutePath, getContext());
+
+        // Populate the adapter with our harvested image data
         mExifDataAdapter.swapEXIFData(exifDataArrayList);
 
         // Create a layout manager
