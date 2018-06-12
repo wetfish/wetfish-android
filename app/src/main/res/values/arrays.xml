@@ -15,6 +15,7 @@
         <item>GPS Dest Latitude Ref</item>
         <item>GPS Dest Longitude</item>
         <item>GPS Dest Longitude Ref</item>
+        <item>GPS Processing Method</item>
         <item>GPS Timestamp</item>
         <item>Image Length</item>
         <item>Image Width</item>
@@ -30,6 +31,7 @@
 
     <!-- EXIF Data Values Array v23 and below -->
     <string-array name="exif_attributes_v23_and_below_sensitive_array">
+        <item>Datetime</item>
         <item>GPS Altitude</item>
         <item>GPS Altitude Ref</item>
         <item>GPS Datestamp</item>
@@ -37,6 +39,7 @@
         <item>GPS Dest Latitude Ref</item>
         <item>GPS Dest Longitude</item>
         <item>GPS Dest Longitude Ref</item>
+        <item>GPS Processing Method</item>
         <item>GPS Timestamp</item>
         <item>Make</item>
         <item>Model</item>
@@ -45,7 +48,6 @@
     <!-- EXIF Data Values Array v23 and below -->
     <string-array name="exif_attributes_v23_and_below_general_array">
         <item>Aperture</item>
-        <item>Datetime</item>
         <item>Exposure Time</item>
         <item>Flash</item>
         <item>Focal Length</item>
