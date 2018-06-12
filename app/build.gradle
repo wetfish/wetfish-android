@@ -7,8 +7,8 @@ android {
         applicationId "net.wetfish.wetfish"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 12
-        versionName "1.5.0"
+        versionCode 13
+        versionName "1.5.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

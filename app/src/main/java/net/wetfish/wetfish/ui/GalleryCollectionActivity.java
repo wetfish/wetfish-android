@@ -444,7 +444,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(mFileView);
 
-                    Snackbar.make(mIncludeLayout, R.string.sb_not_representable_by_glide, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(mIncludeLayout, getString(R.string.sb_not_representable_by_glide), Snackbar.LENGTH_LONG).show();
                 }
             } else {
                 // If network is not connected search the device for the stored file on the
@@ -460,7 +460,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(mFileView);
 
-                Snackbar.make(mIncludeLayout, R.string.sb_network_not_connected, Snackbar.LENGTH_LONG).show();
+                Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_network_not_connected), Snackbar.LENGTH_LONG).show();
             }
 
             // File storage link to be used as a passed value for the intent when the file is clicked
@@ -515,7 +515,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     if (selectViewingApp.resolveActivity(packageManager) != null) {
                         startActivity(selectViewingApp);
                     } else {
-                        Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_no_app_available), Snackbar.LENGTH_LONG).show();
                     }
                 }
             });
@@ -558,7 +558,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         if (selectViewingApp.resolveActivity(packageManager) != null) {
                             startActivity(selectViewingApp);
                         } else {
-                            Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_no_app_available), Snackbar.LENGTH_LONG).show();
                         }
                     }
                 });
@@ -602,10 +602,10 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
                     // Check to see if the clipboard data link equals the database stored link
                     if (clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
-                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
+                        Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_url_clipboard_success),
                                 Snackbar.LENGTH_SHORT).show();
                     } else {
-                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_failure,
+                        Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_url_clipboard_failure),
                                 Snackbar.LENGTH_SHORT).show();
                     }
 
@@ -646,7 +646,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishDeletionLink()));
 
                         if (clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
-                            Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
+                            Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_url_clipboard_success),
                                     Snackbar.LENGTH_LONG);
                         }
                     }
