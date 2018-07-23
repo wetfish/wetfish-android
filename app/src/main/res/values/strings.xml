@@ -105,6 +105,21 @@
     // Checklist - Sorting Method (More Later)
     <string name="pref_sortingMethod_title">Sorting Method</string>
     <string name="pref_sortingMethod_key">pref_sortingMethod_key</string>
+
+    // Category - About Preferences
+    <string name="pref_appVersion_key">pref_appVersion_key</string>
+    <string name="pref_appVersion_title">Wetfish Version</string>
+    <string name="pref_header_about">About</string>
+    <string name="pref_key_app_information">pref_key_app_information</string>
+    <string name="pref_category_app_information">App Information</string>
+    <string name="pref_appVersionSummary_key">pref_appVersionSummary_key</string>
+    <string name="pref_appVersionSummary_title">Version Summary</string>
+    <string name="pref_appVersionSummary">
+    <b>Hotfix Time!</b>\n\n<b>Gallery</b>\nFAM now properly responds to a click outside of the FAM menu when it is expanded.\n\n<b>Gallery Item Detail Pages</b>\nSnackbars now properly populate the page when retrieving the uploaded file\'s url and no longer crash the app.\n\n<b>Uploading EXIF Data Pictures</b>\nTaking, sharing, or selecting photos with EXIF data no longer crash the app, however
+    some sharing bugs may still remain.</string>
+
+
+
     <string-array name="pref_sortingMethod_list_titles">
         <item>null</item>
         <item>null</item>
@@ -313,6 +328,9 @@
     <string name="exif_tag_y_resolution">Y Resolution</string>
     <string name="exif_whitebalance_auto">Whitebalance Auto</string>
     <string name="exif_whitebalance_manual">Whitebalance Manual</string>
+    <string name="dialog_acknowledged">Okay</string>
+    <string name="pref_appVersionSummary_prompt">Click here for Wetfish version details</string>
+
 
 </resources>
 

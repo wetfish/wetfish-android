@@ -1,7 +1,8 @@
-package net.wetfish.wetfish.ui;
+package net.wetfish.wetfish.ui.settings;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.Ringtone;
@@ -17,9 +18,12 @@ import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 
+import net.wetfish.wetfish.BuildConfig;
 import net.wetfish.wetfish.R;
 
 import java.util.List;
@@ -160,7 +164,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName)
                 || DataSyncPreferenceFragment.class.getName().equals(fragmentName)
-                || NotificationPreferenceFragment.class.getName().equals(fragmentName);
+                || NotificationPreferenceFragment.class.getName().equals(fragmentName)
+                || AboutPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     @Override
@@ -251,6 +256,65 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+        }
+
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
+            }
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * This fragment shows app information only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class AboutPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_about);
+            setHasOptionsMenu(true);
+
+            // Bind the summaries to the information
+            findPreference(getString(R.string.pref_appVersion_key)).setSummary(BuildConfig.VERSION_NAME);
+            findPreference(getString(R.string.pref_appVersionSummary_key)).setSummary(getString(R.string.pref_appVersionSummary_prompt));
+
+            findPreference(getString(R.string.pref_appVersionSummary_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // Create dialog builder
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogThemeAppVersionSummary);
+
+
+                    // Create layout inflater
+                    LayoutInflater inflater =getActivity().getLayoutInflater();
+
+                    // Inflate the dialog's custom layout
+                    builder.setView(inflater.inflate(R.layout.dialog_custom_version_information, null))
+
+//                            .setMessage(R.string.pref_appVersionSummary)
+                            .setTitle(R.string.pref_appVersion_title);
+
+                    builder.setPositiveButton(R.string.dialog_acknowledged, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Acknowledged
+                        }
+                    });
+
+                    AlertDialog dialog = builder.create();
+
+                    dialog.show();
+
+                    return true;
+                }
+            });
         }
 
         @Override

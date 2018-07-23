@@ -36,6 +36,7 @@ import com.github.clans.fab.FloatingActionMenu;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.adapters.FilesAdapter;
+import net.wetfish.wetfish.ui.settings.SettingsActivity;
 import net.wetfish.wetfish.utils.FileUtils;
 
 import java.io.File;

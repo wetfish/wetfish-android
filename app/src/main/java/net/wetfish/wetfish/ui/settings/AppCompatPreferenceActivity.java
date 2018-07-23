@@ -1,4 +1,4 @@
-package net.wetfish.wetfish.ui;
+package net.wetfish.wetfish.ui.settings;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
