@@ -23,6 +23,8 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
+
 import net.wetfish.wetfish.BuildConfig;
 import net.wetfish.wetfish.R;
 
@@ -282,9 +284,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setHasOptionsMenu(true);
 
             // Bind the summaries to the information
+            // Setup app version summary
             findPreference(getString(R.string.pref_appVersion_key)).setSummary(BuildConfig.VERSION_NAME);
-            findPreference(getString(R.string.pref_appVersionSummary_key)).setSummary(getString(R.string.pref_appVersionSummary_prompt));
 
+            // Setup app release notes summary and button
+            findPreference(getString(R.string.pref_appVersionSummary_key)).setSummary(getString(R.string.pref_appVersionSummary_prompt));
             findPreference(getString(R.string.pref_appVersionSummary_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -315,6 +319,20 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     return true;
                 }
             });
+
+            // Setup open source references settings summary and button
+            findPreference(getString(R.string.pref_appOpenSourceLibraries_key)).setSummary(getString(R.string.pref_appOpenSourceLibraries_prompt));
+            findPreference(getString(R.string.pref_appOpenSourceLibraries_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // Open the OssLicenseMenuActivity
+                    OssLicensesMenuActivity.setActivityTitle(getString(R.string.custom_license_title));
+                    startActivity(new Intent(getActivity(), OssLicensesMenuActivity.class));
+
+                    return true;
+                }
+            });
+
         }
 
         @Override
