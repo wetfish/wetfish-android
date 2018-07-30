@@ -134,12 +134,13 @@
 
     <!-- FAB & FAB Animation -->
     <com.github.jorgecastilloprz.FABProgressCircle
-        android:id="@+id/fab_progress_circle"
+        android:id="@+id/fab_progress_circle_upload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="@dimen/fab_margin"
         android:layout_marginEnd="@dimen/fab_margin"
+        android:visibility="visible"
         app:arcColor="@color/fab_arc_color"
         app:arcWidth="4dp"
         app:finalIcon="@drawable/ic_done"
@@ -150,7 +151,8 @@
             android:id="@+id/fab_upload_file"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_upload_file"
+            android:src="@drawable/ic_upload_file_white_24dp"
+            android:visibility="visible"
             fab:fab_colorNormal="@color/accent"
             fab:fab_colorPressed="@color/accent_dark"
             fab:fab_colorRipple="@color/accent_light"
