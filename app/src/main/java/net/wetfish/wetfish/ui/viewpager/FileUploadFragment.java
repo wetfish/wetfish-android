@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -89,10 +90,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final int MEDIUM_SIZE_SELECTION = 2;
     private static final int SMALL_SIZE_SELECTION = 3;
     private static final double[] SELECTIONRATIO = {1, .66, .44, .22};
-    private int START_AT_MOST_RECENT_FIRST_INTEGER = 0;
     private static final String IMAGE_FILE = "image/*";
     private static final String VIDEO_FILE = "video/*";
-
+    Handler mCallThread;
+    Call<ResponseBody> mCall;
+    private int START_AT_MOST_RECENT_FIRST_INTEGER = 0;
     /* Views */
     private ImageView mFileView;
     private TextView mFileLength;
@@ -102,12 +104,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private EditText mFileEditTagsView;
     private EditText mFileEditTitleView;
     private EditText mFileEditDescriptionView;
-    private FloatingActionButton fabUploadFile;
-    private FABProgressCircle mFabProgressCircle;
+    private FloatingActionButton mFabUploadFile;
+    private FABProgressCircle mFabProgressCircleUpload;
     private View mRootLayout;
     private View fileUploadContent;
     private Spinner mSpinner;
-
     /* Data */
     private Uri mFileUriAbsolutePath;
     private Uri mDownscaledImageAbsolutePath;
@@ -123,8 +124,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private int mCurrentSpinnerSelection = 0;
     private double mImageFileSize = 0;
     private int sectionNumber;
-
-
     //TODO: Potentially remove.
     private OnFragmentInteractionListener mListener;
 
@@ -225,7 +224,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mFileEditTitleView = mRootLayout.findViewById(R.id.et_title);
         mFileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
         mFileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
-        mFabProgressCircle = mRootLayout.findViewById(R.id.fab_progress_circle);
+        mFabProgressCircleUpload = mRootLayout.findViewById(R.id.fab_progress_circle_upload);
         mFileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
 
         // Setup mFileView's image and onClickListener with the correct file Uri
@@ -258,11 +257,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mFileEditDescriptionView.setOnFocusChangeListener(focusChangeListener);
 
         // Setup listener for progress bar
-        mFabProgressCircle.attachListener(this);
+        mFabProgressCircleUpload.attachListener(this);
 
         // Fab to upload file to Wetfish server
-        fabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
-        fabUploadFile.setOnClickListener(new View.OnClickListener() {
+        mFabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
+        mFabUploadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Verify that the permissions necessary to complete this action have been granted
@@ -278,15 +277,66 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 } else {
 
-                    // Storage permissions granted!
-                    mFabProgressCircle.show();
-                    fabUploadFile.setClickable(false);
-                    if (mSpinner != null) {
-                        mSpinner.setEnabled(false);
-                    }
-                    uploadFile(mFileUriAbsolutePath);
-                }
+                    // Storage permissions have been granted!
+                    // Hide original upload FAB and progress circle container, then deactivate the FAB onClick
+//                    mFabProgressCircleUpload.setVisibility(View.GONE);
+//                    mFabUploadFile.setClickable(false);
+//                    mFabUploadFile.setVisibility(View.GONE);
 
+                    // Deactivate the spinner
+
+
+                    // Show cancel upload FAB and progress circle, then activate the FAB onClick
+//                    fabCancelFile.setVisibility(View.VISIBLE);
+//                    fabCancelFile.setClickable(true);
+//                    mFabProgressCircleUploadCancel.setVisibility(View.VISIBLE);
+
+
+
+
+                    // Thread to upload the file with a delay to allow easier cancellation
+                    if (mCallThread == null) {
+                        // Start the progress circle and change the image to correctly represent the
+                        // FAB buttons new state
+                        mFabProgressCircleUpload.show();
+                        mFabUploadFile.setImageResource(R.drawable.ic_cancel_white_24dp);
+
+                        // Disable spinner during upload
+                        mSpinner.setEnabled(false);
+
+                        // Create separate thread to do network processing
+                        mCallThread = new Handler();
+                        mCallThread.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                //Do something after 20000ms
+                                uploadFile(mFileUriAbsolutePath);
+                            }
+                        }, 3000 /* 3 second delay */);
+
+                    } else {
+                        if (mCallThread != null) {
+
+                            // If mCall has been instantiated, cancel it
+                            if (mCall != null) {
+                                mCall.cancel();
+                            }
+
+                            // Remove callback and return thread back to normal
+                            mCallThread.removeCallbacksAndMessages(null);
+                            mCallThread = null;
+
+                            // Reset the FAB and hide the upload progress bar
+                            mFabProgressCircleUpload.hide();
+                            mFabUploadFile.setImageResource(R.drawable.ic_upload_file_white_24dp);
+                            mSpinner.setEnabled(true);
+
+                            // Pass the user a success notification
+                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.tv_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                                    .show();
+                        }
+                    }
+                }
             }
         });
 
@@ -346,14 +396,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             // Do Nothing
             Log.d(LOG_TAG, "Database addition was successful or file wasn't created");
         }
+
+        // Stop handler thread
+        mCallThread.removeCallbacksAndMessages(null);
     }
+
 
     /**
      * Animation to depict the uploading process
      */
     @Override
     public void onFABProgressAnimationEnd() {
-        Snackbar.make(mFabProgressCircle, getContext().getString(R.string.tv_cloud_upload_complete), Snackbar.LENGTH_SHORT)
+        Snackbar.make(mFabProgressCircleUpload, getContext().getString(R.string.tv_cloud_upload_complete), Snackbar.LENGTH_SHORT)
                 .show();
         // Create file detail activity intent
         Intent fileDetails = new Intent(getContext(), GalleryCollectionActivity.class);
@@ -507,7 +561,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     /**
      * Sets up the given file's stats
-     *
      */
     private void setupFileStats() {
         if (mDownscaledImageCreated) {
@@ -625,7 +678,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
 
             // Make upload file inaccessible and inform the user.
-            fabUploadFile.setVisibility(View.GONE);
+            mFabUploadFile.setVisibility(View.GONE);
             mFileNotFoundView.setVisibility(View.VISIBLE);
         }
     }
@@ -795,10 +848,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             // Create RequestBody & MultipartBody to create a Call.
             RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part body = MultipartBody.Part.createFormData("Image", file.getName(), requestBody);
-            Call<ResponseBody> call = restInterface.postFile(body);
+            mCall = restInterface.postFile(body);
 
             // Execute call request
-            call.enqueue(new Callback<ResponseBody>() {
+            mCall.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     try {
@@ -835,7 +888,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         responseViewURL,
                                         responseDeleteURL,
                                         downscaledFilePath);
-
+//gggggfhgfdasdfghjkl;
                                 /**
                                  *  Check to see if upload was successful to determine if the downscaled image
                                  * should be kept or deleted
@@ -854,7 +907,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircleUpload.beginFinalAnimation();
                             } else {
                                 responseViewURL = getString(R.string.wetfish_base_uploader_url);
 
@@ -890,7 +943,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircleUpload.beginFinalAnimation();
                             }
                         } else {
                             responseViewURL = getString(R.string.wetfish_base_uploader_url);
@@ -927,7 +980,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                "File Uploaded!", Snackbar.LENGTH_LONG);
-                            mFabProgressCircle.beginFinalAnimation();
+                            mFabProgressCircleUpload.beginFinalAnimation();
                         }
                     } catch (IOException e) {
                         Log.d(LOG_TAG, "onFailure Catch: ");
@@ -937,8 +990,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    fabUploadFile.setClickable(true);
-                    mFabProgressCircle.hide();
+                    mFabUploadFile.setClickable(true);
+                    mFabProgressCircleUpload.hide();
+                    mSpinner.setClickable(true);
                     UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                             "File Upload Failed!", Snackbar.LENGTH_LONG);
                     Log.d(LOG_TAG, "onFailure Response: " + t);
@@ -1021,7 +1075,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircleUpload.beginFinalAnimation();
                             } else {
                                 responseViewURL = getString(R.string.wetfish_base_uploader_url);
 
@@ -1057,7 +1111,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircleUpload.beginFinalAnimation();
                             }
                         } else {
                             responseViewURL = getString(R.string.wetfish_base_uploader_url);
@@ -1094,7 +1148,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                "File Uploaded!", Snackbar.LENGTH_LONG);
-                            mFabProgressCircle.beginFinalAnimation();
+                            mFabProgressCircleUpload.beginFinalAnimation();
                         }
                     } catch (IOException e) {
                         Log.d(LOG_TAG, "onFailure Catch: ");
@@ -1104,8 +1158,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    fabUploadFile.setClickable(true);
-                    mFabProgressCircle.hide();
+                    mFabUploadFile.setClickable(true);
+                    mFabProgressCircleUpload.hide();
                     UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                             "File Upload Failed!", Snackbar.LENGTH_LONG);
                     Log.d(LOG_TAG, "onFailure Response: " + t);

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        style="@style/TextViewHeaderSettings"
+        android:key="@string/pref_key_app_information"
+        android:title="@string/pref_category_app_information">
+
+        <Preference
+            style="@style/TextViewBody"
+            android:key="@string/pref_appVersion_key"
+            android:persistent="false"
+            android:selectable="false"
+            android:title="@string/pref_appVersion_title" />
+
+        <Preference
+            style="@style/TextViewBody"
+            android:key="@string/pref_appVersionSummary_key"
+            android:title="@string/pref_appVersionSummary_title" />
+
+        <Preference
+            style="@style/TextViewBody"
+            android:key="@string/pref_appOpenSourceLibraries_key"
+            android:title="@string/pref_appOpenSourceLibraries_title" />
+
+    </PreferenceCategory>
+</PreferenceScreen>

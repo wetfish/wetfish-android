@@ -157,7 +157,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
                 getString(R.string.tv_title_edit_file)};
 
         private int[] imageResId = {
-                R.drawable.ic_upload_file,
+                R.drawable.ic_upload_file_white_24dp,
                 R.drawable.ic_exif_edit,
                 R.drawable.ic_file_edit};
 
