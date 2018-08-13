@@ -133,6 +133,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private Handler mCallThreadDownscaleImage;
     // Thread to delete images
     private Handler mCallThreadDeleteImage;
+    // Thread to determine images
+    private Handler mCallThreadDetermineImage;
 
     Call<ResponseBody> mCall;
 
@@ -227,8 +229,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mFileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
 
         // Setup mFileView's image and onClickListener with the correct file Uri
-        mCallThreadUpload = new Handler();
-        mCallThreadUpload.post(new Runnable() {
+        mCallThreadDetermineImage = new Handler();
+        mCallThreadDetermineImage.post(new Runnable() {
             @Override
             public void run() {
                 if (mDownscaledImageCreated) {
@@ -778,6 +780,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                     "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
         }
+        mCallThreadDetermineImage.removeCallbacksAndMessages(null);
     }
 
 
