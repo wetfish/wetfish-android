@@ -1,7 +1,6 @@
 package net.wetfish.wetfish.ui.viewpager;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +25,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -197,20 +195,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Setup Spinner
                 mSpinner = mRootLayout.findViewById(R.id.spinner_fragment_file_upload);
 
-                // Array Adapter for Spinner
-                @SuppressLint("ResourceType") ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
-                        R.array.upload_fragment_spinner_array, R.xml.custom_spinner_item);
-
-                // Specific array adapter layout
-                spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-                // Apply the adapter to the mSpinner
-                mSpinner.setAdapter(spinnerAdapter);
-
-                // Setup onItemSelectedListener
-                mSpinner.setOnItemSelectedListener(this);
-
-
                 break;
             case VIDEO_FILE: // This layout is for video files
                 //TODO: This will support a separate root layout for videos specifically
@@ -324,7 +308,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         mFabUploadFile.setImageResource(R.drawable.ic_cancel_white_24dp);
 
                         // Disable spinner during upload
-                        mSpinner.setEnabled(false);
+                        if (mMimeType.equals(IMAGE_FILE)){
+                            mSpinner.setEnabled(false);
+                        }
 
                         // Create separate thread to do network processing
                         mCallThreadUpload = new Handler();
@@ -351,7 +337,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             // Reset the FAB and hide the upload progress bar
                             mFabProgressCircleUpload.hide();
                             mFabUploadFile.setImageResource(R.drawable.ic_upload_file_white_24dp);
-                            mSpinner.setEnabled(true);
+                            if (mMimeType.equals(IMAGE_FILE)) {
+                                mSpinner.setEnabled(true);
+                            }
 
                             // Pass the user a success notification
                             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.tv_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
@@ -979,7 +967,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             mFileViewResolution.setText(FileUtils.getImageResolution(mDownscaledImageAbsolutePath, getContext()));
         } else {
             mFileViewSize.setText(FileUtils.getFileSize(mFileUriAbsolutePath, getContext()));
-            mFileViewResolution.setText(FileUtils.getImageResolution(mFileUriAbsolutePath, getContext()));
+            if (mMimeType.equals(IMAGE_FILE)) {
+                mFileViewResolution.setText(FileUtils.getImageResolution(mFileUriAbsolutePath, getContext()));
+            }
         }
     }
 
