@@ -92,8 +92,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final double[] SELECTIONRATIO = {1, .66, .44, .22};
     private static final String IMAGE_FILE = "image/*";
     private static final String VIDEO_FILE = "video/*";
-    Call<ResponseBody> mCall;
-    private int START_AT_MOST_RECENT_FIRST_INTEGER = 0;
+    private int START_AT_MOST_RECENT_FIRST_INTEGER = 0;        
+    private static final int NULL_INTEGER = 1;
+
     /* Views */
     private ImageView mFileView;
     private TextView mFileLength;
@@ -109,6 +110,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private View mRootLayout;
     private View fileUploadContent;
     private Spinner mSpinner;
+          
     /* Data */
     // Temporary original file path variable
     private Uri mFileAbsolutePath;
@@ -135,6 +137,17 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private int mCurrentSpinnerSelection = 0;
     private double mImageFileSize = 0;
     private int sectionNumber;
+
+    /* Threads */
+    // Thread to upload image to Wetfish
+    private Handler mCallThreadUpload;
+    // Thread to downscale images
+    private Handler mCallThreadDownscaleImage;
+    // Thread to delete images
+    private Handler mCallThreadDeleteImage;
+    // Thread to determine images
+    private Handler mCallThreadDetermineImage;
+          
     //TODO: Potentially remove.
     private UploadFragmentInteractionFileSharing mListener;
     /* Threads */
@@ -300,7 +313,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     requestStoragePermission();
 
                 } else {
-
                     // Thread to upload the file with a delay to allow easier cancellation
                     if (mCallThreadUpload == null) {
                         // Start the progress circle and change the image to correctly represent the
@@ -318,7 +330,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         mCallThreadUpload.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                //Do something after 20000ms
+                                //Do something after 3000ms
                                 uploadFile();
                             }
                         }, 3000 /* 3 second delay */);
@@ -411,11 +423,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             }
 
             Log.d(LOG_TAG, "Database addition wasn't successful, delete file");
+          
         } else {
             // Do Nothing
             Log.d(LOG_TAG, "Database addition was successful or file wasn't created");
         }
     }
+
 
     /**
      * Animation to depict the uploading process
@@ -523,7 +537,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      * @param id       The row id of the item that is selected
      */
     @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+    public void onItemSelected(AdapterView<?> parent, View view, final int position, long id) {
 
         mCurrentSpinnerSelection = position;
 
@@ -570,6 +584,15 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             case LARGE_SIZE_SELECTION:
                 // Show the progress bar
                 mRescaleImageProgressBar.setVisibility(View.VISIBLE);
+
+                // Hide the image view
+                mFileView.setVisibility(View.INVISIBLE);
+
+                // Disable the spinner while the thread processes the request
+                mSpinner.setEnabled(false);
+
+                // Show the progress bar
+                mDownscaleImageProgressBar.setVisibility(View.VISIBLE);
 
                 // Hide the image view
                 mFileView.setVisibility(View.INVISIBLE);
@@ -637,6 +660,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 }
                 break;
+
             case SMALL_SIZE_SELECTION:
                 // Show the progress bar
                 mRescaleImageProgressBar.setVisibility(View.VISIBLE);
@@ -693,8 +717,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Delete Previous File
         File file = new File(mRescaledImageAbsolutePath.toString());
 
-        String canonicalPath;
-
+                // If handler is broken or doesn't instantiate re-enable spinner
+                if (mCallThreadDownscaleImage == null) {
+                    // Hide the progress bar
+                    mDownscaleImageProgressBar.setVisibility(View.GONE);
         try {
             canonicalPath = file.getCanonicalPath();
         } catch (IOException e) {
@@ -790,13 +816,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         });
 
         // Find out if the file is null
-        if (desiredAbsoluteFilePath != null && !(desiredAbsoluteFilePath.toString().isEmpty())) {
-            if (desiredAbsoluteFilePath != null) {
-                // File was found
-                mFileNotFoundView.setVisibility(View.GONE);
+        if (desiredAbsoluteFilePath != null) {
+            // File has potentially been found
+            mFileNotFoundView.setVisibility(View.GONE);
 
-                // Setup view data
-                // Check to see if the view is representable by glide
+            // Find out if the file path is present
+            if (!(desiredAbsoluteFilePath.toString().isEmpty())) {
+                // File was found, setup view data & check to see if the view is representable by glide
                 if (FileUtils.representableByGlide(FileUtils.getFileExtensionFromUri(getContext(), desiredAbsoluteFilePath))) {
                     Glide.with(this)
                             .load(FileProvider.getUriForFile(getContext(),
@@ -805,15 +831,33 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             .apply(RequestOptions.fitCenterTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(mFileView);
+
+                    setupFileStats();
                 } else {
-                    // If not, let the user know
-                    Log.d(LOG_TAG, "Welp, something still went wrong!");
+
+                    // Update views to reflect that the file is unable to be shown by glide
+                    mFileNotFoundView.setVisibility(View.VISIBLE);
+                    mFileNotFoundView.setText("File is unable \nto be shown");
+
+                    // Tell the user
+                    UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+                            "File is unable to be shown by Glide", Snackbar.LENGTH_LONG);
                 }
             } else {
+                // Update views to reflect that the file was not found
+                mFabUploadFile.setVisibility(View.GONE);
+                mFileNotFoundView.setVisibility(View.VISIBLE);
+
+                // Tell the user
                 UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                         "File location was not found", Snackbar.LENGTH_LONG);
             }
         } else {
+            // Update views to reflect that the file is unable to be accessed
+            mFabUploadFile.setVisibility(View.GONE);
+            mFileNotFoundView.setVisibility(View.VISIBLE);
+
+            // Tell the user
             UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                     "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
 
@@ -821,6 +865,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             mFabUploadFile.setVisibility(View.GONE);
             mFileNotFoundView.setVisibility(View.VISIBLE);
         }
+        mCallThreadDetermineImage.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -970,7 +1015,24 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         // Delete the thread
                         mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
                     }
+                  /** 
+                  * LOOOOOOOOOOOOOOOOOK AT ME  :TODO WOW:
+*/
+                    // Enable the spinner
+                    mSpinner.setEnabled(true);
 
+                    // Hide the progress bar
+                    mDownscaleImageProgressBar.setVisibility(View.GONE);
+
+                    // Show the image view
+                    mFileView.setVisibility(View.VISIBLE);
+
+                    // Let the user know the image was successfully downscaled
+                    Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                            R.string.sb_image_successfully_downscaled, Snackbar.LENGTH_LONG).show();
+
+                    // Delete the thread
+                    mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
                     // Let the user know the image was successfully rescaled
                     Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                             R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
@@ -981,17 +1043,16 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 // Hide the progress bar
                 mRescaleImageProgressBar.setVisibility(View.GONE);
-
                 // Show the image view
                 mFileView.setVisibility(View.VISIBLE);
 
-                // Let the user know the image was successfully downscaled
+
+                // Let the user know the image was successfully rescaled
                 Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                         R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
 
                 // Delete the thread
                 mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
-            }
         } else {
             // Enable the spinner
             mSpinner.setEnabled(true);
@@ -1010,7 +1071,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
         }
     }
-
     /**
      * Creates an image file with a given name at the location
      *
@@ -1036,6 +1096,45 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     }
 
     /**
+     *
+     * @param originalPosition Parameter to decide whether to define original image file stats or not
+     */
+    private void deleteDownscaledFile(boolean originalPosition) {
+        // Delete Previous File
+        File file = new File(mDownscaledImageAbsolutePath.toString());
+
+        String canonicalPath;
+
+        try {
+            canonicalPath = file.getCanonicalPath();
+        } catch (IOException e) {
+            canonicalPath = file.getAbsolutePath();
+        }
+        final Uri uri = MediaStore.Files.getContentUri("external");
+        final int result = getContext().getContentResolver().delete(uri,
+                MediaStore.Files.FileColumns.DATA + "=?", new String[]{canonicalPath});
+        if (result == 0) {
+            final String absolutePath = file.getAbsolutePath();
+            if (!absolutePath.equals(canonicalPath)) {
+                getContext().getContentResolver().delete(uri,
+                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{mDownscaledImageAbsolutePath.toString()});
+            }
+        }
+
+        // Re-enable the spinner upon successful deletion
+        mSpinner.setEnabled(true);
+
+        // Define that there is no longer a downscaled image
+        mDownscaledImageCreated = false;
+
+        // If the file is being deleted to show the original file appropriately display that
+        if (originalPosition) {
+            determineFileViewContent(mDownscaledImageAbsolutePath);
+        }
+
+    }
+
+    /**
      * Send a broadcast to the media scanner to add this photo
      */
     private void sendMediaBroadcast(String imagePath) {
@@ -1053,6 +1152,21 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Set the data for the intent and broadcast it
         imageMediaScanIntent.setData(imageContentUri);
         getContext().sendBroadcast(imageMediaScanIntent);
+    }
+
+    /**
+     * Sets up the given file's stats
+     */
+    private void setupFileStats() {
+        if (mDownscaledImageCreated) {
+            mFileViewSize.setText(FileUtils.getFileSize(mDownscaledImageAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getImageResolution(mDownscaledImageAbsolutePath, getContext()));
+        } else {
+            mFileViewSize.setText(FileUtils.getFileSize(mFileUriAbsolutePath, getContext()));
+            if (mMimeType.equals(IMAGE_FILE)) {
+                mFileViewResolution.setText(FileUtils.getImageResolution(mFileUriAbsolutePath, getContext()));
+            }
+        }
     }
 
     /**
@@ -1115,10 +1229,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             // Create RequestBody & MultipartBody to create a Call.
             RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part body = MultipartBody.Part.createFormData("Image", file.getName(), requestBody);
-            Call<ResponseBody> call = restInterface.postFile(body);
+            mCall = restInterface.postFile(body);
 
             // Execute call request
-            call.enqueue(new Callback<ResponseBody>() {
+            mCall.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     try {
@@ -1154,6 +1268,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         filePath,
                                         responseViewURL,
                                         responseDeleteURL,
+// TODO: +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                        downscaledFilePath);
+//gggggfhgfdasdfghjkl;
                                         editedFilePath);
 
                                 /**
@@ -1259,6 +1376,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                     mFabUploadFile.setClickable(true);
                     mFabProgressCircleUpload.hide();
+                    mSpinner.setClickable(true);
+
                     UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                             "File Upload Failed!", Snackbar.LENGTH_LONG);
                     Log.d(LOG_TAG, "onFailure Response: " + t);

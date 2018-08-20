@@ -345,7 +345,10 @@
     <string name="exif_tag_y_cb_cr_sub_sampling">Y CB CR Sub Sampling</string>
     <string name="exif_tag_y_resolution">Y Resolution</string>
     <string name="exif_whitebalance_auto">Whitebalance Auto</string>
+ 
     <string name="exif_whitebalance_manual">Whitebalance Manual</string>
+ 
+  <string name="tv_cloud_upload_cancelled">Upload Cancelled</string>
     <string name="sb_exif_transfer_data_unsuccessful">Transfering EXIF data was unsuccessful</string>
 
 
