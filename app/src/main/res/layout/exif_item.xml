@@ -21,16 +21,14 @@
             style="@style/TextViewBodyHeaderExif"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="Optical Something" />
+            android:layout_weight="1"/>
 
         <TextView
             android:id="@+id/tv_exif_data_value"
             style="@style/TextViewBodyExif"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="Value" />
+            android:layout_weight="1"/>
 
     </LinearLayout>
 
@@ -40,7 +38,7 @@
         style="@style/TextViewBodyExif"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Remove Data"
+        android:text="@string/cb_exif_remove_data"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
