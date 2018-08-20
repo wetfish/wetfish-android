@@ -347,7 +347,7 @@ public class ExifUtils {
     };
 
 
-    public static void transferExifData(Uri originalFile, Uri newFile) {
+    public static boolean transferExifData(Uri originalFile, Uri newFile) {
         try {
             // Check what the version of the SDK is to utilize the appropriate available ExifInterface attributes
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -365,6 +365,7 @@ public class ExifUtils {
                     }
                 }
                 newFileExif.saveAttributes();
+                return true;
             } else {
                 // Create an ExifInterface object to interact with the original file's exif data.
                 ExifInterface originalFileExif = new ExifInterface(originalFile.toString());
@@ -379,9 +380,11 @@ public class ExifUtils {
                     }
                 }
                 newFileExif.saveAttributes();
+                return true;
             }
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
