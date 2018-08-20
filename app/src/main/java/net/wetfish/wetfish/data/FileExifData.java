@@ -7,7 +7,6 @@ package net.wetfish.wetfish.data;
  */
 public class FileExifData {
 
-
     private String mExifDataTag;
     private String mExifDataValue;
 

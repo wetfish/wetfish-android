@@ -28,14 +28,17 @@
     <string name="fab_take_picture">Capture Image</string>
     <string name="sb_url_clipboard_success">URL successfully copied to clipboard</string>
     <string name="sb_url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
-    <string name="sb_image_successfully_downscaled">Image successfully downscaled</string>
-    <string name="sb_image_unsuccessfully_downscaled">Image unsuccessfully downscaled</string>
+    <string name="sb_image_successfully_rescaled">Image successfully rescaled</string>
+    <string name="sb_image_unsuccessfully_rescaled">Image unsuccessfully rescaled</string>
+    <string name="sb_image_unsuccessfully_deleted">Image was unsuccessfully deleted</string>
     <string name="sb_not_representable_by_glide">The given file is currently unsupported. Please view at Wetfish.</string>
     <string name="sb_network_not_connected">Currently unconnected to a network.</string>
     <string name="sb_no_app_available">No app installed can interact with this file.</string>
     <string name="sb_unable_to_obtain_file">Unable to obtain chosen file.</string>
     <string name="sb_no_file_selected">No file selected.</string>
     <string name="tv_cloud_upload_complete">Upload Complete!</string>
+    <string name="cb_exif_remove_data">Remove Data</string>
+    <string name="tv_cloud_upload_cancelled">Upload Cancelled</string>
 
     <!-- Snackbar Strings -->
     <string name="sb_permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
@@ -85,6 +88,13 @@
     <string name="fab_view_original">View Original</string>
     <string name="tv_video_length_below_ten_seconds">%1$d:0%2$d</string>
     <string name="tv_video_length_above_ten_seconds">%1$d:%2$d</string>
+
+    <!-- String Constants -->
+    <string name="fragment_transfer_original_file">originalImageFileUri</string>
+    <string name="fragment_transfer_rescaled_file">rescaledImageFileUri</string>
+    <string name="fragment_transfer_exif_edited_file">editedExifImageFileUri</string>
+    <string name="fragment_transfer_image_edited_file">editedVisualImageFileUri</string>
+    <string name="fragment_transfer_video_edited_file">videoFileUri</string>
 
     <!-- Strings related to Settings -->
     <!-- Settings File Name -->
@@ -336,6 +346,7 @@
     <string name="exif_tag_y_resolution">Y Resolution</string>
     <string name="exif_whitebalance_auto">Whitebalance Auto</string>
     <string name="exif_whitebalance_manual">Whitebalance Manual</string>
+    <string name="sb_exif_transfer_data_unsuccessful">Transfering EXIF data was unsuccessful</string>
 
 
 </resources>

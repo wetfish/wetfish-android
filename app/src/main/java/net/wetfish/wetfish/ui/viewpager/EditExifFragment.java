@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * create an instance of this fragment.
  */
 public class EditExifFragment extends Fragment implements
-        ExifDataAdapter.ExifDataAdapterOnClickHandler {
+        ExifDataAdapter.ExifDataAdapterOnClickHandler{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 
@@ -142,7 +142,7 @@ public class EditExifFragment extends Fragment implements
             mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement UploadFragmentInteractionFileSharing");
         }
     }
 

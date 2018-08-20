@@ -21,6 +21,7 @@ import android.text.style.ImageSpan;
 import android.util.Log;
 
 import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.data.FileUriData;
 import net.wetfish.wetfish.ui.viewpager.EditExifFragment;
 import net.wetfish.wetfish.ui.viewpager.EditFileFragment;
 import net.wetfish.wetfish.ui.viewpager.FileUploadFragment;
@@ -28,7 +29,7 @@ import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
 
 public class GalleryUploadActivity extends AppCompatActivity implements
-        FileUploadFragment.OnFragmentInteractionListener,
+        FileUploadFragment.UploadFragmentInteractionFileSharing,
         EditFileFragment.OnFragmentInteractionListener,
         EditExifFragment.OnFragmentInteractionListener {
 
@@ -118,12 +119,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
     // ViewPager Variables
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    //TODO: Implement all this
-    @Override
-    public void onUploadFragmentInteraction(Uri uri) {
-
-    }
-
     @Override
     public void onEditFileFragmentInteraction(Uri uri) {
 
@@ -132,6 +127,11 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 
     @Override
     public void onEditExifFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void uploadTransferCurrentImageUri(FileUriData fileUriData) {
 
     }
 

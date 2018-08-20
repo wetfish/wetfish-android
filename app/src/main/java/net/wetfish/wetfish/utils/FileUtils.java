@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.View;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileContract.FileColumns;
@@ -233,10 +232,9 @@ public class FileUtils {
      * @param bitmapToDownscale    Bitmap to downscale to populate downscaledBitmapFile
      * @param scaleRatio           Ratio as to which to downscale the bitmap provided
      * @param downscaledBitmapFile the downscaled bitmap image populating an image
-     * @param view                 utilized to generate a snackbar for the appropriate layout
      * @return downscaled image or regular image if downscaling has failed
      */
-    public static boolean createDownscaledImageFile(Bitmap bitmapToDownscale, double scaleRatio, File downscaledBitmapFile, View view) {
+    public static boolean createDownscaledImageFile(Bitmap bitmapToDownscale, double scaleRatio, File downscaledBitmapFile) {
         // Height and width downscaled by the scaleRatio
         double destinationHeight = bitmapToDownscale.getHeight() * scaleRatio;
         double destinationWidth = bitmapToDownscale.getWidth() * scaleRatio;
@@ -259,17 +257,58 @@ public class FileUtils {
                 // Close File Output Stream when finished
                 fileOutputStream.close();
 
+                // Creating file was successful
                 return true;
             } else {
+                //  Creating file failed
                 return false;
             }
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        // Creating file failed
+        return false;
+    }
+
+    /**
+     * Create a scaled bitmap of the given image, returning resolution to the orginal while preserving
+     * the image's native aspect ratio.
+     *
+     * @param downscaledBitmapFile the downscaled bitmap image populating an image
+     * @return downscaled image or regular image if downscaling has failed
+     */
+    public static boolean createOriginalScaledImageFile(Bitmap originalBitmap, File downscaledBitmapFile) {
+        try {
+            // Byte Array Output Stream
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            // Compress to the desired format, JPEG, at full quality
+            boolean successfulCopy = originalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
+
+            if (successfulCopy) {
+                // File Output Stream for the downscaledBitmapFile
+                FileOutputStream fileOutputStream = new FileOutputStream(downscaledBitmapFile);
+                fileOutputStream.write(byteArrayOutputStream.toByteArray());
+
+                // Close File Output Stream when finished
+                fileOutputStream.close();
+
+                // Creating file was successful
+                return true;
+            } else {
+                //  Creating file failed
+                return false;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Creating file failed
         return false;
     }
 
@@ -281,6 +320,16 @@ public class FileUtils {
         double downscaledWidth = bitmapDownscaledOriginal.getWidth();
 
         return downscaledWidth < originalWidth;
+    }
+
+    public static boolean checkSuccessfulBitmapUpscale(Uri originalBitmapUri, Uri downscaledBitmapUri) {
+        Bitmap bitmapOriginal = BitmapFactory.decodeFile(originalBitmapUri.toString());
+        Bitmap bitmapDownscaledOriginal = BitmapFactory.decodeFile(downscaledBitmapUri.toString());
+
+        double originalWidth = bitmapOriginal.getWidth();
+        double upscaledWidth = bitmapDownscaledOriginal.getWidth();
+
+        return upscaledWidth < originalWidth;
     }
 
     public static String getFileSize(Uri fileUri, Context context) {

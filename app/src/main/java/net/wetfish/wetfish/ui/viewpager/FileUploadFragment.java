@@ -1,7 +1,6 @@
 package net.wetfish.wetfish.ui.viewpager;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -25,9 +25,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -39,6 +39,7 @@ import com.github.jorgecastilloprz.FABProgressCircle;
 import com.github.jorgecastilloprz.listeners.FABProgressListener;
 
 import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.data.FileUriData;
 import net.wetfish.wetfish.retrofit.RESTInterface;
 import net.wetfish.wetfish.retrofit.RetrofitClient;
 import net.wetfish.wetfish.ui.GalleryActivity;
@@ -89,10 +90,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final int MEDIUM_SIZE_SELECTION = 2;
     private static final int SMALL_SIZE_SELECTION = 3;
     private static final double[] SELECTIONRATIO = {1, .66, .44, .22};
-    private int START_AT_MOST_RECENT_FIRST_INTEGER = 0;
     private static final String IMAGE_FILE = "image/*";
     private static final String VIDEO_FILE = "video/*";
-
+    Call<ResponseBody> mCall;
+    private int START_AT_MOST_RECENT_FIRST_INTEGER = 0;
     /* Views */
     private ImageView mFileView;
     private TextView mFileLength;
@@ -102,31 +103,59 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private EditText mFileEditTagsView;
     private EditText mFileEditTitleView;
     private EditText mFileEditDescriptionView;
-    private FloatingActionButton fabUploadFile;
-    private FABProgressCircle mFabProgressCircle;
+    private FloatingActionButton mFabUploadFile;
+    private FABProgressCircle mFabProgressCircleUpload;
+    private ProgressBar mRescaleImageProgressBar;
     private View mRootLayout;
     private View fileUploadContent;
     private Spinner mSpinner;
-
     /* Data */
-    private Uri mFileUriAbsolutePath;
-    private Uri mDownscaledImageAbsolutePath;
+    // Temporary original file path variable
+    private Uri mFileAbsolutePath;
+    // Temporary file path variable for downscaled images. Allows EXIF data to be transferred to @mEditedImageAbsolutePath
+    private Uri mRescaledImageAbsolutePath;
+    // Final file path variable for all image edits.
+    private Uri mEditedImageAbsolutePath;
+    // Final file path variable for uploading @mEditedImageAbsolutePath if it exists or @mFileAbsolutePath otherwise
+    private Uri mUploadFileAbsolutePath;
     private String mFileType;
     private String mMimeType;
     private String responseViewURL;
     private String responseDeleteURL;
-    private boolean responseURLAcquired;
-    private boolean mDownscaledImageCreated = false;
+    //    private boolean responseURLAcquired;
+    // Value to check if the exif values have been changed
+    private boolean mExifChanged = false;
+    private boolean mImageEdited = false;
+    private boolean mRescaledImageCreated = false;
+    private boolean mEditedImageCreated = false;
     private boolean mDatabaseAdditionSuccessful = false;
     private boolean fileFound;
+    private FileUriData mFileUriData;
     private int uploadID;
     private int mCurrentSpinnerSelection = 0;
     private double mImageFileSize = 0;
     private int sectionNumber;
-
-
     //TODO: Potentially remove.
-    private OnFragmentInteractionListener mListener;
+    private UploadFragmentInteractionFileSharing mListener;
+    /* Threads */
+    // Thread to upload image to Wetfish
+    private Handler mCallThreadUpload;
+    // Thread to downscale images
+    private Handler mCallThreadDownscaleImage;
+    // Thread to delete images
+    private Handler mCallThreadDeleteImage;
+    // Thread to determine images
+    private Handler mCallThreadDetermineImage;
+
+    public interface UploadFragmentInteractionFileSharing {
+        void uploadTransferCurrentImageUri(FileUriData fileUriData);
+    }
+
+    {
+        // Let the user know the image was unsuccessfully rescaled
+        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
+    }
 
     public FileUploadFragment() {
         // Required empty public constructor
@@ -154,7 +183,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             sectionNumber = getArguments().getInt(ARG_SECTION_NUMBER);
-            mFileUriAbsolutePath = Uri.parse(getArguments().getString(ARG_FILE_URI));
+            mFileAbsolutePath = Uri.parse(getArguments().getString(ARG_FILE_URI));
         }
     }
 
@@ -163,7 +192,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Determine the mime type
-        mFileType = FileUtils.getFileExtensionFromUri(getContext(), mFileUriAbsolutePath);
+        mFileType = FileUtils.getFileExtensionFromUri(getContext(), mFileAbsolutePath);
         mMimeType = FileUtils.getMimeType(mFileType, getContext());
 
         // Inflate the proper layout depending on the mime type
@@ -183,20 +212,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Setup Spinner
                 mSpinner = mRootLayout.findViewById(R.id.spinner_fragment_file_upload);
 
-                // Array Adapter for Spinner
-                @SuppressLint("ResourceType") ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
-                        R.array.upload_fragment_spinner_array, R.xml.custom_spinner_item);
-
-                // Specific array adapter layout
-                spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-                // Apply the adapter to the mSpinner
-                mSpinner.setAdapter(spinnerAdapter);
-
-                // Setup onItemSelectedListener
-                mSpinner.setOnItemSelectedListener(this);
-
-
                 break;
             case VIDEO_FILE: // This layout is for video files
                 //TODO: This will support a separate root layout for videos specifically
@@ -211,8 +226,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 mFileViewSize = mRootLayout.findViewById(R.id.tv_video_size);
 
                 // Setup view data
-                mFileViewSize.setText(FileUtils.getFileSize(mFileUriAbsolutePath, getContext()));
-                mFileLength.setText(FileUtils.getVideoLength(mFileUriAbsolutePath, getContext()));
+                mFileViewSize.setText(FileUtils.getFileSize(mFileAbsolutePath, getContext()));
+                mFileLength.setText(FileUtils.getVideoLength(mFileAbsolutePath, getContext()));
 
                 break;
             default:
@@ -220,20 +235,28 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 break;
         }
 
+
         // Views
-        // TODO: Support Video Views soon. (Glide/VideoView/Exoplayer)
         mFileEditTitleView = mRootLayout.findViewById(R.id.et_title);
         mFileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
         mFileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
-        mFabProgressCircle = mRootLayout.findViewById(R.id.fab_progress_circle);
+        mFabProgressCircleUpload = mRootLayout.findViewById(R.id.fab_progress_circle_upload);
+        mRescaleImageProgressBar = mRootLayout.findViewById(R.id.pb_downscale_image);
         mFileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
 
         // Setup mFileView's image and onClickListener with the correct file Uri
-        if (mDownscaledImageCreated) {
-            determineFileViewContent(mDownscaledImageAbsolutePath);
-        } else {
-            determineFileViewContent(mFileUriAbsolutePath);
-        }
+        mCallThreadDetermineImage = new Handler();
+        mCallThreadDetermineImage.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mEditedImageCreated) {
+                    determineFileViewContent(mEditedImageAbsolutePath);
+                } else {
+                    determineFileViewContent(mFileAbsolutePath);
+                }
+            }
+        });
+
         // Set a focus change listener to allow for focus to dictate the appearance of the keyboard
         View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
             /**
@@ -258,11 +281,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mFileEditDescriptionView.setOnFocusChangeListener(focusChangeListener);
 
         // Setup listener for progress bar
-        mFabProgressCircle.attachListener(this);
+        mFabProgressCircleUpload.attachListener(this);
 
         // Fab to upload file to Wetfish server
-        fabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
-        fabUploadFile.setOnClickListener(new View.OnClickListener() {
+        mFabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
+        mFabUploadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Verify that the permissions necessary to complete this action have been granted
@@ -278,15 +301,53 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 } else {
 
-                    // Storage permissions granted!
-                    mFabProgressCircle.show();
-                    fabUploadFile.setClickable(false);
-                    if (mSpinner != null) {
-                        mSpinner.setEnabled(false);
-                    }
-                    uploadFile(mFileUriAbsolutePath);
-                }
+                    // Thread to upload the file with a delay to allow easier cancellation
+                    if (mCallThreadUpload == null) {
+                        // Start the progress circle and change the image to correctly represent the
+                        // FAB buttons new state
+                        mFabProgressCircleUpload.show();
+                        mFabUploadFile.setImageResource(R.drawable.ic_cancel_white_24dp);
 
+                        // Disable spinner during upload
+                        if (mMimeType.equals(IMAGE_FILE)) {
+                            mSpinner.setEnabled(false);
+                        }
+
+                        // Create separate thread to do network processing
+                        mCallThreadUpload = new Handler();
+                        mCallThreadUpload.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                //Do something after 20000ms
+                                uploadFile();
+                            }
+                        }, 3000 /* 3 second delay */);
+
+                    } else {
+                        if (mCallThreadUpload != null) {
+
+                            // If mCall has been instantiated, cancel it
+                            if (mCall != null) {
+                                mCall.cancel();
+                            }
+
+                            // Remove callback and return thread back to normal
+                            mCallThreadUpload.removeCallbacksAndMessages(null);
+                            mCallThreadUpload = null;
+
+                            // Reset the FAB and hide the upload progress bar
+                            mFabProgressCircleUpload.hide();
+                            mFabUploadFile.setImageResource(R.drawable.ic_upload_file_white_24dp);
+                            if (mMimeType.equals(IMAGE_FILE)) {
+                                mSpinner.setEnabled(true);
+                            }
+
+                            // Pass the user a success notification
+                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.tv_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                                    .show();
+                        }
+                    }
+                }
             }
         });
 
@@ -296,11 +357,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof UploadFragmentInteractionFileSharing) {
+            mListener = (UploadFragmentInteractionFileSharing) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement UploadFragmentInteractionFileSharing");
         }
     }
 
@@ -318,7 +379,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     @Override
     public void onStart() {
         super.onStart();
-        responseURLAcquired = false;
     }
 
     /**
@@ -339,9 +399,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (!mDatabaseAdditionSuccessful && mDownscaledImageCreated) {
+        if (!mDatabaseAdditionSuccessful) {
+
+            /* This is important if the application quits before the transaction between
+               @mRescaledImageAbsolutePath and @mEditedImageAbsolutePath occurs */
+            if (mRescaledImageCreated) {
+                deleteRescaledFile();
+            }
+            if (mEditedImageCreated) {
+                deleteEditedFile();
+            }
+
             Log.d(LOG_TAG, "Database addition wasn't successful, delete file");
-            deleteDownscaledFile();
         } else {
             // Do Nothing
             Log.d(LOG_TAG, "Database addition was successful or file wasn't created");
@@ -353,7 +422,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      */
     @Override
     public void onFABProgressAnimationEnd() {
-        Snackbar.make(mFabProgressCircle, getContext().getString(R.string.tv_cloud_upload_complete), Snackbar.LENGTH_SHORT)
+        Snackbar.make(mFabProgressCircleUpload, getContext().getString(R.string.tv_cloud_upload_complete), Snackbar.LENGTH_SHORT)
                 .show();
         // Create file detail activity intent
         Intent fileDetails = new Intent(getContext(), GalleryCollectionActivity.class);
@@ -410,7 +479,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 if (requestCode == REQUEST_STORAGE) {
                     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         // Storage permissions were granted. Upload file.
-                        uploadFile(mFileUriAbsolutePath);
+                        uploadFile();
                     } else {
                         // Storage Permissions were not granted
                         Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
@@ -425,6 +494,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 break;
             }
         }
+    }
+
+    /**
+     * Callback method to be invoked when the selection disappears from this
+     * view. The selection can disappear for instance when touch is activated
+     * or when the adapter becomes empty.
+     *
+     * @param parent The AdapterView that now contains no selected item.
+     */
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Do nothin'
     }
 
     /**
@@ -448,57 +529,147 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         switch (position) {
             case ORIGINAL_SIZE_SELECTION:
+                // Only if the user has EXIF changes to save when selecting original resolution refer back to original image
                 // Check to see if a file has been generated before this
-                if (mDownscaledImageCreated) {
-                    // Delete Previous File
-                    deleteDownscaledFile();
-                }
+                if (mExifChanged) {
+                    // Show the progress bar
+                    mRescaleImageProgressBar.setVisibility(View.VISIBLE);
 
-                // Setup the file stats
-                setupFileStats();
+                    // Hide the image view
+                    mFileView.setVisibility(View.INVISIBLE);
+
+                    // Disable the spinner while the thread processes the request
+                    mSpinner.setEnabled(false);
+
+                    // Generate medium sized image (75%)) and setup mFileView accordingly
+                    mCallThreadDownscaleImage = new Handler();
+                    mCallThreadDownscaleImage.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            // Create a downscaled image
+                            createRescaledImage(mCurrentSpinnerSelection);
+                        }
+                    }, 0 /* 1 Second Delay for File Deletion*/);
+
+                    // If handler is broken or doesn't instantiate re-enable spinner
+                    if (mCallThreadDownscaleImage == null) {
+                        // Hide the progress bar
+                        mRescaleImageProgressBar.setVisibility(View.GONE);
+
+                        // Show the image view
+                        mFileView.setVisibility(View.VISIBLE);
+
+                        // Disable the spinner while the thread processes the request
+                        mSpinner.setEnabled(true);
+
+                    }
+                }
 
                 break;
             case LARGE_SIZE_SELECTION:
-                // Check to see if a file has been generated before this
-                if (mDownscaledImageCreated) {
-                    // Delete Previous File
-                    deleteDownscaledFile();
-                }
+                // Show the progress bar
+                mRescaleImageProgressBar.setVisibility(View.VISIBLE);
+
+                // Hide the image view
+                mFileView.setVisibility(View.INVISIBLE);
+
+                // Disable the spinner while the thread processes the request
+                mSpinner.setEnabled(false);
 
                 // Generate medium sized image (75%)) and setup mFileView accordingly
-                createDownscaledFile(position);
+                mCallThreadDownscaleImage = new Handler();
+                mCallThreadDownscaleImage.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
 
-                // Setup the file stats
-                setupFileStats();
+                        // Create a downscaled image
+                        createRescaledImage(mCurrentSpinnerSelection);
+                    }
+                }, 0 /* 1 Second Delay for File Deletion*/);
+
+                // If handler is broken or doesn't instantiate re-enable spinner
+                if (mCallThreadDownscaleImage == null) {
+                    // Hide the progress bar
+                    mRescaleImageProgressBar.setVisibility(View.GONE);
+
+                    // Show the image view
+                    mFileView.setVisibility(View.VISIBLE);
+
+                    // Disable the spinner while the thread processes the request
+                    mSpinner.setEnabled(true);
+
+                }
+
 
                 break;
             case MEDIUM_SIZE_SELECTION:
-                // Check to see if a file has been generated before this
-                if (mDownscaledImageCreated) {
-                    // Delete Previous File
-                    deleteDownscaledFile();
+                // Show the progress bar
+                mRescaleImageProgressBar.setVisibility(View.VISIBLE);
+
+                // Hide the image view
+                mFileView.setVisibility(View.INVISIBLE);
+
+                // Disable the spinner while the thread processes the request
+                mSpinner.setEnabled(false);
+
+                // Generate medium sized image (75%)) and setup mFileView accordingly
+                mCallThreadDownscaleImage = new Handler();
+                mCallThreadDownscaleImage.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        // Create a downscaled image
+                        createRescaledImage(mCurrentSpinnerSelection);
+                    }
+                }, 0 /* 1 Second Delay for File Deletion*/);
+
+                // If handler is broken or doesn't instantiate re-enable spinner
+                if (mCallThreadDownscaleImage == null) {
+                    // Hide the progress bar
+                    mRescaleImageProgressBar.setVisibility(View.GONE);
+
+                    // Show the image view
+                    mFileView.setVisibility(View.VISIBLE);
+
+                    // Disable the spinner while the thread processes the request
+                    mSpinner.setEnabled(true);
+
                 }
-
-                // Generate medium sized image (50%)) and setup mFileView accordingly
-                createDownscaledFile(position);
-
-                // Setup the file stats
-                setupFileStats();
-
                 break;
             case SMALL_SIZE_SELECTION:
-                // Check to see if a file has been generated before this
-                if (mDownscaledImageCreated) {
-                    deleteDownscaledFile();
+                // Show the progress bar
+                mRescaleImageProgressBar.setVisibility(View.VISIBLE);
+
+                // Hide the image view
+                mFileView.setVisibility(View.INVISIBLE);
+
+                // Disable the spinner while the thread processes the request
+                mSpinner.setEnabled(false);
+
+                // Generate medium sized image (75%)) and setup mFileView accordingly
+                mCallThreadDownscaleImage = new Handler();
+                mCallThreadDownscaleImage.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        // Create a downscaled image
+                        createRescaledImage(mCurrentSpinnerSelection);
+                    }
+                }, 0 /* 1 Second Delay for File Deletion*/);
+
+                // If handler is broken or doesn't instantiate re-enable spinner
+                if (mCallThreadDownscaleImage == null) {
+                    // Hide the progress bar
+                    mRescaleImageProgressBar.setVisibility(View.GONE);
+
+                    // Show the image view
+                    mFileView.setVisibility(View.VISIBLE);
+
+                    // Disable the spinner while the thread processes the request
+                    mSpinner.setEnabled(true);
 
                 }
-
-                // Generate small sized image (25%) and setup mFileView accordingly
-                createDownscaledFile(position);
-
-                // Setup the file stats
-                setupFileStats();
-
                 break;
             default:
                 Log.d(LOG_TAG, "Y'never know!");
@@ -507,21 +678,20 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     /**
      * Sets up the given file's stats
-     *
      */
     private void setupFileStats() {
-        if (mDownscaledImageCreated) {
-            mFileViewSize.setText(FileUtils.getFileSize(mDownscaledImageAbsolutePath, getContext()));
-            mFileViewResolution.setText(FileUtils.getImageResolution(mDownscaledImageAbsolutePath, getContext()));
+        if (mRescaledImageCreated) {
+            mFileViewSize.setText(FileUtils.getFileSize(mRescaledImageAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getImageResolution(mRescaledImageAbsolutePath, getContext()));
         } else {
-            mFileViewSize.setText(FileUtils.getFileSize(mFileUriAbsolutePath, getContext()));
-            mFileViewResolution.setText(FileUtils.getImageResolution(mFileUriAbsolutePath, getContext()));
+            mFileViewSize.setText(FileUtils.getFileSize(mFileAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getImageResolution(mFileAbsolutePath, getContext()));
         }
     }
 
-    private void deleteDownscaledFile() {
+    private boolean deleteRescaledFile() {
         // Delete Previous File
-        File file = new File(mDownscaledImageAbsolutePath.toString());
+        File file = new File(mRescaledImageAbsolutePath.toString());
 
         String canonicalPath;
 
@@ -537,23 +707,46 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             final String absolutePath = file.getAbsolutePath();
             if (!absolutePath.equals(canonicalPath)) {
                 getContext().getContentResolver().delete(uri,
-                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{mDownscaledImageAbsolutePath.toString()});
+                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{mRescaledImageAbsolutePath.toString()});
             }
+
+            // Successfully deleted the file
+            mRescaledImageCreated = false;
+            return true;
         }
 
-        mDownscaledImageCreated = false;
+        // Failed to delete the file
+        return false;
     }
 
-    /**
-     * Callback method to be invoked when the selection disappears from this
-     * view. The selection can disappear for instance when touch is activated
-     * or when the adapter becomes empty.
-     *
-     * @param parent The AdapterView that now contains no selected item.
-     */
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-        // Do nothin'
+    private boolean deleteEditedFile() {
+        // Delete Previous File
+        File file = new File(mEditedImageAbsolutePath.toString());
+
+        String canonicalPath;
+
+        try {
+            canonicalPath = file.getCanonicalPath();
+        } catch (IOException e) {
+            canonicalPath = file.getAbsolutePath();
+        }
+        final Uri uri = MediaStore.Files.getContentUri("external");
+        final int result = getContext().getContentResolver().delete(uri,
+                MediaStore.Files.FileColumns.DATA + "=?", new String[]{canonicalPath});
+        if (result == 0) {
+            final String absolutePath = file.getAbsolutePath();
+            if (!absolutePath.equals(canonicalPath)) {
+                getContext().getContentResolver().delete(uri,
+                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{mEditedImageAbsolutePath.toString()});
+            }
+
+            // Successfully deleted the file
+            mEditedImageCreated = false;
+            return true;
+        }
+
+        // Failed to delete the file
+        return false;
     }
 
     /**
@@ -625,23 +818,22 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
 
             // Make upload file inaccessible and inform the user.
-            fabUploadFile.setVisibility(View.GONE);
+            mFabUploadFile.setVisibility(View.GONE);
             mFileNotFoundView.setVisibility(View.VISIBLE);
         }
     }
-
-    //TODO: Do this during a loader and during the loader hide the upload button.
 
     /**
      * This method will create a downscaled bitmap  image utilizing FileUtils createDownscaledImageFile,
      * and upon success, accordingly change mFileView's onClickListener and displayed image. Upon failure
      * Snackbars will be shown.
      *
-     * @param downscaleRatioSelected a passed value determined on the onClick
+     * @param rescaleRatioSelected a passed value determined on the onClick
      */
-    private void createDownscaledFile(int downscaleRatioSelected) {
+    private void createRescaledImage(int rescaleRatioSelected) {
+        //TODO: This will need to be edited when File Fragment Editing is available.
         // Create a bitmap of the original file
-        Bitmap bitmap = BitmapFactory.decodeFile(mFileUriAbsolutePath.toString());
+        Bitmap bitmap = BitmapFactory.decodeFile(mFileAbsolutePath.toString());
 
         // Create the file that the result will populate
         File imageFile = null;
@@ -656,40 +848,167 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         if (imageFile != null) {
 
-            // Create a downscaled bitmap of the original file
-            boolean downscaledFileCreated = FileUtils.createDownscaledImageFile(bitmap, SELECTIONRATIO[downscaleRatioSelected],
-                    imageFile, mRootLayout.findViewById(R.id.gallery_detail_content));
+            // Create a rescaled bitmap of the original file
+            if (rescaleRatioSelected == 0) {
+                mRescaledImageCreated = FileUtils.createOriginalScaledImageFile(bitmap, imageFile);
+                Log.d(LOG_TAG, "_________TRUE__________");
+            } else {
+                mRescaledImageCreated = FileUtils.createDownscaledImageFile(bitmap, SELECTIONRATIO[rescaleRatioSelected],
+                        imageFile);
+                Log.d(LOG_TAG, "_________FALSE__________");
+            }
 
-            // Check to see if the file is actually downscaled
-            if (downscaledFileCreated) {
-                mDownscaledImageCreated = FileUtils.checkSuccessfulBitmapDownscale(mFileUriAbsolutePath,
-                        mDownscaledImageAbsolutePath);
-                if (mDownscaledImageCreated) {
-                    // Change the file to be opened accordingly
-                    determineFileViewContent(mDownscaledImageAbsolutePath);
+            // Check to see if the rescaled image has been created
+            if (mRescaledImageCreated) {
+                // Verify that the image is actually rescaled appropriately
+                if (rescaleRatioSelected == 0) {
+                    mRescaledImageCreated = FileUtils.checkSuccessfulBitmapUpscale(mFileAbsolutePath,
+                            mRescaledImageAbsolutePath);
+                } else {
+                    mRescaledImageCreated = FileUtils.checkSuccessfulBitmapDownscale(mFileAbsolutePath,
+                            mRescaledImageAbsolutePath);
+                }
+                if (mRescaledImageCreated) {
+                    // Update the view field with the newly rescaled image if successfully rescaled
+                    determineFileViewContent(mRescaledImageAbsolutePath);
 
-                    // Write the appropriate EXIF data to the image
 
-                    // Check if the image is a jpeg
-                    if (FileUtils.getFileExtensionFromUri(getContext(), mFileUriAbsolutePath).matches("(?i).jpeg|.jpg(?-i)")) {
-                        ExifUtils.transferExifData(mFileUriAbsolutePath, mDownscaledImageAbsolutePath);
+                    // TODO: Look into catching the failed circumstances where EXIF is not transferred ETC.
+                    // Figure out EXIF
+                    if (FileUtils.getFileExtensionFromUri(getContext(), mFileAbsolutePath).matches("(?i).jpeg|.jpg(?-i)")) {
+                        // If the image is a jpeg/jpg check to see if there is a pre-created file with EXIF data.
+                        if (mExifChanged && mEditedImageCreated && !mEditedImageAbsolutePath.toString().isEmpty()) {
+                            // If an edited copy exists with altered EXIF gather the EXIF data from this instead of the original
+                            ExifUtils.transferExifData(mEditedImageAbsolutePath, mRescaledImageAbsolutePath);
+
+                            // Delete the previously created file after successful EXIF transfer
+                            deleteEditedFile();
+
+                            // Point resources to their appropriate variables
+                            mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
+                            mEditedImageCreated = true;
+
+                            // Remove rescaled image absolute path uri
+                            mRescaledImageAbsolutePath = null;
+                            mRescaledImageCreated = false;
+
+                            // Enable the spinner
+                            mSpinner.setEnabled(true);
+
+                            // Hide the progress bar
+                            mRescaleImageProgressBar.setVisibility(View.GONE);
+
+                            // Show the image view
+                            mFileView.setVisibility(View.VISIBLE);
+
+                            // Let the user know the image was successfully downscaled
+                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                                    R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
+
+                            // Delete the thread
+                            mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
+                        } else {
+                            // If no edited copy exists with altered EXIF gather EXIF data from the original image
+                            ExifUtils.transferExifData(mFileAbsolutePath, mRescaledImageAbsolutePath);
+
+                            // Point resources to their appropriate variables
+                            mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
+                            mEditedImageCreated = true;
+
+                            // Remove rescaled image absolute path uri
+                            mRescaledImageAbsolutePath = null;
+                            mRescaledImageCreated = false;
+
+                            // Enable the spinner
+                            mSpinner.setEnabled(true);
+
+                            // Hide the progress bar
+                            mRescaleImageProgressBar.setVisibility(View.GONE);
+
+                            // Show the image view
+                            mFileView.setVisibility(View.VISIBLE);
+
+                            // Let the user know the image was successfully downscaled
+                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                                    R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
+
+                            // Delete the thread
+                            mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
+                        }
+                    } else {
+                        // The file is not a JPEG/JPG and has no EXIF data to worry about
+                        // Delete the previously created file after successful EXIF transfer
+                        if (mExifChanged) {
+                            deleteEditedFile();
+                        }
+
+                        // Point resources to their appropriate variables
+                        mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
+                        mEditedImageCreated = true;
+
+                        // Remove rescaled image absolute path uri
+                        mRescaledImageAbsolutePath = null;
+                        mRescaledImageCreated = false;
+
+                        // Remove rescaled image absolute path uri
+                        mRescaledImageAbsolutePath = null;
+                        mRescaledImageCreated = false;
+
+                        // Enable the spinner
+                        mSpinner.setEnabled(true);
+
+                        // Hide the progress bar
+                        mRescaleImageProgressBar.setVisibility(View.GONE);
+
+                        // Show the image view
+                        mFileView.setVisibility(View.VISIBLE);
+
+                        // Let the user know the image was successfully downscaled
+                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                                R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
+
+                        // Delete the thread
+                        mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
                     }
 
-                    // Let the user know the image was successfully downscaled
+                    // Let the user know the image was successfully rescaled
                     Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                            R.string.sb_image_successfully_downscaled, Snackbar.LENGTH_LONG).show();
+                            R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
                 }
             } else {
-                // Let the user know the image was unsuccessfully downscaled
+                // Enable the spinner
+                mSpinner.setEnabled(true);
+
+                // Hide the progress bar
+                mRescaleImageProgressBar.setVisibility(View.GONE);
+
+                // Show the image view
+                mFileView.setVisibility(View.VISIBLE);
+
+                // Let the user know the image was successfully downscaled
                 Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                        R.string.sb_image_unsuccessfully_downscaled, Snackbar.LENGTH_LONG).show();
+                        R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
+
+                // Delete the thread
+                mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
             }
         } else {
-            // Let the user know the image was unsuccessfully downscaled
+            // Enable the spinner
+            mSpinner.setEnabled(true);
+
+            // Hide the progress bar
+            mRescaleImageProgressBar.setVisibility(View.GONE);
+
+            // Show the image view
+            mFileView.setVisibility(View.VISIBLE);
+
+            // Let the user know the image was successfully downscaled
             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                    R.string.sb_image_unsuccessfully_downscaled, Snackbar.LENGTH_LONG).show();
+                    R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
+
+            // Delete the thread
+            mCallThreadDownscaleImage.removeCallbacksAndMessages(null);
         }
-        // Generate large sized image (75%)
     }
 
     /**
@@ -700,7 +1019,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      */
     private File createImageFile() throws IOException {
         // Create a unique image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HH-mm-ss").format(new Date());
         String imageFileName = getString(R.string.image_file_start) + timeStamp + "_";
         File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         storageDir.mkdir();
@@ -711,7 +1030,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         );
 
         // File path
-        mDownscaledImageAbsolutePath = Uri.parse(image.getAbsolutePath());
+        mRescaledImageAbsolutePath = Uri.parse(image.getAbsolutePath());
 
         return image;
     }
@@ -728,7 +1047,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         Uri imageContentUri = Uri.fromFile(imageFile);
 
         //TODO: Delete later
-        Log.d(LOG_TAG, "mDownscaledImageAbsolutePath: " + imagePath);
+        Log.d(LOG_TAG, "mRescaledImageAbsolutePath: " + imagePath);
         Log.d(LOG_TAG, "imageContentUri: " + imageContentUri.toString());
 
         // Set the data for the intent and broadcast it
@@ -769,7 +1088,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    private void uploadFile(Uri fileUriAbsolutePath) {
+    private void uploadFile() {
 
         // Create Retrofit Instance
         Retrofit retrofit = RetrofitClient.getClient(getString(R.string.wetfish_base_url));
@@ -778,18 +1097,19 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         RESTInterface restInterface = retrofit.create(RESTInterface.class);
 
         // Provide the correct image to Wetfish depending on the images currently available
-        if (mDownscaledImageCreated) {
+        if (mEditedImageCreated) {
+
             // Should a downscaled image be present
             // Populate the file with the correct data to later pass to the  RequestBody instance
-            File file = new File(mDownscaledImageAbsolutePath.toString());
+            File file = new File(mEditedImageAbsolutePath.toString());
 
             // Gather file extension from chosen file for database
-            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), mDownscaledImageAbsolutePath);
+            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), mEditedImageAbsolutePath);
 
             // Gather file URI from chosen file for database.
-            final String filePath = mDownscaledImageAbsolutePath.toString();
+            final String filePath = mEditedImageAbsolutePath.toString();
 
-            Log.d(LOG_TAG, "mFileUriAbsolutePath: " + mDownscaledImageAbsolutePath);
+            Log.d(LOG_TAG, "mFileAbsolutePath: " + mEditedImageAbsolutePath);
             Log.d(LOG_TAG, "filePath: " + filePath);
 
             // Create RequestBody & MultipartBody to create a Call.
@@ -806,12 +1126,12 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         String onResponseString = response.body().string();
                         Log.d(LOG_TAG, "onResponse: " + onResponseString);
 
-                        //  Downscaled image path
-                        String downscaledFilePath;
-                        if (mDownscaledImageCreated) {
-                            downscaledFilePath = mDownscaledImageAbsolutePath.toString();
+                        //  Edited image path
+                        String editedFilePath;
+                        if (mEditedImageCreated) {
+                            editedFilePath = mEditedImageAbsolutePath.toString();
                         } else {
-                            downscaledFilePath = "";
+                            editedFilePath = "";
                         }
 
                         // If response body is not empty get returned URL
@@ -834,7 +1154,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         filePath,
                                         responseViewURL,
                                         responseDeleteURL,
-                                        downscaledFilePath);
+                                        editedFilePath);
 
                                 /**
                                  *  Check to see if upload was successful to determine if the downscaled image
@@ -844,7 +1164,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     mDatabaseAdditionSuccessful = true;
 
                                     // Update media
-                                    sendMediaBroadcast(downscaledFilePath);
+                                    sendMediaBroadcast(editedFilePath);
                                 } else {
                                     mDatabaseAdditionSuccessful = false;
                                 }
@@ -854,7 +1174,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircleUpload.beginFinalAnimation();
                             } else {
                                 responseViewURL = getString(R.string.wetfish_base_uploader_url);
 
@@ -870,7 +1190,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         filePath,
                                         responseViewURL,
                                         responseDeleteURL,
-                                        downscaledFilePath);
+                                        editedFilePath);
 
                             /*
                                Check to see if upload was successful to determine if the downscaled image
@@ -880,7 +1200,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     mDatabaseAdditionSuccessful = true;
 
                                     // Update media
-                                    sendMediaBroadcast(downscaledFilePath);
+                                    sendMediaBroadcast(editedFilePath);
                                 } else {
                                     mDatabaseAdditionSuccessful = false;
                                 }
@@ -890,7 +1210,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircleUpload.beginFinalAnimation();
                             }
                         } else {
                             responseViewURL = getString(R.string.wetfish_base_uploader_url);
@@ -907,7 +1227,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     filePath,
                                     responseViewURL,
                                     responseDeleteURL,
-                                    downscaledFilePath);
+                                    editedFilePath);
 
                         /*
                            Check to see if upload was successful to determine if the downscaled image
@@ -917,7 +1237,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 mDatabaseAdditionSuccessful = true;
 
                                 // Update media
-                                sendMediaBroadcast(downscaledFilePath);
+                                sendMediaBroadcast(editedFilePath);
                             } else {
                                 mDatabaseAdditionSuccessful = false;
                             }
@@ -927,7 +1247,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                "File Uploaded!", Snackbar.LENGTH_LONG);
-                            mFabProgressCircle.beginFinalAnimation();
+                            mFabProgressCircleUpload.beginFinalAnimation();
                         }
                     } catch (IOException e) {
                         Log.d(LOG_TAG, "onFailure Catch: ");
@@ -937,8 +1257,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    fabUploadFile.setClickable(true);
-                    mFabProgressCircle.hide();
+                    mFabUploadFile.setClickable(true);
+                    mFabProgressCircleUpload.hide();
                     UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                             "File Upload Failed!", Snackbar.LENGTH_LONG);
                     Log.d(LOG_TAG, "onFailure Response: " + t);
@@ -946,17 +1266,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             });
 
         } else {
-            // Should no downscaled image be present
+            // Should no edited image be present
+
             // Populate the file with the correct data to later pass to the  RequestBody instance
-            File file = new File(fileUriAbsolutePath.toString());
+            File file = new File(mFileAbsolutePath.toString());
 
             // Gather file extension from chosen file for database
-            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), fileUriAbsolutePath);
+            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), mFileAbsolutePath);
 
             // Gather file URI from chosen file for database.
-            final String filePath = fileUriAbsolutePath.toString();
+            final String filePath = mFileAbsolutePath.toString();
 
-            Log.d(LOG_TAG, "mFileUriAbsolutePath: " + fileUriAbsolutePath);
+            Log.d(LOG_TAG, "mFileAbsolutePath: " + mFileAbsolutePath);
             Log.d(LOG_TAG, "filePath: " + filePath);
 
             // Create RequestBody & MultipartBody to create a Call.
@@ -973,13 +1294,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         String onResponseString = response.body().string();
                         Log.d(LOG_TAG, "onResponse: " + onResponseString);
 
-                        //  Downscaled image path
-                        String downscaledFilePath;
-                        if (mDownscaledImageCreated) {
-                            downscaledFilePath = mDownscaledImageAbsolutePath.toString();
-                        } else {
-                            downscaledFilePath = "";
-                        }
+                        //  There is no edited file
+                        String editedFilePath = "";
 
                         // If response body is not empty get returned URL
                         if (!(onResponseString.isEmpty())) {
@@ -1001,7 +1317,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         filePath,
                                         responseViewURL,
                                         responseDeleteURL,
-                                        downscaledFilePath);
+                                        editedFilePath);
 
                                 /**
                                  *  Check to see if upload was successful to determine if the downscaled image
@@ -1011,7 +1327,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     mDatabaseAdditionSuccessful = true;
 
                                     // Update media
-                                    sendMediaBroadcast(downscaledFilePath);
+                                    sendMediaBroadcast(editedFilePath);
                                 } else {
                                     mDatabaseAdditionSuccessful = false;
                                 }
@@ -1021,7 +1337,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircleUpload.beginFinalAnimation();
                             } else {
                                 responseViewURL = getString(R.string.wetfish_base_uploader_url);
 
@@ -1037,7 +1353,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         filePath,
                                         responseViewURL,
                                         responseDeleteURL,
-                                        downscaledFilePath);
+                                        editedFilePath);
 
                             /*
                                Check to see if upload was successful to determine if the downscaled image
@@ -1047,7 +1363,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     mDatabaseAdditionSuccessful = true;
 
                                     // Update media
-                                    sendMediaBroadcast(downscaledFilePath);
+                                    sendMediaBroadcast(editedFilePath);
                                 } else {
                                     mDatabaseAdditionSuccessful = false;
                                 }
@@ -1057,7 +1373,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircle.beginFinalAnimation();
+                                mFabProgressCircleUpload.beginFinalAnimation();
                             }
                         } else {
                             responseViewURL = getString(R.string.wetfish_base_uploader_url);
@@ -1074,7 +1390,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     filePath,
                                     responseViewURL,
                                     responseDeleteURL,
-                                    downscaledFilePath);
+                                    editedFilePath);
 
                         /*
                            Check to see if upload was successful to determine if the downscaled image
@@ -1084,7 +1400,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 mDatabaseAdditionSuccessful = true;
 
                                 // Update media
-                                sendMediaBroadcast(downscaledFilePath);
+                                sendMediaBroadcast(editedFilePath);
                             } else {
                                 mDatabaseAdditionSuccessful = false;
                             }
@@ -1094,7 +1410,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
 //                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
 //                                "File Uploaded!", Snackbar.LENGTH_LONG);
-                            mFabProgressCircle.beginFinalAnimation();
+                            mFabProgressCircleUpload.beginFinalAnimation();
                         }
                     } catch (IOException e) {
                         Log.d(LOG_TAG, "onFailure Catch: ");
@@ -1104,18 +1420,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    fabUploadFile.setClickable(true);
-                    mFabProgressCircle.hide();
+                    mFabUploadFile.setClickable(true);
+                    mFabProgressCircleUpload.hide();
                     UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
                             "File Upload Failed!", Snackbar.LENGTH_LONG);
                     Log.d(LOG_TAG, "onFailure Response: " + t);
                 }
             });
         }
-    }
-
-    public interface OnFragmentInteractionListener {
-        // TODO:
-        void onUploadFragmentInteraction(Uri uri);
     }
 }
