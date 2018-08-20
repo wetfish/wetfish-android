@@ -6,6 +6,7 @@
     android:id="@+id/gallery_detail_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
     tools:context="net.wetfish.wetfish.ui.viewpager.FileUploadFragment">
 
     <android.support.v4.widget.NestedScrollView
@@ -40,10 +41,10 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- File View -->
-                <ImageView
-                    android:id="@+id/iv_fragment_file_upload"
-                    android:layout_width="0dp"
+                <!-- File View Container -->
+                <FrameLayout
+                    android:id="@+id/iv_fragment_file_upload_container"
+                    android:layout_width="match_parent"
                     android:layout_height="240dp"
                     android:layout_marginBottom="8dp"
                     android:layout_marginEnd="48dp"
@@ -54,7 +55,35 @@
                     app:layout_constraintBottom_toTopOf="@+id/ll_image_details"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/et_title" />
+                    app:layout_constraintTop_toBottomOf="@+id/et_title" >
+
+                    <!-- File Downscaling Progress Bar -->
+                    <ProgressBar
+                        android:id="@+id/pb_downscale_image"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="128dp"
+                        android:layout_height="128dp"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginStart="48dp"
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone" />
+
+                    <!-- File View -->
+                    <ImageView
+                        android:id="@+id/iv_fragment_file_upload"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginStart="48dp"
+                        android:layout_marginTop="16dp"
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter"/>
+
+                </FrameLayout>
+
 
                 <!-- File View Stats -->
                 <android.support.v7.widget.LinearLayoutCompat
@@ -66,7 +95,7 @@
                     android:layout_marginStart="48dp"
                     android:orientation="horizontal"
                     app:layout_constraintBottom_toTopOf="@+id/spinner_fragment_file_upload"
-                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload">
+                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload_container">
 
                     <android.support.v7.widget.AppCompatTextView
                         android:id="@+id/tv_image_resolution"
