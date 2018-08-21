@@ -130,6 +130,8 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 
     }
 
+
+
     @Override
     public void uploadTransferCurrentImageUri(FileUriData fileUriData) {
 

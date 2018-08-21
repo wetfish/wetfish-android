@@ -20,12 +20,21 @@
     <string name="tv_file_size_mb">%.2f mb</string>
     <string name="tv_error_loading_db">Error Loading Database</string>
     <string name="tv_no_results">No Files Uploaded…</string>
-    <string name="et_description_hint">Description</string>
+    <string name="tv_cloud_upload_complete">Upload Complete!</string>
+    <string name="tv_cloud_upload_cancelled">Upload Cancelled</string>    <string name="et_description_hint">Description</string>
     <string name="et_tags_hint">Tags</string>
     <string name="et_title_hint">Title</string>
     <string name="fab_select_file">Select File</string>
     <string name="fab_take_video">Capture Video</string>
     <string name="fab_take_picture">Capture Image</string>
+
+    <string name="cb_exif_remove_data">Remove Data</string>
+
+    <!-- Snackbar Strings -->
+    <string name="sb_permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
+    <string name="permission_not_granted_storage">Uploading to Wetfish requires Storage permissions.</string>
+    <string name="ok">OK</string>
+    <string name="sb_exif_transfer_data_unsuccessful">Transfering EXIF data was unsuccessful</string>
     <string name="sb_url_clipboard_success">URL successfully copied to clipboard</string>
     <string name="sb_url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
     <string name="sb_image_successfully_rescaled">Image successfully rescaled</string>
@@ -36,14 +45,6 @@
     <string name="sb_no_app_available">No app installed can interact with this file.</string>
     <string name="sb_unable_to_obtain_file">Unable to obtain chosen file.</string>
     <string name="sb_no_file_selected">No file selected.</string>
-    <string name="tv_cloud_upload_complete">Upload Complete!</string>
-    <string name="cb_exif_remove_data">Remove Data</string>
-    <string name="tv_cloud_upload_cancelled">Upload Cancelled</string>
-
-    <!-- Snackbar Strings -->
-    <string name="sb_permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
-    <string name="permission_not_granted_storage">Uploading to Wetfish requires Storage permissions.</string>
-    <string name="ok">OK</string>
 
     <!-- Database Strings -->
     <string name="not_implemented">N/A</string>
@@ -345,11 +346,9 @@
     <string name="exif_tag_y_cb_cr_sub_sampling">Y CB CR Sub Sampling</string>
     <string name="exif_tag_y_resolution">Y Resolution</string>
     <string name="exif_whitebalance_auto">Whitebalance Auto</string>
- 
     <string name="exif_whitebalance_manual">Whitebalance Manual</string>
- 
-  <string name="tv_cloud_upload_cancelled">Upload Cancelled</string>
-    <string name="sb_exif_transfer_data_unsuccessful">Transfering EXIF data was unsuccessful</string>
+
+
 
 
 </resources>
