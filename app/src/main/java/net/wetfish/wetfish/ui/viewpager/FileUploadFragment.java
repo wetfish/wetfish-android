@@ -886,7 +886,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(mFileView);
 
-                    setupFileStats();
+                    if(mMimeType.equals(IMAGE_FILE)) {
+                        setupFileStats();
+                    }
+
                 } else {
 
                     // Update views to reflect that the file is unable to be shown by glide
