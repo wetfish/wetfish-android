@@ -274,7 +274,7 @@ public class FileUtils {
     }
 
     /**
-     * Create a scaled bitmap of the given image, returning resolution to the orginal while preserving
+     * Create a scaled bitmap of the given image, reducing resolution by the scaleRatio while preserving
      * the image's native aspect ratio.
      *
      * @param downscaledBitmapFile the downscaled bitmap image populating an image
