@@ -555,7 +555,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         @Override
                         public void run() {
                             try {
-                                // Create a downscaled image
+                                // Create a rescaled image
                                 createRescaledImage(mCurrentSpinnerSelection);
                             } finally {
                                 // Update the view field with the newly rescaled image if successfully rescaled
@@ -587,7 +587,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         @Override
                         public void run() {
                             try {
-                                // Create a downscaled image
+                                // Create a rescaled image
                                 createRescaledImage(mCurrentSpinnerSelection);
                             } finally {
                                 // Update the view field with the newly rescaled image if successfully rescaled
@@ -628,7 +628,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     @Override
                     public void run() {
                         try {
-                            // Create a downscaled image
+                            // Create a rescaled image
                             createRescaledImage(mCurrentSpinnerSelection);
                         } finally {
                             // Update the view field with the newly rescaled image if successfully rescaled
@@ -673,7 +673,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     @Override
                     public void run() {
                         try {
-                            // Create a downscaled image
+                            // Create a rescaled image
                             createRescaledImage(mCurrentSpinnerSelection);
                         } finally {
                             // Update the view field with the newly rescaled image if successfully rescaled
@@ -717,7 +717,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     @Override
                     public void run() {
                         try {
-                            // Create a downscaled image
+                            // Create a rescaled image
                             createRescaledImage(mCurrentSpinnerSelection);
                         } finally {
                             // Update the view field with the newly rescaled image if successfully rescaled
@@ -932,7 +932,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     }
 
     /**
-     * This method will create a downscaled bitmap  image utilizing FileUtils createDownscaledImageFile,
+     * This method will create a rescaled bitmap  image utilizing @FileUtils @createDownscaledImageFile,
      * and upon success, accordingly change mFileView's onClickListener and displayed image. Upon failure
      * Snackbars will be shown.
      *
@@ -958,8 +958,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
             // Create a rescaled bitmap of the original file
             if (rescaleRatioSelected == 0) {
+                // This method must create a bitmap of the original image's resolution
                 mRescaledImageCreated = FileUtils.createOriginalScaledImageFile(bitmap, imageFile);
             } else {
+                // This method must create a bitmap of the original image's resolution downscaled
                 mRescaledImageCreated = FileUtils.createDownscaledImageFile(bitmap, SELECTIONRATIO[rescaleRatioSelected], imageFile);
             }
 
@@ -1012,6 +1014,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             Log.d(LOG_TAG, "Else Stuff, no eXIF WAS EDITED");
                             // If no edited copy exists with altered EXIF gather EXIF data from the original image
                             ExifUtils.transferExifData(mFileAbsolutePath, mRescaledImageAbsolutePath);
+                            ExifUtils.gatherExifData(mRescaledImageAbsolutePath, getActivity());
 
                             // Point resources to their appropriate variables
                             mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
@@ -1030,7 +1033,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             // Show the image view
                             mFileView.setVisibility(View.VISIBLE);
 
-                            // Let the user know the image was successfully downscaled
+                            // Let the user know the image was successfully rescaled
                             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                                     R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
                         }
@@ -1059,7 +1062,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         // Show the image view
                         mFileView.setVisibility(View.VISIBLE);
 
-                        // Let the user know the image was successfully downscaled
+                        // Let the user know the image was successfully rescaled
                         Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                                 R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
                     }
@@ -1101,7 +1104,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Show the image view
                 mFileView.setVisibility(View.VISIBLE);
 
-                // Let the user know the image was successfully downscaled
+                // Let the user know the image was successfully rescaled
                 Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                         R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
             }
@@ -1116,7 +1119,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             // Show the image view
             mFileView.setVisibility(View.VISIBLE);
 
-            // Let the user know the image was successfully downscaled
+            // Let the user know the image was successfully rescaled
             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                     R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
         }
@@ -1210,7 +1213,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Provide the correct image to Wetfish depending on the images currently available
         if (mEditedImageCreated) {
 
-            // Should a downscaled image be present
+            // Should a rescaled image be present
             // Populate the file with the correct data to later pass to the  RequestBody instance
             File file = new File(mEditedImageAbsolutePath.toString());
 
@@ -1268,7 +1271,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         editedFilePath);
 
                                 /**
-                                 *  Check to see if upload was successful to determine if the downscaled image
+                                 *  Check to see if upload was successful to determine if the rescaled image
                                  * should be kept or deleted
                                  */
                                 if (uploadID >= 0) {
@@ -1304,7 +1307,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         editedFilePath);
 
                             /*
-                               Check to see if upload was successful to determine if the downscaled image
+                               Check to see if upload was successful to determine if the rescaled image
                               should be kept or deleted
                              */
                                 if (uploadID >= 0) {
@@ -1341,7 +1344,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     editedFilePath);
 
                         /*
-                           Check to see if upload was successful to determine if the downscaled image
+                           Check to see if upload was successful to determine if the rescaled image
                           should be kept or deleted
                          */
                             if (uploadID >= 0) {
@@ -1433,7 +1436,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         editedFilePath);
 
                                 /**
-                                 *  Check to see if upload was successful to determine if the downscaled image
+                                 *  Check to see if upload was successful to determine if the edited image
                                  * should be kept or deleted
                                  */
                                 if (uploadID >= 0) {
@@ -1469,7 +1472,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         editedFilePath);
 
                             /*
-                               Check to see if upload was successful to determine if the downscaled image
+                               Check to see if upload was successful to determine if the edited image
                               should be kept or deleted
                              */
                                 if (uploadID >= 0) {
@@ -1506,7 +1509,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     editedFilePath);
 
                         /*
-                           Check to see if upload was successful to determine if the downscaled image
+                           Check to see if upload was successful to determine if the edited image
                           should be kept or deleted
                          */
                             if (uploadID >= 0) {

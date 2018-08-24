@@ -109,8 +109,8 @@ public class GalleryUploadActivity extends AppCompatActivity implements
     private static final String LOG_TAG = GalleryUploadActivity.class.getSimpleName();
     // View Variables
     private TabLayout tabLayout;
-
     private ViewPager viewPager;
+
     // Data Variables
     private Uri fileUri;
 

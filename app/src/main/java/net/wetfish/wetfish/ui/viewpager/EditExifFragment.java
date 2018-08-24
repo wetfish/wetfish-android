@@ -12,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.github.clans.fab.FloatingActionButton;
+
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.adapters.ExifDataAdapter;
 import net.wetfish.wetfish.utils.ExifUtils;
@@ -37,11 +39,14 @@ public class EditExifFragment extends Fragment implements
     private static final String ARG_FILE_URI = "file_uri";
     ArrayList<Object> exifDataArrayList;
     // TODO: Rename and change types of parameters
-    private String mParam1;
+    private String mEditedImageAbsolutePath;
     private String mParam2;
     /* Views */
     private RecyclerView mRecyclerView;
     private ExifDataAdapter mExifDataAdapter;
+    private View mRootLayout;
+    private FloatingActionButton mFabEditFileExif;
+
     /* Data */
     private Uri mFileUriAbsolutePath;
     private OnFragmentInteractionListener mListener;
@@ -72,7 +77,7 @@ public class EditExifFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
+            mEditedImageAbsolutePath = getArguments().getString(ARG_PARAM1);
             mFileUriAbsolutePath = Uri.parse(getArguments().getString(ARG_FILE_URI));
         }
     }
@@ -81,13 +86,25 @@ public class EditExifFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_edit_exif_view_pager, container, false);
+        mRootLayout = inflater.inflate(R.layout.fragment_edit_exif_view_pager, container, false);
 
         // Recycler View for Files
-        mRecyclerView = rootView.findViewById(R.id.rv_exif_data);
+        mRecyclerView = mRootLayout.findViewById(R.id.rv_exif_data);
 
         // Create an adapter
         mExifDataAdapter = new ExifDataAdapter(getContext(), this);
+
+        // FAB to edit EXIF data
+        mFabEditFileExif = mRootLayout.findViewById(R.id.fab_edit_exif);
+        mFabEditFileExif.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Edit the EXIF
+                // TODO: Probably make a prompt
+
+
+            }
+        });
 
 
         // Setup layout for the Recycler View
@@ -95,8 +112,7 @@ public class EditExifFragment extends Fragment implements
 //        mGridLayoutManager = new GridLayoutManager(this, 3);
 //        mRecyclerView.setLayoutManager(mGridLayoutManager);
 
-
-        return rootView;
+        return mRootLayout;
     }
 
     /**
