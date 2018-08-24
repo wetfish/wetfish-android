@@ -7,20 +7,30 @@ package net.wetfish.wetfish.data;
  */
 public class FileExifData {
 
-    private String mExifDataTag;
+    private String mExifDataKey;
     private String mExifDataValue;
 
+    // Regular constructor
     public FileExifData (String exifDataTag, String exifDataValue) {
-
-        mExifDataTag = exifDataTag;
+        mExifDataKey = exifDataTag;
         mExifDataValue = exifDataValue;
     }
 
+    //  Cloning constructor
+    public FileExifData (FileExifData  fileExifData) {
+        mExifDataKey = fileExifData.getExifDataTag();
+        mExifDataValue = fileExifData.getExifDataValue();
+    }
+
     public String getExifDataTag() {
-        return mExifDataTag;
+        return mExifDataKey;
     }
 
     public String getExifDataValue() {
         return mExifDataValue;
+    }
+
+    public void setExifDataValue(String mExifDataValue) {
+        this.mExifDataValue = mExifDataValue;
     }
 }

@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -17,6 +19,8 @@ import net.wetfish.wetfish.data.FileExifDataHeader;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.widget.CompoundButton.*;
 
 /**
  * Created by ${Michael} on 12/12/2017.
@@ -36,8 +40,11 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private final ExifDataAdapterOnClickHandler mClickHandler;
     // List of EXIF data objects
     private List<Object> mExifDataList = new ArrayList<>();
+    // Duplicate list of EXIF data objects to implement changes
+    private List<Object> mEditedExifDataList = new ArrayList<>();
     // Activity context
     private Context mContext;
+    private boolean mEditedExifDataListInstantiated = false;
 
 
     public ExifDataAdapter(Context mContext, ExifDataAdapterOnClickHandler mClickHandler) {
@@ -54,7 +61,6 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         mExifDataList = newDataList;
         notifyDataSetChanged();
     }
-
 
     /**
      * Called when RecyclerView needs a new {@link FileExifDataHeader} or {@link FileExifData} of the given type to represent
@@ -136,7 +142,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             case VIEW_TYPE_EXIF_DATA:
                 ExifDataViewHolder exifDataViewHolder = (ExifDataViewHolder) holder;
-                exifDataViewHolder.bind((FileExifData) mExifDataList.get(position));
+                exifDataViewHolder.bind((FileExifData) mExifDataList.get(position), position);
                 break;
             case VIEW_TYPE_EXIF_DATA_BLANK:
                 ExifDataBlankViewHolder exifDataBlankViewHolder = (ExifDataBlankViewHolder) holder;
@@ -202,6 +208,8 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         // EXIF data TextViews
         public TextView mExifDataTag;
         public TextView mExifDataValue;
+        public CheckBox mExifDataCheckbox;
+
 
         /**
          * Constructor for FileViewHolder. Obtain a reference to the layout.
@@ -212,15 +220,69 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(itemView);
 
             // EXIF data text view references
-            mExifDataTag = (TextView) itemView.findViewById(R.id.tv_exif_data_tag);
-            mExifDataValue = (TextView) itemView.findViewById(R.id.tv_exif_data_value);
+            mExifDataTag = itemView.findViewById(R.id.tv_exif_data_tag);
+            mExifDataValue = itemView.findViewById(R.id.tv_exif_data_value);
             itemView.setOnClickListener(this);
+
+            // Checkbox
+            mExifDataCheckbox = itemView.findViewById(R.id.cb_exif_data_deletion_selection);
+
         }
 
-        public void bind(FileExifData exifData) {
+        public void bind(final FileExifData exifData, final int position) {
+
             if (exifData != null) {
                 mExifDataTag.setText(exifData.getExifDataTag());
                 mExifDataValue.setText(exifData.getExifDataValue());
+
+                mExifDataCheckbox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked) {
+
+                            if (!mEditedExifDataListInstantiated) {
+                                for (int i = 0;  i < mExifDataList.size(); i++) {
+                                    mEditedExifDataList.add(new FileExifData((FileExifData) mExifDataList.get(i)));
+                                    Log.d(LOG_TAG, "Added " + i);
+                                }
+                                mEditedExifDataListInstantiated = true;
+                            }
+
+                            FileExifData editedExifData = exifData;
+                            Log.d(LOG_TAG, "Here is the data Bruv\n" + exifData.getExifDataTag()
+                                    + "\n" + exifData.getExifDataValue());
+                            editedExifData.setExifDataValue("");
+                            Log.d(LOG_TAG, "Here is the data Bruv\n" + editedExifData.getExifDataTag()
+                                    + "\n" + editedExifData.getExifDataValue());
+                            mEditedExifDataList.set(position, editedExifData);
+
+                            FileExifData testData = (FileExifData) mEditedExifDataList.get(position);
+
+                            Log.d(LOG_TAG, "Here is the data Bruv\n" + testData.getExifDataTag()
+                                    + "\n" + testData.getExifDataValue());
+                        } else {
+                            FileExifData testData = (FileExifData) mEditedExifDataList.get(position);
+
+                            Log.d(LOG_TAG, "Here is the data Bruv\n" + testData.getExifDataTag()
+                                    + "\n" + testData.getExifDataValue());
+
+                            mEditedExifDataList.set(position, exifData);
+
+                            testData = (FileExifData) mEditedExifDataList.get(position);
+
+                            Log.d(LOG_TAG, "Here is the data Bruv\n" + testData.getExifDataTag()
+                                    + "\n" + testData.getExifDataValue());
+                        }
+
+                    }
+                });
+//                {
+//                    mEditedExifDataList.add(new FileExifData(exifData.getExifDataTag(), exifData.getExifDataValue()));
+//                }
+//
+//                if (mExifDataCheckbox.) {
+//
+//                }
             }
         }
 
