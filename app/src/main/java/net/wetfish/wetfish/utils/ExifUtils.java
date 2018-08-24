@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileExifData;
@@ -437,6 +438,7 @@ public class ExifUtils {
 
                         // Add Exif data and increment
                         exifDataArrayList.add(new FileExifData(exifTagsV24AndAboveSensitive[i], exifAttributeValue));
+                        Log.d(LOG_TAG, exifAttributeValue + " " + exifTagsV24AndAboveSensitive[i]);
                         exifValueTagPairsStored++;
                     }
                 }
@@ -466,6 +468,7 @@ public class ExifUtils {
 
                         // Add Exif data and increment
                         exifDataArrayList.add(new FileExifData(exifTagsV24AndAboveGeneral[i], exifAttributeValue));
+                        Log.d(LOG_TAG, exifAttributeValue + " " + exifTagsV24AndAboveGeneral[i]);
                         exifValueTagPairsStored++;
                     }
                 }
@@ -591,4 +594,28 @@ public class ExifUtils {
 //            e.printStackTrace();
 //        }
 //    }
+
+    private boolean transferEditedExifData(ArrayList<Object> editedExifDataList, Uri newFile) {
+        try {
+            // Create an ExifInterface object to transfer the edited current file's exif data.
+            ExifInterface newFileExif = new ExifInterface(newFile.toString());
+
+            // Run through tags and store them
+            for (int i = 0; i < editedExifDataList.size(); i++) {
+                // Obtain the fileExifData object at the given location
+                FileExifData fileExifData = (FileExifData) editedExifDataList.get(i);
+                if (fileExifData != null) {
+                    // If fileExifData doesn't equal null, apply that data to the ExifInterface object
+                    newFileExif.setAttribute(fileExifData.getExifDataTag(), fileExifData.getExifDataValue());
+                }
+            }
+            // Save the ExifInterface to the file
+            newFileExif.saveAttributes();
+            return true;
+        } catch (IOException e) {
+            // Print stack trace should the try block fail
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
