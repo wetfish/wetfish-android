@@ -284,42 +284,10 @@
 
     <!-- EXIF Tag Values: ExifInterface-->
     <string-array name="exif_tags_complete_array_interface">
-        <item>ApertureValue</item>
         <item>Artist</item>
-        <item>BitsPerSample</item>
-        <item>BrightnessValue</item>
-        <item>CFAPattern</item>
-        <item>ColorSpace</item>
-        <item>ComponentsConfiguration</item>
-        <item>CompressedBitsPerPixel</item>
-        <item>Compression</item>
-        <item>Contrast</item>
-        <item>Copyright</item>
-        <item>CustomRendered</item>
         <item>DateTime</item>
         <item>DateTimeDigitized</item>
         <item>DateTimeOriginal</item>
-        <item>DefaultCropSize</item>
-        <item>DeviceSettingDescription</item>
-        <item>DigitalZoomRatio</item>
-        <item>DNGVersion</item>
-        <item>EXIFVersion</item>
-        <item>ExposureBiasValue</item>
-        <item>ExposureIndex</item>
-        <item>ExposureMode</item>
-        <item>ExposureProgram</item>
-        <item>ExposureTime</item>
-        <item>FNumber</item>
-        <item>FileSource</item>
-        <item>Flash</item>
-        <item>FlashpixVersion</item>
-        <item>FlashEnergy</item>
-        <item>FocalLength</item>
-        <item>FocalLengthIn35MMFilm</item>
-        <item>FocalPlaneResolutionUnit</item>
-        <item>FocalPlaneXResolution</item>
-        <item>FocalPlaneYResolution</item>
-        <item>GainControl</item>
         <item>GPSAltitude</item>
         <item>GPSAltitudeRef</item>
         <item>GPSAreaInformation</item>
@@ -352,19 +320,53 @@
         <item>GPSTrackRef</item>
         <item>GPSVersionID</item>
         <item>ImageDescription</item>
+        <item>Make</item>
+        <item>MakerNote</item>
+        <item>Model</item>
+        <item>Aperture</item>
+        <item>ApertureValue</item>
+        <item>BitsPerSample</item>
+        <item>BrightnessValue</item>
+        <item>CFAPattern</item>
+        <item>ColorSpace</item>
+        <item>ComponentsConfiguration</item>
+        <item>CompressedBitsPerPixel</item>
+        <item>Compression</item>
+        <item>Contrast</item>
+        <item>Copyright</item>
+        <item>CustomRendered</item>
+        <item>DefaultCropSize</item>
+        <item>DeviceSettingDescription</item>
+        <item>DigitalZoomRatio</item>
+        <item>DNGVersion</item>
+        <item>EXIFVersion</item>
+        <item>ExposureBiasValue</item>
+        <item>ExposureIndex</item>
+        <item>ExposureMode</item>
+        <item>ExposureProgram</item>
+        <item>ExposureTime</item>
+        <item>FNumber</item>
+        <item>FileSource</item>
+        <item>Flash</item>
+        <item>FlashpixVersion</item>
+        <item>FlashEnergy</item>
+        <item>FocalLength</item>
+        <item>FocalLengthIn35MMFilm</item>
+        <item>FocalPlaneResolutionUnit</item>
+        <item>FocalPlaneXResolution</item>
+        <item>FocalPlaneYResolution</item>
+        <item>GainControl</item>
         <item>ImageLength</item>
         <item>ImageUniqueID</item>
         <item>ImageWidth</item>
         <item>InteroperabilityIndex</item>
+        <item>ISO</item>
         <item>ISOSpeedRatings</item>
         <item>JPEGInterchangeFormat</item>
         <item>JPEGInterchangeFormatLength</item>
         <item>LightSource</item>
-        <item>Make</item>
-        <item>MakerNote</item>
         <item>MaxApertureValue</item>
         <item>MeteringMode</item>
-        <item>Model</item>
         <item>NewSubfileType</item>
         <item>OECF</item>
         <item>AspectFrame</item>
@@ -382,7 +384,7 @@
         <item>ResolutionUnit</item>
         <item>RowsPerStrip</item>
         <item>ISO</item>
-        <item>JPGFromRaw</item>
+        <item>JpgFromRaw</item>
         <item>SensorBottomBorder</item>
         <item>SensorLeftBorder</item>
         <item>SensorRightBorder</item>

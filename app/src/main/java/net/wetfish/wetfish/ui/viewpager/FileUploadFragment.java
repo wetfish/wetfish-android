@@ -2,6 +2,7 @@ package net.wetfish.wetfish.ui.viewpager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
@@ -46,6 +47,7 @@ import net.wetfish.wetfish.retrofit.RESTInterface;
 import net.wetfish.wetfish.retrofit.RetrofitClient;
 import net.wetfish.wetfish.ui.GalleryActivity;
 import net.wetfish.wetfish.ui.GalleryCollectionActivity;
+import net.wetfish.wetfish.ui.GalleryUploadActivity;
 import net.wetfish.wetfish.utils.ExifUtils;
 import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
@@ -70,7 +72,7 @@ import retrofit2.Retrofit;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link FileUploadFragment.UploadFragmentInteractionFileSharing} interface
+ * {@link UploadFragmentUriUpdate} interface
  * to handle interaction events.
  * Use the {@link FileUploadFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -78,12 +80,12 @@ import retrofit2.Retrofit;
 public class FileUploadFragment extends Fragment implements FABProgressListener,
         AdapterView.OnItemSelectedListener {
 
-    /* Fragment initialization parameter keys */
-    private static final String ARG_SECTION_NUMBER = "section_number";
-    private static final String ARG_FILE_URI = "file_uri";
+
 
     /* Constants */
     private static final String LOG_TAG = FileUploadFragment.class.getSimpleName();
+    private static final String ARG_EDITED_FILE_URI = "section_number";
+    private static final String ARG_ORIGINAL_FILE_URI = "file_uri";
     private static final int REQUEST_STORAGE = 0;
     private static final String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -136,39 +138,44 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private int uploadID;
     private int mCurrentSpinnerSelection = 0;
     private double mImageFileSize = 0;
-    private int sectionNumber;
 
     /* Threads */
     // Thread to upload image to Wetfish
     private Handler mCallThreadUpload;
-    // Thread to downscale images
+    // Thread to rescale images
     private Handler mCallThreadRescaleImage;
-    // Thread to delete images
-    private Handler mCallThreadDeleteImage;
     // Thread to determine images
     private Handler mCallThreadDetermineImage;
 
     private Call<ResponseBody> mCall;
 
-    private UploadFragmentInteractionFileSharing mListener;
+    /* Fragment Interaction Interfaces */
+    private UploadFragmentUriUpdate mSendUri;
+    public interface UploadFragmentUriUpdate {
+        void uploadTransferEditedUri(Uri mEditedImageAbsolutePath);
+    }
+
+    /* Fragment interaction methods */
+    public void receiveEditExifFragmentData(Uri editedFileUri) {
+        mEditedImageAbsolutePath = editedFileUri;
+    }
 
     public FileUploadFragment() {
         // Required empty public constructor
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Create an instance of {@link FileUploadFragment} with the original fle Uri and edited file Uri if present
      *
-     * @param position The position of the fragment
-     * @param fileUri  The Uri of the data passed to the fragment
+     * @param editedFileUri The Uri of files edited off of the original file
+     * @param fileUri  The Uri of the the original upload file
      * @return A new instance of fragment FileUploadFragment.
      */
-    public static FileUploadFragment newInstance(Integer position, Uri fileUri) {
+    public static FileUploadFragment newInstance(Uri editedFileUri, Uri fileUri) {
         FileUploadFragment fragment = new FileUploadFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_SECTION_NUMBER, position);
-        args.putString(ARG_FILE_URI, fileUri.toString());
+        args.putString(ARG_EDITED_FILE_URI, editedFileUri.toString());
+        args.putString(ARG_ORIGINAL_FILE_URI, fileUri.toString());
         fragment.setArguments(args);
         return fragment;
     }
@@ -177,12 +184,14 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            sectionNumber = getArguments().getInt(ARG_SECTION_NUMBER);
-            mFileAbsolutePath = Uri.parse(getArguments().getString(ARG_FILE_URI));
+            mEditedImageAbsolutePath = Uri.parse(getArguments().getString(ARG_EDITED_FILE_URI));
+            mFileAbsolutePath = Uri.parse(getArguments().getString(ARG_ORIGINAL_FILE_URI));
         }
     }
 
     //TODO: Later on when Video Playback is possible with exoplayer the focus feature will only be for images
+
+    // TODO: Fix the initial error with "File Not Found" even though it was
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -257,7 +266,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mCallThreadDetermineImage.post(new Runnable() {
             @Override
             public void run() {
-                if (mEditedImageCreated) {
+                if (mEditedImageCreated || (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty())) {
+                    // If @mEditedImageAbsolutePath has been created or provided by another fragment, use it.
                     determineFileViewContent(mEditedImageAbsolutePath);
                 } else {
                     determineFileViewContent(mFileAbsolutePath);
@@ -349,8 +359,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 mSpinner.setEnabled(true);
                             }
 
-                            // Pass the user a success notification
-                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.tv_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                            // Pass the user a success notification of cancellation
+                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
                                     .show();
                         }
                     }
@@ -364,18 +374,23 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof UploadFragmentInteractionFileSharing) {
-            mListener = (UploadFragmentInteractionFileSharing) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement UploadFragmentInteractionFileSharing");
+        try {
+            mSendUri = (UploadFragmentUriUpdate) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Error in data retrieval");
         }
+//        if (context instanceof UploadFragmentUriUpdate) {
+//            mSendUri = (UploadFragmentUriUpdate) context;
+//        } else {
+//            throw new RuntimeException(context.toString()
+//                    + " must implement UploadFragmentUriUpdate");
+//        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        mSendUri = null;
     }
 
     /**
@@ -397,6 +412,30 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     public void onPause() {
         super.onPause();
         //TODO: Potentially delete and recreate image on onPause()?
+    }
+
+    /**
+     * Called when the fragment is visible to the user and actively running.
+     * This is generally
+     * tied to {@link Activity#onResume() Activity.onResume} of the containing
+     * Activity's lifecycle.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Setup mFileView's image and onClickListener with the correct file Uri
+        mCallThreadDetermineImage = new Handler();
+        mCallThreadDetermineImage.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mEditedImageCreated || (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty())) {
+                    // If @mEditedImageAbsolutePath has been created or provided by another fragment, use it.
+                    determineFileViewContent(mEditedImageAbsolutePath);
+                } else {
+                    determineFileViewContent(mFileAbsolutePath);
+                }
+            }
+        });
     }
 
     /**
@@ -982,7 +1021,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         // If the image is a jpeg/jpg check to see if there is a pre-created file with EXIF data.
                         if (mExifEdited && mEditedImageCreated && !mEditedImageAbsolutePath.toString().isEmpty()) {
                             // If an edited copy exists with altered EXIF gather the EXIF data from this instead of the original
-                            ExifUtils.transferExifData(mEditedImageAbsolutePath, mRescaledImageAbsolutePath);
+                            ExifUtils.transferExifData(mEditedImageAbsolutePath, mRescaledImageAbsolutePath, getContext());
 
                             // Delete the previously created file after successful EXIF transfer
                             deleteEditedFile();
@@ -990,6 +1029,12 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             // Point resources to their appropriate variables
                             mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
                             mEditedImageCreated = true;
+
+                            // TODO: May be a more effective way at the same feature. Add EditFile later
+                            // Send the updated Uri to the other fragments and update them
+                            mSendUri.uploadTransferEditedUri(mEditedImageAbsolutePath);
+                            ((GalleryUploadActivity)getActivity()).mSectionsPagerAdapter
+                                    .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_EXIF_FRAGMENT).onResume();
 
                             // Remove rescaled image absolute path uri
                             mRescaledImageAbsolutePath = null;
@@ -1004,6 +1049,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             // Show the image view
                             mFileView.setVisibility(View.VISIBLE);
 
+
                             // Let the user know the image was successfully downscaled
                             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                                     R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
@@ -1013,12 +1059,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         } else {
                             Log.d(LOG_TAG, "Else Stuff, no eXIF WAS EDITED");
                             // If no edited copy exists with altered EXIF gather EXIF data from the original image
-                            ExifUtils.transferExifData(mFileAbsolutePath, mRescaledImageAbsolutePath);
+                            ExifUtils.transferExifData(mFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
                             ExifUtils.gatherExifData(mRescaledImageAbsolutePath, getActivity());
 
                             // Point resources to their appropriate variables
                             mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
                             mEditedImageCreated = true;
+
+                            // TODO: May be a more effective way at the same feature. Add EditFile later
+                            // Send the updated Uri to the other fragments and upgate them
+                            mSendUri.uploadTransferEditedUri(mEditedImageAbsolutePath);
+                            ((GalleryUploadActivity)getActivity()).mSectionsPagerAdapter
+                                    .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_EXIF_FRAGMENT).onResume();
 
                             // Remove rescaled image absolute path uri
                             mRescaledImageAbsolutePath = null;
@@ -1048,6 +1100,12 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         // Point resources to their appropriate variables
                         mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
                         mEditedImageCreated = true;
+
+                        // TODO: May be a more effective way at the same feature. Add EditFile later
+                        // Send the updated Uri to the other fragments and upgate them
+                        mSendUri.uploadTransferEditedUri(mEditedImageAbsolutePath);
+                        ((GalleryUploadActivity)getActivity()).mSectionsPagerAdapter
+                                .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_EXIF_FRAGMENT).onResume();
 
                         // Remove rescaled image absolute path uri
                         mRescaledImageAbsolutePath = null;
@@ -1544,9 +1602,5 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 }
             });
         }
-    }
-
-    public interface UploadFragmentInteractionFileSharing {
-        void uploadTransferCurrentImageUri(FileUriData fileUriData);
     }
 }

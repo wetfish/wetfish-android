@@ -64,6 +64,8 @@ public class GalleryActivity extends AppCompatActivity implements
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
     // Content Provider Auto Increment Buffer
     private int POSITION_BUFFER = 1;
+    // Constant triggers if the user is trying to take photos or videos
+    // TODO: Make the request fire the given feature if the user had previously requested it.
 
     /* Views */
     // Progress bar utilized during loader
@@ -193,9 +195,27 @@ public class GalleryActivity extends AppCompatActivity implements
         mSelectFileFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectFileToUpload();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED
+                            || ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                        // Permissions have not been granted, inform the user and ask again
+                        requestStoragePermission();
+
+                    } else {
+                        // Storage permissions granted!
+                        selectFileToUpload();
+                    }
+                } else {
+                    selectFileToUpload();
+                }
             }
-        });
+
+            });
 
         // Acquire a connectivity manager to see network status
         ConnectivityManager connectivityManager = (ConnectivityManager)

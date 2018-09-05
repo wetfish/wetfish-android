@@ -91,7 +91,7 @@ public class ExifUtils {
 
                     // Add Exif data and increment
                     exifDataArrayList.add(new FileExifData(exifTagsSensitive[i], exifTagsSensitiveInterface[i], exifAttributeValue));
-                    Log.d(LOG_TAG, "Value != Null (Secure): " + exifTagsSensitive[i] + " " + exifAttributeValue);
+                    Log.d(LOG_TAG, "Value != Null (Secure): " + exifTagsSensitive[i] + " " + exifAttributeValue + " " + i);
                     exifValueTagPairsStored++;
                 }
             }
@@ -101,6 +101,8 @@ public class ExifUtils {
                 exifDataArrayList.add(new FileExifDataHeader(true, context));
                 exifDataArrayList.add(new FileExifDataBlank(true));
             }
+
+            Log.d(LOG_TAG, "EXIF VALUE TAGS STORED (Sensitive) " + exifValueTagPairsStored);
 
             // Reset the header and value tag pairs added for general security level exif tags
             exifHeaderCreated = false;
@@ -133,6 +135,8 @@ public class ExifUtils {
                 exifDataArrayList.add(new FileExifDataBlank(false));
             }
 
+            Log.d(LOG_TAG, "EXIF VALUE TAGS STORED (Sensitive) " + exifValueTagPairsStored);
+
             return exifDataArrayList;
         } catch (IOException e) {
             e.printStackTrace();
@@ -163,7 +167,7 @@ public class ExifUtils {
                     newFileExif.setAttribute(fileExifData.getExifDataTag(), originalFileExif.getAttribute(fileExifData.getExifDataTag()));
 
                     String exifAttributeValue = originalFileExif.getAttribute(fileExifData.getExifDataTag());
-                    Log.d(LOG_TAG, "Transfer Edited Exif Data: " + fileExifData.getExifDataTag() + " " + exifAttributeValue);
+                    Log.d(LOG_TAG, "Transfer Edited Exif Data: " + fileExifData.getExifDataTag() + " " + exifAttributeValue + " :" + i);
                 }
             }
             // Save the attributes to the new file

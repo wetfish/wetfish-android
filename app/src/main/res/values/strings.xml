@@ -48,6 +48,8 @@
     <string name="sb_no_app_available">No app installed can interact with this file.</string>
     <string name="sb_unable_to_obtain_file">Unable to obtain chosen file.</string>
     <string name="sb_no_file_selected">No file selected.</string>
+    <string name="sb_image_unsuccessfully_created">Image creation failed</string>
+    <string name="sb_edit_exif_no_changes">No changes selected</string>
 
     <!-- Database Strings -->
     <string name="not_implemented">N/A</string>
@@ -212,6 +214,10 @@
 
     <string name="title_activity_settings">Settings</string>
     <string name="tv_title_activity_gallery_detail_view_pager">Gallery</string>
+
+    //EXIF Data layout
+    <string name="exif_data_header_sensitive">Sensitive Exif Data</string>
+    <string name="exif_data_header_general">General Exif Data</string>
 
 </resources>
 
