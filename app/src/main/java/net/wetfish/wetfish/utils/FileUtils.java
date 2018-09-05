@@ -36,8 +36,6 @@ public class FileUtils {
     private static final double UNIT_CONVERSION = 1000;
     private static final double ROUNDING_NUMBER = 100.0;
 
-
-    // TODO: Might want to rename this
     public static String getAbsolutePathFromUri(Context context, Uri contentUri) {
         String fileProviderString = "(/net.wetfish.wetfish/)";
         String capturedFileString = "(CAPTURED_FILE_)";
@@ -60,7 +58,6 @@ public class FileUtils {
                 cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
                 int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
                 cursor.moveToFirst();
-                Log.d("FileUtils[gRPFU]: ", cursor.getString(column_index));
 
                 // Use cursor to store column_index string
                 String columnIndex = cursor.getString(column_index);
@@ -151,6 +148,21 @@ public class FileUtils {
         return Files.CONTENT_URI.buildUpon().appendPath(Integer.toString(id)).build();
     }
 
+    /**
+     * Database method that inserts the uploaded file's data into the database upon a successful upload
+     *
+     * @param context
+     * @param fileTitle
+     * @param fileTags
+     * @param fileDescription
+     * @param fileUploadDate
+     * @param fileExtension
+     * @param fileDeviceUri
+     * @param fileWetfishLocationUrl
+     * @param fileWetfishDeletionUrl
+     * @param editedFileDeviceUri
+     * @return
+     */
     public static int insertFileData(Context context, String fileTitle, String fileTags,
                                      String fileDescription, long fileUploadDate, String fileExtension,
                                      String fileDeviceUri, String fileWetfishLocationUrl,
@@ -183,7 +195,6 @@ public class FileUtils {
         return Integer.valueOf(((context.getContentResolver().insert(Files.CONTENT_URI, cv)).getLastPathSegment()).toString());
     }
 
-
     /**
      * Method to determine what the mime type is for the provided file extension
      *
@@ -209,6 +220,12 @@ public class FileUtils {
         }
     }
 
+    /**
+     * Determines if the image type is representable by the Glide library
+     *
+     * @param fileType The file type being used in @{@link net.wetfish.wetfish.ui.viewpager.FileUploadFragment}
+     * @return the mime type
+     */
     public static boolean representableByGlide(String fileType) {
         Log.d("FileUtils[rBG]: ", "CHECK IT: " + fileType);
         if (fileType.matches("(?i).jpeg|.jpg|.jiff|.exif|.tiff|.gif|.bmp|.png|.webp|.bat|.bpg|.svg(?-i)")) {
@@ -312,6 +329,13 @@ public class FileUtils {
         return false;
     }
 
+    /**
+     * Method created to determine that a bitmap has successfully been downscaled
+     *
+     * * @param originalBitmapUri
+     * @param downscaledBitmapUri
+     * @return
+     */
     public static boolean checkSuccessfulBitmapDownscale(Uri originalBitmapUri, Uri downscaledBitmapUri) {
         Bitmap bitmapOriginal = BitmapFactory.decodeFile(originalBitmapUri.toString());
         Bitmap bitmapDownscaledOriginal = BitmapFactory.decodeFile(downscaledBitmapUri.toString());
@@ -322,6 +346,13 @@ public class FileUtils {
         return downscaledWidth < originalWidth;
     }
 
+    /**
+     * Method created to determine that a bitmap has successfully been upscaled
+     *
+     * * @param originalBitmapUri
+     * @param downscaledBitmapUri
+     * @return
+     */
     public static boolean checkSuccessfulBitmapUpscale(Uri originalBitmapUri, Uri downscaledBitmapUri) {
         Bitmap bitmapOriginal = BitmapFactory.decodeFile(originalBitmapUri.toString());
         Bitmap bitmapDownscaledOriginal = BitmapFactory.decodeFile(downscaledBitmapUri.toString());
@@ -332,6 +363,30 @@ public class FileUtils {
         return upscaledWidth < originalWidth;
     }
 
+    /**
+     * Method created  to determine that a bitmap has successfully been duplicated
+     *
+     * @param originalBitmapUri
+     * @param downscaledBitmapUri
+     * @return
+     */
+    public static boolean checkSuccessfulBitmapDuplication(Uri originalBitmapUri, Uri downscaledBitmapUri) {
+        Bitmap bitmapOriginal = BitmapFactory.decodeFile(originalBitmapUri.toString());
+        Bitmap bitmapDownscaledOriginal = BitmapFactory.decodeFile(downscaledBitmapUri.toString());
+
+        double originalWidth = bitmapOriginal.getWidth();
+        double upscaledWidth = bitmapDownscaledOriginal.getWidth();
+
+        return upscaledWidth == originalWidth;
+    }
+
+    /**
+     * Acquires the current file's size and returns it as a string
+     *
+     * @param fileUri
+     * @param context
+     * @return
+     */
     public static String getFileSize(Uri fileUri, Context context) {
         // Create an image to reference
         File file = new File(fileUri.toString());
@@ -359,6 +414,13 @@ public class FileUtils {
 
     }
 
+    /**
+     * Acquires the current file's image resolution and returns it as a string
+     *
+     * @param fileUri
+     * @param context
+     * @return
+     */
     public static String getImageResolution(Uri fileUri, Context context) {
         // Get the bitmap we want the resolution from
         Bitmap bitmap = BitmapFactory.decodeFile(fileUri.toString());
@@ -367,6 +429,13 @@ public class FileUtils {
         return context.getString(R.string.tv_image_resolution, bitmap.getWidth(), bitmap.getHeight());
     }
 
+    /**
+     * Acquires the current video's length and returns it as a string
+     *
+     * @param fileUri
+     * @param context
+     * @return
+     */
     public static String getVideoLength(Uri fileUri, Context context) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
 
