@@ -42,7 +42,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
     public static final int VIEWPAGER_OFF_SCREEN_PAGE_LIMIT = 2;
     public static final int VIEWPAGER_UPLOAD_FRAGMENT = 0;
     public static final int VIEWPAGER_EDIT_EXIF_FRAGMENT = 1;
-    private static final int VIEWPAGER_EDIT_FILE_FRAGMENT = 2;
+    public static final int VIEWPAGER_EDIT_FILE_FRAGMENT = 2;
     // View Variables
     private TabLayout tabLayout;
     private ViewPager mViewPager;

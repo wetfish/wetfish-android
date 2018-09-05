@@ -194,11 +194,6 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                                         // If the image was successfully created, initialize the file's edited EXIF data
 
                                         if (initializeEditedFileExif()) {
-                                            // If successfully initialized, send the file Uri to the other fragments and update @mExifDataAdapter
-                                            mSendUri.editExifTransferEditedUri(mEditedImageAbsolutePath);
-                                            ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
-                                                    .getFragment(GalleryUploadActivity.VIEWPAGER_UPLOAD_FRAGMENT).onResume();
-
                                             // If successful, gather the modified EXIF data
                                             mExifDataArrayList = gatherExifData(mEditedImageAbsolutePath, getContext());
 
@@ -214,6 +209,17 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                                         // Update boolean for @endCallThreadEditExif
                                         mSuccessfulExifEdit = false;
                                     }
+                                }
+
+                                if (mSuccessfulExifEdit) {
+                                    // If successfully initialized, send the file Uri to the other fragments and update @mExifDataAdapter
+                                    mSendUri.editExifTransferEditedUri(mEditedImageAbsolutePath);
+                                    ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
+                                            .getFragment(GalleryUploadActivity.VIEWPAGER_UPLOAD_FRAGMENT).onResume();
+
+                                    mSendUri.editExifTransferEditedUri(mEditedImageAbsolutePath);
+                                    ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
+                                            .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_FILE_FRAGMENT).onResume();
                                 }
 
                                 // Clear the thread and update the FAB upon final animation
@@ -365,6 +371,8 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                     R.string.sb_exif_transfer_data_unsuccessful, Snackbar.LENGTH_LONG).show();
         }
+
+
     }
 
     public interface EditExifFragmentUriUpdate {

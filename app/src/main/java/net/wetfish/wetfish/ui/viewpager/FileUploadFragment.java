@@ -414,6 +414,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         //TODO: Potentially delete and recreate image on onPause()?
     }
 
+    // TODO: This call me be the one causing additional lagging on the UI thread...
     /**
      * Called when the fragment is visible to the user and actively running.
      * This is generally
@@ -423,12 +424,14 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(LOG_TAG, "onResume triggered");
         // Setup mFileView's image and onClickListener with the correct file Uri
         mCallThreadDetermineImage = new Handler();
         mCallThreadDetermineImage.post(new Runnable() {
             @Override
             public void run() {
                 if (mEditedImageCreated || (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty())) {
+                    Log.d(LOG_TAG, "Edited Image Triggered");
                     // If @mEditedImageAbsolutePath has been created or provided by another fragment, use it.
                     determineFileViewContent(mEditedImageAbsolutePath);
                 } else {
@@ -1102,7 +1105,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         mEditedImageCreated = true;
 
                         // TODO: May be a more effective way at the same feature. Add EditFile later
-                        // Send the updated Uri to the other fragments and upgate them
+                        // Send the updated Uri to the other fragments and update them
                         mSendUri.uploadTransferEditedUri(mEditedImageAbsolutePath);
                         ((GalleryUploadActivity)getActivity()).mSectionsPagerAdapter
                                 .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_EXIF_FRAGMENT).onResume();
