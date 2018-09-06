@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.ViewGroup;
 
 import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.data.EditedFileData;
 import net.wetfish.wetfish.ui.viewpager.EditExifFragment;
 import net.wetfish.wetfish.ui.viewpager.EditFileFragment;
 import net.wetfish.wetfish.ui.viewpager.FileUploadFragment;
@@ -143,7 +144,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
      * @param editedFileUri Uri of an edited image
      */
     @Override
-    public void editExifTransferEditedUri(Uri editedFileUri) {
+    public void editExifTransferEditedFileData(EditedFileData editedFileUri) {
         FileUploadFragment uploadFragment = (FileUploadFragment) mSectionsPagerAdapter.getFragment(VIEWPAGER_UPLOAD_FRAGMENT);
         uploadFragment.receiveEditExifFragmentData(editedFileUri);
     }
@@ -155,7 +156,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
      * @param editedFileUri Uri of an edited image
      */
     @Override
-    public void uploadTransferEditedUri(Uri editedFileUri) {
+    public void uploadTransferEditedFileData (EditedFileData editedFileUri) {
         EditExifFragment editExifFragment = (EditExifFragment) mSectionsPagerAdapter.getFragment(VIEWPAGER_EDIT_EXIF_FRAGMENT);
         editExifFragment.receiveUploadFragmentData(editedFileUri);
     }

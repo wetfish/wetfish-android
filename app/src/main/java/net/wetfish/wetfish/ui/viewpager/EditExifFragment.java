@@ -27,6 +27,7 @@ import com.github.jorgecastilloprz.listeners.FABProgressListener;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.adapters.ExifDataAdapter;
+import net.wetfish.wetfish.data.EditedFileData;
 import net.wetfish.wetfish.ui.GalleryUploadActivity;
 import net.wetfish.wetfish.utils.FileUtils;
 
@@ -68,6 +69,8 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
     private Uri mFileAbsolutePath;
     private Uri mEditedImageAbsolutePath;
     private Uri mEditedImageAbsolutePathTemp;
+    private double mEditedImageQuality;
+    private EditedFileData mEditedFileData;
     private ArrayList<Object> mExifDataArrayList;
     private boolean mDuplicateImageCreated;
     private boolean mCancelableCallThreadEditExif;
@@ -81,8 +84,10 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
     private EditExifFragmentUriUpdate mSendUri;
 
     /* Fragment interaction methods */
-    public void receiveUploadFragmentData(Uri editedFileUri) {
-        mEditedImageAbsolutePath = editedFileUri;
+    public void receiveUploadFragmentData(EditedFileData editedFileUri) {
+        mEditedFileData = editedFileUri;
+        mEditedImageAbsolutePath = editedFileUri.getEditedFileUri();
+        mEditedImageQuality = editedFileUri.getRescaledImageQuality();
     }
 
     /**
@@ -114,6 +119,10 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
         if (getArguments() != null) {
             mEditedImageAbsolutePath = Uri.parse(getArguments().getString(ARG_EDITED_FILE_URI));
             mFileAbsolutePath = Uri.parse(getArguments().getString(ARG_ORIGINAL_FILE_URI));
+        }
+
+        if (mEditedFileData == null) {
+            mEditedFileData = new EditedFileData();
         }
     }
 
@@ -212,12 +221,17 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                                 }
 
                                 if (mSuccessfulExifEdit) {
+
+                                    // Send the EditedFileData object with update information
+                                    mEditedFileData.setEditedFileUri(mEditedImageAbsolutePath);
+                                    mEditedFileData.setExifChanged(true);
+
                                     // If successfully initialized, send the file Uri to the other fragments and update @mExifDataAdapter
-                                    mSendUri.editExifTransferEditedUri(mEditedImageAbsolutePath);
+                                    mSendUri.editExifTransferEditedFileData(mEditedFileData);
                                     ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
                                             .getFragment(GalleryUploadActivity.VIEWPAGER_UPLOAD_FRAGMENT).onResume();
 
-                                    mSendUri.editExifTransferEditedUri(mEditedImageAbsolutePath);
+                                    mSendUri.editExifTransferEditedFileData(mEditedFileData);
                                     ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
                                             .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_FILE_FRAGMENT).onResume();
                                 }
@@ -316,6 +330,13 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
     @Override
     public void onResume() {
         Log.d(LOG_TAG, "onResume");
+        if (mEditedFileData != null) {
+            String quack = null;
+            if(mEditedFileData.getEditedFileUri() != null ) {
+                quack = mEditedFileData.getEditedFileUri().toString();
+            }
+            Log.d(LOG_TAG, "Is this stuff saved?" + quack);
+        }
         super.onResume();
     }
 
@@ -371,12 +392,10 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                     R.string.sb_exif_transfer_data_unsuccessful, Snackbar.LENGTH_LONG).show();
         }
-
-
     }
 
     public interface EditExifFragmentUriUpdate {
-        void editExifTransferEditedUri(Uri mEditedImageAbsolutePath);
+        void editExifTransferEditedFileData(EditedFileData mEditedFileData);
     }
 
     /**
@@ -394,6 +413,7 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
         void onEditExifFragmentInteraction(Uri uri);
     }
 
+    // TODO: Appropriately check for downscaled image
     /* Image Creation Methods*/
     /**
      * Utilizes @createFile to generate an image file that's a copy of @mFileAbsolutePath save

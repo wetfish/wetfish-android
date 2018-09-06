@@ -19,6 +19,9 @@ import java.util.ArrayList;
 public class ExifUtils {
 
     public static boolean transferExifData(Uri originalFile, Uri newFile, Context context) {
+        // Logging Tag
+        final String LOG_TAG = ExifUtils.class.getSimpleName();
+
         try {
             // Get the complete list of EXIF tags available to ExifInterface
             String[] exifTagsCompleteInterface = context.getResources().getStringArray(R.array.exif_tags_complete_array_interface);
@@ -31,9 +34,11 @@ public class ExifUtils {
 
             for (int i = 0; i < exifTagsCompleteInterface.length; i++) {
                 String exifAttributeValue = originalFileExif.getAttribute(exifTagsCompleteInterface[i]);
+                Log.d(LOG_TAG, "Transfer Edited Exif Data: " + exifTagsCompleteInterface[i] + " " + exifAttributeValue + " : " + i);
                 if (exifAttributeValue != null) {
-                    newFileExif.setAttribute(exifTagsCompleteInterface[i], exifAttributeValue);
+                    newFileExif.setAttribute(exifTagsCompleteInterface[i], originalFileExif.getAttribute(exifTagsCompleteInterface[i]));
                 }
+
             }
             newFileExif.saveAttributes();
             return true;
