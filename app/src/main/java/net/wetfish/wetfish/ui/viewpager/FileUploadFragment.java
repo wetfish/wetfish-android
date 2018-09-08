@@ -590,6 +590,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, final int position, long id) {
 
+        Log.d(LOG_TAG, "Current Spinner Selection: " + position);
         mCurrentSpinnerSelection = position;
 
         switch (position) {
@@ -613,6 +614,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         public void run() {
                             try {
                                 // Create a rescaled image
+                                Log.d(LOG_TAG, "Current Spinner Selection: " + position);
                                 createRescaledImage(mCurrentSpinnerSelection);
                             } finally {
                                 // Update the view field with the newly rescaled image if successfully rescaled
@@ -624,7 +626,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 }
                             }
                         }
-                    }, 0 /* 1 Second Delay for File Deletion*/);
+                    }, 0 /* No delay for file deletion*/);
 
                     // If handler is broken or doesn't instantiate re-enable spinner
                     if (mCallThreadRescaleImage == null) {
@@ -656,7 +658,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 }
                             }
                         }
-                    }, 0 /* 1 Second Delay for File Deletion*/);
+                    }, 0 /* No delay for file deletion */);
                 }
 
                 break;
@@ -697,7 +699,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             }
                         }
                     }
-                }, 0 /* 1 Second Delay for File Deletion*/);
+                }, 0 /* No delay for file deletion*/);
 
                 // If handler is broken or doesn't instantiate re-enable spinner
                 if (mCallThreadRescaleImage == null) {
@@ -742,7 +744,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             }
                         }
                     }
-                }, 0 /* 1 Second Delay for File Deletion*/);
+                }, 0 /* No delay for file deletion*/);
 
                 // If handler is broken or doesn't instantiate re-enable spinner
                 if (mCallThreadRescaleImage == null) {
@@ -786,7 +788,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             }
                         }
                     }
-                }, 0 /* 1 Second Delay for File Deletion*/);
+                }, 0 /* No delay for file deletion*/);
 
                 // If handler is broken or doesn't instantiate re-enable spinner
                 if (mCallThreadRescaleImage == null) {
@@ -1026,9 +1028,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             if (mRescaledImageCreated) {
                 // Verify that the image is actually rescaled appropriately
                 if (rescaleRatioSelected == 0) {
+                    Log.d(LOG_TAG, "rescaleRatio: 0");
                     mRescaledImageCreated = FileUtils.checkSuccessfulBitmapUpscale(mFileAbsolutePath,
                             mRescaledImageAbsolutePath);
                 } else {
+                    Log.d(LOG_TAG, "rescaleRatio: " + SELECTIONRATIO[rescaleRatioSelected]);
                     mRescaledImageCreated = FileUtils.checkSuccessfulBitmapDownscale(mFileAbsolutePath,
                             mRescaledImageAbsolutePath);
                 }
@@ -1082,7 +1086,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             Log.d(LOG_TAG, "Else Stuff, no eXIF WAS EDITED");
                             // TODO: Just check this swag out bruv.
                             // If no edited copy exists with altered EXIF gather EXIF data from the original image
-                            if (mExifEdited = true) {
+                            if (mExifEdited) {
                                 ExifUtils.transferExifData(mEditedImageAbsolutePath, mRescaledImageAbsolutePath, getContext());
                             } else {
                                 ExifUtils.transferExifData(mFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
@@ -1171,10 +1175,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         deleteEditedFile();
                         deleteRescaledFile();
                     }
-
-                    // Remove rescaled image absolute path uri
-                    mRescaledImageAbsolutePath = null;
-                    mRescaledImageCreated = false;
 
                     // Remove rescaled image absolute path uri
                     mRescaledImageAbsolutePath = null;
