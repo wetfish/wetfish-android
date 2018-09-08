@@ -360,7 +360,7 @@ public class FileUtils {
         double originalWidth = bitmapOriginal.getWidth();
         double upscaledWidth = bitmapDownscaledOriginal.getWidth();
 
-        return upscaledWidth < originalWidth;
+        return upscaledWidth == originalWidth;
     }
 
     /**

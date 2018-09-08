@@ -1028,13 +1028,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             if (mRescaledImageCreated) {
                 // Verify that the image is actually rescaled appropriately
                 if (rescaleRatioSelected == 0) {
-                    Log.d(LOG_TAG, "rescaleRatio: 0");
                     mRescaledImageCreated = FileUtils.checkSuccessfulBitmapUpscale(mFileAbsolutePath,
                             mRescaledImageAbsolutePath);
+                    Log.d(LOG_TAG, "rescaleRatio: 0: " + mRescaledImageCreated);
                 } else {
-                    Log.d(LOG_TAG, "rescaleRatio: " + SELECTIONRATIO[rescaleRatioSelected]);
                     mRescaledImageCreated = FileUtils.checkSuccessfulBitmapDownscale(mFileAbsolutePath,
                             mRescaledImageAbsolutePath);
+                    Log.d(LOG_TAG, "rescaleRatio: " + SELECTIONRATIO[rescaleRatioSelected] + mRescaledImageCreated);
                 }
                 if (mRescaledImageCreated) {
                     // TODO: Look into catching the failed circumstances where EXIF is not transferred ETC.
