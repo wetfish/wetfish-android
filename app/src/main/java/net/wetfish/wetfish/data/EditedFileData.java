@@ -21,6 +21,7 @@ public class EditedFileData {
 
     /**
      * Constructor
+     *
      * @param editedFileUri
      * @param exifChanged
      * @param rescaledImageQuality
@@ -31,34 +32,26 @@ public class EditedFileData {
         mRescaledImageQuality = rescaledImageQuality;
     }
 
+    /* Getters */
+    public Uri getEditedFileUri() {
+        return mEditedFileUri;
+    }
+    public boolean getExifChanged() {
+        return mExifChanged;
+    }
+    public double getRescaledImageQuality() {
+        return mRescaledImageQuality;
+    }
 
     /* Setters */
     public void setEditedFileUri(Uri mFileUri) {
         this.mEditedFileUri = mFileUri;
     }
-
     public void setExifChanged(boolean mExifChanged) {
         this.mExifChanged = mExifChanged;
     }
-
     public void setRescaledImageQuality(double mRescaledImageQuality) {
         this.mRescaledImageQuality = this.mRescaledImageQuality;
     }
 
-    /* Getters */
-    public Uri getEditedFileUri() {
-        return mEditedFileUri;
-    }
-
-    public boolean getExifChanged() {
-        return mExifChanged;
-    }
-
-    public double getRescaledImageQuality() {
-        return mRescaledImageQuality;
-    }
-
-
-
 }
-
