@@ -154,6 +154,9 @@ public class GalleryActivity extends AppCompatActivity implements
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
 
+                        // Close FAM
+                        mFAM.close(true);
+
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
 
@@ -179,6 +182,9 @@ public class GalleryActivity extends AppCompatActivity implements
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
 
+                        // Close FAM
+                        mFAM.close(true);
+
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
 
@@ -203,8 +209,13 @@ public class GalleryActivity extends AppCompatActivity implements
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
 
+                        // Close FAM
+                        mFAM.close(true);
+
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
+
+
 
                     } else {
                         // Storage permissions granted!
@@ -296,7 +307,7 @@ public class GalleryActivity extends AppCompatActivity implements
 //            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{useCameraIntentPicture, useCameraIntentVideo, pickFileIntentTwo});
 
             Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            pickFileIntent.setType(getString(R.string.file_mime_type));
+            pickFileIntent.setType("video/*, image/*");
 
             Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.select_upload_file));
 
