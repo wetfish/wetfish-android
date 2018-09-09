@@ -255,6 +255,9 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                             // Pass the user a success notification of cancellation
                             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                                     getContext().getString(R.string.sb_edit_exif_cancelled), Snackbar.LENGTH_SHORT).show();
+
+                            // Enable clicking on the EXIF checkboxes
+                            mExifDataAdapter.setClickable(true);
                         }
                     }
                 } else {
@@ -392,6 +395,8 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                     R.string.sb_exif_transfer_data_unsuccessful, Snackbar.LENGTH_LONG).show();
         }
+
+        mExifDataAdapter.setClickable(true);
     }
 
     public interface EditExifFragmentUriUpdate {
@@ -422,8 +427,15 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
      * @return a true if the image was successfully copied, otherwise return false
      */
     private boolean createImageFile() {
-        // Create a bitmap of the original file
-        Bitmap bitmap = BitmapFactory.decodeFile(mFileAbsolutePath.toString());
+        // Create a bitmap of the most recent file
+        Bitmap bitmap;
+        if (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty()) {
+            // If an edited image exists, use the edited as a base
+            bitmap = BitmapFactory.decodeFile(mEditedImageAbsolutePath.toString());
+        } else {
+            // If no edited image exists, use the original as a base
+            bitmap = BitmapFactory.decodeFile(mFileAbsolutePath.toString());
+        }
 
         // Create the file that the result will populate
         File imageFile = null;
@@ -442,8 +454,17 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
             // Check to see if the duplicate image has been created
             if (mDuplicateImageCreated) {
                 // Verify that the image is actually rescaled appropriately
-                mDuplicateImageCreated = FileUtils.checkSuccessfulBitmapDuplication(mFileAbsolutePath,
-                        mEditedImageAbsolutePathTemp);
+                if (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty()) {
+                    // If an edited image exists, use the edited
+                    mDuplicateImageCreated = FileUtils.checkSuccessfulBitmapDuplication(mEditedImageAbsolutePath,
+                            mEditedImageAbsolutePathTemp);
+                } else {
+                    // If no edited image exists, use the original
+                    mDuplicateImageCreated = FileUtils.checkSuccessfulBitmapDuplication(mFileAbsolutePath,
+                            mEditedImageAbsolutePathTemp);
+                }
+
+
                 if (mDuplicateImageCreated) {
                     return true;
                 } else {
@@ -588,7 +609,6 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
     public boolean updateEditedFileExif() {
         Log.d(LOG_TAG, "This is new EXIF data population");
         if (transferEditedExifData(mExifDataAdapter.getEditedExifDataTransferList(), mEditedImageAbsolutePath, mEditedImageAbsolutePathTemp)) {
-            Log.d(LOG_TAG, "Boom check shit"  +  mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
             Log.d(LOG_TAG, "Boom check shit"  +  mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
 
             // EXIF  transfer successful, delete the base edited file

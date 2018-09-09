@@ -50,7 +50,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     // Determines if @mEditedExifDataList needs to be instantiated
     private boolean mEditedExifDataListInstantiated = false;
     // Determines if the adapter should be clickable
-    public boolean isClickable;
+    public boolean isClickable = true;
 
     public ExifDataAdapter(Context mContext, ExifDataAdapterOnClickHandler mClickHandler) {
         this.mClickHandler = mClickHandler;
@@ -285,55 +285,68 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     @Override
 
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if (isChecked) {
-                            Log.d(LOG_TAG, "Yo check it MR. Here's that isCHECKED TRIGERRRRRRR" + position);
-                            Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: "  + isChecked);
+                        // Check if the individual ExifDataViewHolder views are clickable
+                        if (isClickable) {
+                            if (isChecked) {
+                                Log.d(LOG_TAG, "Yo check it MR. Here's that isCHECKED TRIGERRRRRRR" + position);
+                                Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: "  + isChecked);
 
-                            mUserTriggered = true;
+                                mUserTriggered = true;
 
-                            // Check to see if an editedExifDaraList has been instantiated
-                            if (!mEditedExifDataListInstantiated) {
-                                // Create a copy EXIF FileExifData list if it doesn't exist
-                                for (int i = 0;  i < mExifDataList.size(); i++) {
-                                    Log.d(LOG_TAG, "LOG_TAG: " + i);
-                                    if (mExifDataList.get(i) instanceof FileExifData) {
-                                        FileExifData fileExifData = (FileExifData) mExifDataList.get(i);
-                                        // Add @FileExifData objects to the list
+                                // Check to see if an editedExifDaraList has been instantiated
+                                if (!mEditedExifDataListInstantiated) {
+                                    // Create a copy EXIF FileExifData list if it doesn't exist
+                                    for (int i = 0;  i < mExifDataList.size(); i++) {
+                                        Log.d(LOG_TAG, "LOG_TAG: " + i);
+                                        if (mExifDataList.get(i) instanceof FileExifData) {
+                                            FileExifData fileExifData = (FileExifData) mExifDataList.get(i);
+                                            // Add @FileExifData objects to the list
 //                                        mEditedExifDataList.add(fileExifData);
-                                        mEditedExifDataList.add(fileExifData);
-                                    } else if (mExifDataList.get(i) instanceof FileExifDataHeader) {
-                                        // Add a @FileExifDataHeader placeholder object to the list
+                                            mEditedExifDataList.add(fileExifData);
+                                        } else if (mExifDataList.get(i) instanceof FileExifDataHeader) {
+                                            // Add a @FileExifDataHeader placeholder object to the list
 //                                        mEditedExifDataList.add(new FileExifDataHeader((FileExifDataHeader) mExifDataList.get(i)));
-                                        mEditedExifDataList.add("Place Holder");
-                                    } else {
-                                        // Add a @FileExifDataBlank placeholder object to the list
+                                            mEditedExifDataList.add("Place Holder");
+                                        } else {
+                                            // Add a @FileExifDataBlank placeholder object to the list
 //                                        mEditedExifDataList.add(new FileExifDataBlank((FileExifDataBlank) mExifDataList.get(i)));
-                                        mEditedExifDataList.add("Place Holder");
+                                            mEditedExifDataList.add("Place Holder");
+                                        }
                                     }
+
+                                    // Verify that the ArrayList now exists and needn't be created again
+                                    mEditedExifDataListInstantiated = true;
+
+                                    // Verify that this has been checked
+
                                 }
-
-                                // Verify that the ArrayList now exists and needn't be created again
-                                mEditedExifDataListInstantiated = true;
-
-                                // Verify that this has been checked
-
-                            }
 //
-                            // Remove the value at the given position
-                            mEditedExifDataList.set(position, null);
+                                // Remove the value at the given position
+                                mEditedExifDataList.set(position, null);
 
-                            // Set a true value within the position to store the checked state
-                            checkboxStateArray.put(position, true);
+                                // Set a true value within the position to store the checked state
+                                checkboxStateArray.put(position, true);
+                            } else {
+                                if (position < mExifDataList.size()) {
+                                    Log.d(LOG_TAG, "Yo check it MR. Here's that else isChecked TRIGERRRRRRR");
+                                    Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: " + isChecked);
+                                    FileExifData fileExifData = (FileExifData) mExifDataList.get(position);
+
+                                    mEditedExifDataList.set(position, fileExifData);
+
+                                    // Set a false value within the position to store the unchecked state
+                                    checkboxStateArray.put(position, false);
+                                }
+                            }
                         } else {
-                            if (position < mExifDataList.size()) {
-                                Log.d(LOG_TAG, "Yo check it MR. Here's that else isChecked TRIGERRRRRRR");
-                                Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: " + isChecked);
-                                FileExifData fileExifData = (FileExifData) mExifDataList.get(position);
-
-                                mEditedExifDataList.set(position, fileExifData);
-
-                                // Set a false value within the position to store the unchecked state
-                                checkboxStateArray.put(position, false);
+                            if (!checkboxStateArray.get(position, false)) {
+                                // If the position hasn't been instantiated or is false, checkbox /isn't/ checked
+                                Log.d(LOG_TAG, "checkboxStateArray: " + position + "Is checked?: " + checkboxStateArray.get(position, false));
+                                mExifDataCheckbox.setChecked(false);
+                            } else {
+                                // If the position has been instantiated and is true, checkbox /is/ checked
+                                Log.d(LOG_TAG, "checkboxStateArray: " + position + "Is checked?: " + checkboxStateArray.get(position, false));
+                                mExifDataCheckbox.setChecked(true);
                             }
                         }
 
@@ -379,18 +392,6 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             //TODO: Potentially remove
 //            int adapterPosition = getAdapterPosition();
 //            mClickHandler.onListItemClick(adapterPosition);
-        }
-    }
-
-    /**
-     * Method to allow for the disabling of click events on the adapter
-     * 
-     * @param view
-     */
-    public void onClick(View view) {
-        if(!isClickable){
-            // Disable touch events
-            return;
         }
     }
 
