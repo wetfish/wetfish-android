@@ -162,6 +162,14 @@
     </android.support.v4.widget.NestedScrollView>
 
     <!-- FAB & FAB Animation -->
+    <RelativeLayout
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_gravity="bottom|end"
+        android:clickable="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
     <com.github.jorgecastilloprz.FABProgressCircle
         android:id="@+id/fab_progress_circle_upload"
         android:layout_width="wrap_content"
@@ -188,6 +196,8 @@
             fab:fab_size="normal" />
 
     </com.github.jorgecastilloprz.FABProgressCircle>
+
+    </RelativeLayout>
 
     <!-- File Not Found Text View -->
     <TextView

@@ -35,7 +35,6 @@
     </android.support.v4.widget.NestedScrollView>
 
     <!-- FAB & FAB Animation -->
-    <!-- TODO: Potentially implement this within the upload page. -->
     <RelativeLayout
         android:layout_width="88dp"
         android:layout_height="88dp"
