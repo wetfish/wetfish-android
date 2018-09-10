@@ -312,6 +312,16 @@ public class GalleryActivity extends AppCompatActivity implements
             Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.select_upload_file));
 
             startActivityForResult(chooserIntent, REQUEST_PICK_FILE);
+
+//            Intent pickFileIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//            pickFileIntent.setType("*/*");
+//
+//            pickFileIntent.putExtra(Intent.EXTRA_MIME_TYPES, "video/*, image/*");
+//
+//            pickFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
+//            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.select_upload_file));
+//
+//            startActivityForResult(chooserIntent, REQUEST_PICK_FILE);
         } catch (Exception e) {
             Log.d(LOG_TAG, "An exception occurred!: " + e.toString());
         }
@@ -457,6 +467,9 @@ public class GalleryActivity extends AppCompatActivity implements
 
                     Log.d(LOG_TAG, contentUri.toString());
 
+                    // Close FAM
+                    mFAM.close(true);
+
                     startActivity(new Intent(this, GalleryUploadActivity.class)
                             .setDataAndType(contentUri, getString(R.string.file_mime_type)));
                     break;
@@ -468,6 +481,9 @@ public class GalleryActivity extends AppCompatActivity implements
                     Uri imageContentUri = Uri.fromFile(imageFile);
                     imageMediaScanIntent.setData(imageContentUri);
                     this.sendBroadcast(imageMediaScanIntent);
+
+                    // Close FAM
+                    mFAM.close(true);
 
                     startActivity(new Intent(this, GalleryUploadActivity.class)
                             .setDataAndType(Uri.parse(mCurrentImagePath), getString(R.string.image_mime_type)));
@@ -481,11 +497,17 @@ public class GalleryActivity extends AppCompatActivity implements
                     videoMediaScanIntent.setData(videoContentUri);
                     this.sendBroadcast(videoMediaScanIntent);
 
+                    // Close FAM
+                    mFAM.close(true);
+
                     startActivity(new Intent(this, GalleryUploadActivity.class)
                             .setDataAndType(Uri.parse(mCurrentVideoPath), getString(R.string.video_mime_type)));
                     break;
                 default:
                     Snackbar.make(findViewById(R.id.gallery_container), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
+
+                    // Close FAM
+                    mFAM.close(true);
 
                     Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
                     break;
