@@ -45,6 +45,8 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private ArrayList<Object> mEditedExifDataList = new ArrayList<>();
     // List of selected objects to retain selection info
     private SparseBooleanArray checkboxStateArray = new SparseBooleanArray();
+    // Number of changed fields. Checker for FAB
+    private int checkboxesSelectedAmount = 0;
     // Activity context
     private Context mContext;
     // Determines if @mEditedExifDataList needs to be instantiated
@@ -216,6 +218,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         mEditedExifDataList.clear();
         mExifDataList.clear();
         mEditedExifDataListInstantiated = false;
+        checkboxesSelectedAmount = 0;
         notifyDataSetChanged();
     }
 
@@ -293,6 +296,9 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
                                 mUserTriggered = true;
 
+                                // Increment the amount of selected Checkboxes
+                                checkboxesSelectedAmount++;
+
                                 // Check to see if an editedExifDaraList has been instantiated
                                 if (!mEditedExifDataListInstantiated) {
                                     // Create a copy EXIF FileExifData list if it doesn't exist
@@ -328,6 +334,10 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                 checkboxStateArray.put(position, true);
                             } else {
                                 if (position < mExifDataList.size()) {
+
+                                    // Decrement the amount of selected Checkboxes
+                                    checkboxesSelectedAmount--;
+
                                     Log.d(LOG_TAG, "Yo check it MR. Here's that else isChecked TRIGERRRRRRR");
                                     Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: " + isChecked);
                                     FileExifData fileExifData = (FileExifData) mExifDataList.get(position);
@@ -425,6 +435,10 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 //            int adapterPosition = getAdapterPosition();
 //            mClickHandler.onListItemClick(adapterPosition);
         }
+    }
+
+    public int getCheckboxesSelectedAmount () {
+        return checkboxesSelectedAmount;
     }
 
     public ArrayList<Object> getEditedExifDataTransferList() {

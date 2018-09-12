@@ -148,7 +148,7 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                 // Edit the EXIF
                 // TODO: Probably make a prompt
 
-                if (mExifDataAdapter.isEditedExifDataListInstantiated()) {
+                if (mExifDataAdapter.isEditedExifDataListInstantiated() && mExifDataAdapter.getCheckboxesSelectedAmount() > 0) {
                     if (mCallThreadEditExif == null) {
                         // Thread can be cancelled
                         mCancelableCallThreadEditExif = true;
