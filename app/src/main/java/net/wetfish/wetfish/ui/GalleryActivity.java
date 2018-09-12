@@ -452,6 +452,9 @@ public class GalleryActivity extends AppCompatActivity implements
     protected void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
 
+        // Close FAM
+        mFAM.close(true);
+
         // Close FAM.
 //        mFAM.close(true);
 
@@ -467,9 +470,6 @@ public class GalleryActivity extends AppCompatActivity implements
 
                     Log.d(LOG_TAG, contentUri.toString());
 
-                    // Close FAM
-                    mFAM.close(true);
-
                     startActivity(new Intent(this, GalleryUploadActivity.class)
                             .setDataAndType(contentUri, getString(R.string.file_mime_type)));
                     break;
@@ -481,9 +481,6 @@ public class GalleryActivity extends AppCompatActivity implements
                     Uri imageContentUri = Uri.fromFile(imageFile);
                     imageMediaScanIntent.setData(imageContentUri);
                     this.sendBroadcast(imageMediaScanIntent);
-
-                    // Close FAM
-                    mFAM.close(true);
 
                     startActivity(new Intent(this, GalleryUploadActivity.class)
                             .setDataAndType(Uri.parse(mCurrentImagePath), getString(R.string.image_mime_type)));
@@ -497,17 +494,11 @@ public class GalleryActivity extends AppCompatActivity implements
                     videoMediaScanIntent.setData(videoContentUri);
                     this.sendBroadcast(videoMediaScanIntent);
 
-                    // Close FAM
-                    mFAM.close(true);
-
                     startActivity(new Intent(this, GalleryUploadActivity.class)
                             .setDataAndType(Uri.parse(mCurrentVideoPath), getString(R.string.video_mime_type)));
                     break;
                 default:
                     Snackbar.make(findViewById(R.id.gallery_container), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
-
-                    // Close FAM
-                    mFAM.close(true);
 
                     Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
                     break;
@@ -517,7 +508,6 @@ public class GalleryActivity extends AppCompatActivity implements
             Snackbar.make(findViewById(android.R.id.content), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
 
             Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
-
         }
     }
 
