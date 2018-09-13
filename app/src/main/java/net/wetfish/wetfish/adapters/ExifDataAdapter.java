@@ -39,6 +39,8 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     // Click handler?
     private final ExifDataAdapterOnClickHandler mClickHandler;
+    // Determines if the adapter should be clickable
+    public boolean isClickable = true;
     // List of EXIF data objects
     private ArrayList<Object> mExifDataList = new ArrayList<>();
     // Duplicate list of EXIF data objects to transfer changes via EXIF
@@ -51,8 +53,6 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private Context mContext;
     // Determines if @mEditedExifDataList needs to be instantiated
     private boolean mEditedExifDataListInstantiated = false;
-    // Determines if the adapter should be clickable
-    public boolean isClickable = true;
 
     public ExifDataAdapter(Context mContext, ExifDataAdapterOnClickHandler mClickHandler) {
         this.mClickHandler = mClickHandler;
@@ -72,7 +72,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     /**
      * Called when RecyclerView needs a new {@link FileExifDataHeader} or {@link FileExifData} of the given type to represent
      * an item.
-     *
+     * <p>
      * The new ViewHolder will be used to display items of the adapter using
      * {@link #onBindViewHolder(RecyclerView.ViewHolder, int)}. Since it will be re-used to display
      * different items in the data set, it is a good idea to cache references to sub views of
@@ -196,9 +196,9 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         // If a header check to deliver the appropriate header, otherwise return EXIF data
         if (object instanceof FileExifData) {
             return VIEW_TYPE_EXIF_DATA;
-        } else if (object instanceof FileExifDataBlank){
+        } else if (object instanceof FileExifDataBlank) {
             return VIEW_TYPE_EXIF_DATA_BLANK;
-        } else if (object instanceof FileExifDataHeader){
+        } else if (object instanceof FileExifDataHeader) {
             return VIEW_TYPE_EXIF_DATA_HEADER;
         } else {
             return 2;
@@ -209,7 +209,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
      * This method is called once the FAB button is pressed to finalize the desired EXIF edits.
      * When this is called the adapter refreshes the editedExifDataList and creates a new
      * checkboxStateArray to represent new data.
-     *
+     * <p>
      * Once this is done it runs swapExifData to easily handle the refresh of new data
      */
     public void renewEditedExifDataList() {
@@ -228,6 +228,18 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public void setClickable(boolean clickable) {
         isClickable = clickable;
+    }
+
+    public int getCheckboxesSelectedAmount() {
+        return checkboxesSelectedAmount;
+    }
+
+    public ArrayList<Object> getEditedExifDataTransferList() {
+        return mEditedExifDataList;
+    }
+
+    public boolean isEditedExifDataListInstantiated() {
+        return mEditedExifDataListInstantiated;
     }
 
     // ExifDataAdapterOnClickHandler interface
@@ -267,6 +279,15 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             Log.d(LOG_TAG, "THIS ONE IS IMPORTANT ---------------------------" + mExifDataList.size());
 
             if (exifData != null) {
+
+                // TODO: Potentially implement a separate option/display.
+                // Remove the checkbox if it's one of the four that cannot be readily edited
+                String exifTag = exifData.getExifDataTag();
+                if (exifTag.equals("ImageLength") || exifTag.equals("ImageWidth") ||
+                        exifTag.equals("LightSource") || exifTag.equals("Orientation")) {
+                    mExifDataCheckbox.setVisibility(View.GONE);
+                }
+
                 mExifDataTag.setText(exifData.getExifDataTag());
                 mExifDataValue.setText(exifData.getExifDataValue());
 
@@ -292,7 +313,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         if (isClickable) {
                             if (isChecked) {
                                 Log.d(LOG_TAG, "Yo check it MR. Here's that isCHECKED TRIGERRRRRRR" + position);
-                                Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: "  + isChecked);
+                                Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: " + isChecked);
 
                                 mUserTriggered = true;
 
@@ -302,20 +323,24 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                 // Check to see if an editedExifDaraList has been instantiated
                                 if (!mEditedExifDataListInstantiated) {
                                     // Create a copy EXIF FileExifData list if it doesn't exist
-                                    for (int i = 0;  i < mExifDataList.size(); i++) {
+                                    for (int i = 0; i < mExifDataList.size(); i++) {
                                         Log.d(LOG_TAG, "LOG_TAG: " + i);
                                         if (mExifDataList.get(i) instanceof FileExifData) {
                                             FileExifData fileExifData = (FileExifData) mExifDataList.get(i);
+
+                                            Log.d(LOG_TAG, "Check this out: " + fileExifData.getExifDataTagLayout());
                                             // Add @FileExifData objects to the list
 //                                        mEditedExifDataList.add(fileExifData);
                                             mEditedExifDataList.add(fileExifData);
                                         } else if (mExifDataList.get(i) instanceof FileExifDataHeader) {
                                             // Add a @FileExifDataHeader placeholder object to the list
 //                                        mEditedExifDataList.add(new FileExifDataHeader((FileExifDataHeader) mExifDataList.get(i)));
+                                            Log.d(LOG_TAG, "Check this out: Placeholder");
                                             mEditedExifDataList.add("Place Holder");
                                         } else {
                                             // Add a @FileExifDataBlank placeholder object to the list
 //                                        mEditedExifDataList.add(new FileExifDataBlank((FileExifDataBlank) mExifDataList.get(i)));
+                                            Log.d(LOG_TAG, "Check this out: Placeholder");
                                             mEditedExifDataList.add("Place Holder");
                                         }
                                     }
@@ -349,14 +374,16 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                 }
                             }
                         } else {
-                            if (!checkboxStateArray.get(position, false)) {
-                                // If the position hasn't been instantiated or is false, checkbox /isn't/ checked
-                                Log.d(LOG_TAG, "checkboxStateArray: " + position + "Is checked?: " + checkboxStateArray.get(position, false));
-                                mExifDataCheckbox.setChecked(false);
-                            } else {
-                                // If the position has been instantiated and is true, checkbox /is/ checked
-                                Log.d(LOG_TAG, "checkboxStateArray: " + position + "Is checked?: " + checkboxStateArray.get(position, false));
-                                mExifDataCheckbox.setChecked(true);
+                            if (position < mExifDataList.size()) {
+                                if (!checkboxStateArray.get(position, false)) {
+                                    // If the position hasn't been instantiated or is false, checkbox /isn't/ checked
+                                    Log.d(LOG_TAG, "checkboxStateArray: " + position + "Is checked?: " + checkboxStateArray.get(position, false));
+                                    mExifDataCheckbox.setChecked(false);
+                                } else {
+                                    // If the position has been instantiated and is true, checkbox /is/ checked
+                                    Log.d(LOG_TAG, "checkboxStateArray: " + position + "Is checked?: " + checkboxStateArray.get(position, false));
+                                    mExifDataCheckbox.setChecked(true);
+                                }
                             }
                         }
 
@@ -435,17 +462,5 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 //            int adapterPosition = getAdapterPosition();
 //            mClickHandler.onListItemClick(adapterPosition);
         }
-    }
-
-    public int getCheckboxesSelectedAmount () {
-        return checkboxesSelectedAmount;
-    }
-
-    public ArrayList<Object> getEditedExifDataTransferList() {
-        return mEditedExifDataList;
-    }
-
-    public boolean isEditedExifDataListInstantiated() {
-        return mEditedExifDataListInstantiated;
     }
 }

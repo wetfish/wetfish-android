@@ -84,7 +84,6 @@ public class ExifUtils {
             for (int i = 0; i < exifTagsSensitiveInterface.length; i++) {
 
                 // Gather the attribute value at location i and store it if it is present
-//                    Log.d(LOG_TAG, "What is happening: " + originalFileExif.getAttribute(EXIF_ATTRIBUTES_VERSION_24_ABOVE_SENSITIVE[i]));
                 String exifAttributeValue = originalFileExif.getAttribute(exifTagsSensitiveInterface[i]);
                 if (exifAttributeValue != null) {
 
@@ -103,6 +102,7 @@ public class ExifUtils {
 
             // If no exif tags were stored, represent this
             if (exifValueTagPairsStored == 0) {
+                Log.d(LOG_TAG, "No EXIF data to store (Secure)");
                 exifDataArrayList.add(new FileExifDataHeader(true, context));
                 exifDataArrayList.add(new FileExifDataBlank(true));
             }
@@ -136,6 +136,7 @@ public class ExifUtils {
 
             // If no exif tags were stored, represent this
             if (exifValueTagPairsStored == 0) {
+                Log.d(LOG_TAG, "No EXIF data to store (Secure)");
                 exifDataArrayList.add(new FileExifDataHeader(false, context));
                 exifDataArrayList.add(new FileExifDataBlank(false));
             }

@@ -70,14 +70,11 @@
         <item>GPS Track Ref</item>
         <item>GPS Version ID</item>
         <item>Image Description</item>
-        <item>Image Length</item>
         <item>Image Unique ID</item>
-        <item>Image Width</item>
         <item>Interoperability Index</item>
         <item>ISO Speed Ratings</item>
         <item>JPEG Interchange Format</item>
         <item>JPEG Interchange Format Length</item>
-        <item>Light Source</item>
         <item>Make</item>
         <item>Maker Note</item>
         <item>Max Aperture Value</item>
@@ -89,7 +86,6 @@
         <item>ORF Preview Image Length</item>
         <item>ORF Preview Image Start</item>
         <item>ORF Thumbnail Image</item>
-        <item>Orientation</item>
         <item>Photometric Interpretation</item>
         <item>Pixel X Dimension</item>
         <item>Pixel Y Dimension</item>
@@ -138,6 +134,10 @@
         <item>Y Resolution</item>
         <item>Whitebalance Auto</item>
         <item>Whitebalance Manual</item>
+        <item>Image Length</item>
+        <item>Image Width</item>
+        <item>Light Source</item>
+        <item>Orientation</item>
     </string-array>
     <string-array name="exif_tags_general_array">
         <item>Aperture</item>
@@ -173,15 +173,12 @@
         <item>Focal Plane X Resolution</item>
         <item>Focal Plane Y Resolution</item>
         <item>Gain Control</item>
-        <item>Image Length</item>
         <item>Image Unique ID</item>
-        <item>Image Width</item>
         <item>Interoperability Index</item>
         <item>ISO</item>
         <item>ISO Speed Ratings</item>
         <item>JPEG Interchange Format</item>
         <item>JPEG Interchange Format Length</item>
-        <item>Light Source</item>
         <item>Max Aperture Value</item>
         <item>Metering Mode</item>
         <item>New Subfile Type</item>
@@ -190,7 +187,6 @@
         <item>ORF Preview Image Length</item>
         <item>ORF Preview Image Start</item>
         <item>ORF Thumbnail Image</item>
-        <item>Orientation</item>
         <item>Photometric Interpretation</item>
         <item>Pixel X Dimension</item>
         <item>Pixel Y Dimension</item>
@@ -239,6 +235,10 @@
         <item>Y Resolution</item>
         <item>Whitebalance Auto</item>
         <item>Whitebalance Manual</item>
+        <item>Image Length</item>
+        <item>Image Width</item>
+        <item>Light Source</item>
+        <item>Orientation</item>
     </string-array>
     <string-array name="exif_tags_sensitive_array">
         <item>Artist</item>
@@ -356,15 +356,12 @@
         <item>FocalPlaneXResolution</item>
         <item>FocalPlaneYResolution</item>
         <item>GainControl</item>
-        <item>ImageLength</item>
         <item>ImageUniqueID</item>
-        <item>ImageWidth</item>
         <item>InteroperabilityIndex</item>
         <item>ISO</item>
         <item>ISOSpeedRatings</item>
         <item>JPEGInterchangeFormat</item>
         <item>JPEGInterchangeFormatLength</item>
-        <item>LightSource</item>
         <item>MaxApertureValue</item>
         <item>MeteringMode</item>
         <item>NewSubfileType</item>
@@ -373,7 +370,6 @@
         <item>PreviewImageLength</item>
         <item>PreviewImageStart</item>
         <item>ThumbnailImage</item>
-        <item>Orientation</item>
         <item>PhotometricInterpretation</item>
         <item>PixelXDimension</item>
         <item>PixelYDimension</item>
@@ -422,6 +418,111 @@
         <item>YResolution</item>
         <item>WhitebalanceAuto</item>
         <item>WhitebalanceManual</item>
+        <item>ImageLength</item>
+        <item>ImageWidth</item>
+        <item>LightSource</item>
+        <item>Orientation</item>
+    </string-array>
+    <string-array name="exif_tags_general_array_interface">
+        <item>Aperture</item>
+        <item>ApertureValue</item>
+        <item>BitsPerSample</item>
+        <item>BrightnessValue</item>
+        <item>CFAPattern</item>
+        <item>ColorSpace</item>
+        <item>ComponentsConfiguration</item>
+        <item>CompressedBitsPerPixel</item>
+        <item>Compression</item>
+        <item>Contrast</item>
+        <item>Copyright</item>
+        <item>CustomRendered</item>
+        <item>DefaultCropSize</item>
+        <item>DeviceSettingDescription</item>
+        <item>DigitalZoomRatio</item>
+        <item>DNGVersion</item>
+        <item>EXIFVersion</item>
+        <item>ExposureBiasValue</item>
+        <item>ExposureIndex</item>
+        <item>ExposureMode</item>
+        <item>ExposureProgram</item>
+        <item>ExposureTime</item>
+        <item>FNumber</item>
+        <item>FileSource</item>
+        <item>Flash</item>
+        <item>FlashpixVersion</item>
+        <item>FlashEnergy</item>
+        <item>FocalLength</item>
+        <item>FocalLengthIn35MMFilm</item>
+        <item>FocalPlaneResolutionUnit</item>
+        <item>FocalPlaneXResolution</item>
+        <item>FocalPlaneYResolution</item>
+        <item>GainControl</item>
+        <item>ImageUniqueID</item>
+        <item>InteroperabilityIndex</item>
+        <item>ISO</item>
+        <item>ISOSpeedRatings</item>
+        <item>JPEGInterchangeFormat</item>
+        <item>JPEGInterchangeFormatLength</item>
+        <item>MaxApertureValue</item>
+        <item>MeteringMode</item>
+        <item>NewSubfileType</item>
+        <item>OECF</item>
+        <item>AspectFrame</item>
+        <item>PreviewImageLength</item>
+        <item>PreviewImageStart</item>
+        <item>ThumbnailImage</item>
+        <item>PhotometricInterpretation</item>
+        <item>PixelXDimension</item>
+        <item>PixelYDimension</item>
+        <item>PlanarConfiguration</item>
+        <item>PrimaryChromaticities</item>
+        <item>ReferenceBlackWhite</item>
+        <item>RelatedSoundFile</item>
+        <item>ResolutionUnit</item>
+        <item>RowsPerStrip</item>
+        <item>ISO</item>
+        <item>JpgFromRaw</item>
+        <item>SensorBottomBorder</item>
+        <item>SensorLeftBorder</item>
+        <item>SensorRightBorder</item>
+        <item>SensorTopBorder</item>
+        <item>SamplesPerPixel</item>
+        <item>Saturation</item>
+        <item>SceneCaptureType</item>
+        <item>SceneType</item>
+        <item>SensingMethod</item>
+        <item>Sharpness</item>
+        <item>ShutterSpeedValue</item>
+        <item>Software</item>
+        <item>SpatialFrequencyResponse</item>
+        <item>SpectralSensitivity</item>
+        <item>StripByteCounts</item>
+        <item>StripOffsets</item>
+        <item>SubfileType</item>
+        <item>SubjectArea</item>
+        <item>SubjectDistance</item>
+        <item>SubjectDistanceRange</item>
+        <item>SubjectLocation</item>
+        <item>SubSecTime</item>
+        <item>SubSecTimeDigitized</item>
+        <item>SubSecTimeOriginal</item>
+        <item>ThumbnailImageLength</item>
+        <item>ThumbnailImageWidth</item>
+        <item>TransferFunction</item>
+        <item>UserComment</item>
+        <item>WhiteBalance</item>
+        <item>WhitePoint</item>
+        <item>XResolution</item>
+        <item>YCbCrCoefficients</item>
+        <item>YCbCrPositioning</item>
+        <item>YCbCrSubSampling</item>
+        <item>YResolution</item>
+        <item>WhitebalanceAuto</item>
+        <item>WhitebalanceManual</item>
+        <item>ImageLength</item>
+        <item>ImageWidth</item>
+        <item>LightSource</item>
+        <item>Orientation</item>
     </string-array>
     <string-array name="exif_tags_sensitive_array_interface">
         <item>Artist</item>
@@ -463,106 +564,5 @@
         <item>Make</item>
         <item>MakerNote</item>
         <item>Model</item>
-    </string-array>
-    <string-array name="exif_tags_general_array_interface">
-        <item>Aperture</item>
-        <item>ApertureValue</item>
-        <item>BitsPerSample</item>
-        <item>BrightnessValue</item>
-        <item>CFAPattern</item>
-        <item>ColorSpace</item>
-        <item>ComponentsConfiguration</item>
-        <item>CompressedBitsPerPixel</item>
-        <item>Compression</item>
-        <item>Contrast</item>
-        <item>Copyright</item>
-        <item>CustomRendered</item>
-        <item>DefaultCropSize</item>
-        <item>DeviceSettingDescription</item>
-        <item>DigitalZoomRatio</item>
-        <item>DNGVersion</item>
-        <item>EXIFVersion</item>
-        <item>ExposureBiasValue</item>
-        <item>ExposureIndex</item>
-        <item>ExposureMode</item>
-        <item>ExposureProgram</item>
-        <item>ExposureTime</item>
-        <item>FNumber</item>
-        <item>FileSource</item>
-        <item>Flash</item>
-        <item>FlashpixVersion</item>
-        <item>FlashEnergy</item>
-        <item>FocalLength</item>
-        <item>FocalLengthIn35MMFilm</item>
-        <item>FocalPlaneResolutionUnit</item>
-        <item>FocalPlaneXResolution</item>
-        <item>FocalPlaneYResolution</item>
-        <item>GainControl</item>
-        <item>ImageLength</item>
-        <item>ImageUniqueID</item>
-        <item>ImageWidth</item>
-        <item>InteroperabilityIndex</item>
-        <item>ISO</item>
-        <item>ISOSpeedRatings</item>
-        <item>JPEGInterchangeFormat</item>
-        <item>JPEGInterchangeFormatLength</item>
-        <item>LightSource</item>
-        <item>MaxApertureValue</item>
-        <item>MeteringMode</item>
-        <item>NewSubfileType</item>
-        <item>OECF</item>
-        <item>AspectFrame</item>
-        <item>PreviewImageLength</item>
-        <item>PreviewImageStart</item>
-        <item>ThumbnailImage</item>
-        <item>Orientation</item>
-        <item>PhotometricInterpretation</item>
-        <item>PixelXDimension</item>
-        <item>PixelYDimension</item>
-        <item>PlanarConfiguration</item>
-        <item>PrimaryChromaticities</item>
-        <item>ReferenceBlackWhite</item>
-        <item>RelatedSoundFile</item>
-        <item>ResolutionUnit</item>
-        <item>RowsPerStrip</item>
-        <item>ISO</item>
-        <item>JpgFromRaw</item>
-        <item>SensorBottomBorder</item>
-        <item>SensorLeftBorder</item>
-        <item>SensorRightBorder</item>
-        <item>SensorTopBorder</item>
-        <item>SamplesPerPixel</item>
-        <item>Saturation</item>
-        <item>SceneCaptureType</item>
-        <item>SceneType</item>
-        <item>SensingMethod</item>
-        <item>Sharpness</item>
-        <item>ShutterSpeedValue</item>
-        <item>Software</item>
-        <item>SpatialFrequencyResponse</item>
-        <item>SpectralSensitivity</item>
-        <item>StripByteCounts</item>
-        <item>StripOffsets</item>
-        <item>SubfileType</item>
-        <item>SubjectArea</item>
-        <item>SubjectDistance</item>
-        <item>SubjectDistanceRange</item>
-        <item>SubjectLocation</item>
-        <item>SubSecTime</item>
-        <item>SubSecTimeDigitized</item>
-        <item>SubSecTimeOriginal</item>
-        <item>ThumbnailImageLength</item>
-        <item>ThumbnailImageWidth</item>
-        <item>TransferFunction</item>
-        <item>UserComment</item>
-        <item>WhiteBalance</item>
-        <item>WhitePoint</item>
-        <item>XResolution</item>
-        <item>YCbCrCoefficients</item>
-        <item>YCbCrPositioning</item>
-        <item>YCbCrSubSampling</item>
-        <item>YResolution</item>
-        <item>WhitebalanceAuto</item>
-        <item>WhitebalanceManual</item>
     </string-array>
 </resources>
