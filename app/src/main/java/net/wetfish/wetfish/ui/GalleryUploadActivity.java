@@ -12,7 +12,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
@@ -23,6 +22,7 @@ import android.view.ViewGroup;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.EditedFileData;
+import net.wetfish.wetfish.ui.viewpager.CustomLockingViewPager;
 import net.wetfish.wetfish.ui.viewpager.EditExifFragment;
 import net.wetfish.wetfish.ui.viewpager.EditFileFragment;
 import net.wetfish.wetfish.ui.viewpager.FileUploadFragment;
@@ -46,7 +46,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
     public static final int VIEWPAGER_EDIT_FILE_FRAGMENT = 2;
     // View Variables
     private TabLayout tabLayout;
-    private ViewPager mViewPager;
+    private CustomLockingViewPager mViewPager;
 
     // Data Variables
     private Uri fileUri;
@@ -167,7 +167,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        // Constants
+        /* Constants */
         private static final int PAGE_COUNT = 3;
 
         /* Data */
@@ -177,6 +177,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         private Map<Integer, String> mFragmentTags;
         // Fragment Manager
         private FragmentManager mFragmentManager;
+
 
         // Context
         Context mContext;
@@ -275,5 +276,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             return spannableString;
         }
+
+
     }
 }

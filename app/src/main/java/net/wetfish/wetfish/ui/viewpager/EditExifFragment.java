@@ -64,6 +64,7 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
     private View mRootLayout;
     private FloatingActionButton mFabEditFileExif;
     private FABProgressCircle mFabProgressCircleEditExif;
+    private CustomLockingViewPager mViewpager;
 
     /* Data */
     private Uri mFileAbsolutePath;
@@ -75,7 +76,6 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
     private boolean mDuplicateImageCreated;
     private boolean mCancelableCallThreadEditExif;
     private boolean mSuccessfulExifEdit;
-
 
     /* Threads */
     private Handler mCallThreadEditExif;
@@ -136,6 +136,7 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
         mRecyclerView = mRootLayout.findViewById(R.id.rv_exif_data);
         mFabProgressCircleEditExif = mRootLayout.findViewById(R.id.fab_progress_circle_edit_exif);
         mFabProgressCircleEditExif.attachListener(this);
+        mViewpager = getActivity().findViewById(R.id.vp_gallery_detail);
 
         // Create an adapter
         mExifDataAdapter = new ExifDataAdapter(getContext(), this);
@@ -150,6 +151,9 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
 
                 if (mExifDataAdapter.isEditedExifDataListInstantiated() && mExifDataAdapter.getCheckboxesSelectedAmount() > 0) {
                     if (mCallThreadEditExif == null) {
+                        // Disable Viewpager swiping
+                        mViewpager.setViewpagerSwitching(false);
+
                         // Thread can be cancelled
                         mCancelableCallThreadEditExif = true;
 
@@ -168,6 +172,7 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                             public void run() {
                                 // Set thread priority
                                 android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_LOWEST);
+
                                 // Thread can no longer be cancelled
                                 mCancelableCallThreadEditExif = false;
 
@@ -243,6 +248,9 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                     } else {
                         if (mCancelableCallThreadEditExif) {
                             Log.d(LOG_TAG, "Canceling thread?");
+                            // Enable Viewpager swiping
+                            mViewpager.setViewpagerSwitching(true);
+
                             // If the thread has already been instantiated the user has indicated stopping it
                             // Remove callback and return thread back to normal
                             mCallThreadEditExif.removeCallbacksAndMessages(null);
@@ -396,6 +404,10 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                     R.string.sb_exif_transfer_data_unsuccessful, Snackbar.LENGTH_LONG).show();
         }
 
+        // Enable Viewpager switching
+        mViewpager.setViewpagerSwitching(true);
+
+        // Enable Exif Adapter clicking
         mExifDataAdapter.setClickable(true);
     }
 
