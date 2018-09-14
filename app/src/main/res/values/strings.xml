@@ -139,10 +139,10 @@
         <b>Settings</b>\n
         - About page crediting libraries &amp; licenses, version history, &amp; version changes.\n\n
 
-        <b>Gallery</b>\n
-        - Scrolling inertia.\n
+        <b>Gallery &amp; Hotifx</b>\n
         - FAM properly closing\n
-        - FABs for selecting image &amp; video files.\n\n
+        - FABs for selecting image &amp; video files.\n
+        - Scrolling Fix\n\n
 
         <b>Upload Page</b>\n
         - Prevent tab switching during upload.\n
