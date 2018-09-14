@@ -20,12 +20,16 @@ public class FileExifDataHeader {
         // Determine whether EXIF data is sensitive or not
         mIsExifDataSensitive = isExifDataSensitive;
 
-        // Set the appropriate title regarding the EXIF data
-        if (mIsExifDataSensitive) {
+        // Set the appropriate header title regarding the EXIF data type
+        if (isExifDataSensitive) {
             mExifDataStringHeader = context.getString(R.string.exif_data_header_sensitive);
         } else {
             mExifDataStringHeader = context.getString(R.string.exif_data_header_general);
         }
+    }
+
+    public FileExifDataHeader (FileExifDataHeader fileExifDataHeader) {
+        // Do nothing, this is merely a place holder
     }
 
     public String getExifDataStringHeader() {

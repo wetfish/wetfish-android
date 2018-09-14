@@ -6,6 +6,7 @@
     android:id="@+id/gallery_detail_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
     tools:context="net.wetfish.wetfish.ui.viewpager.FileUploadFragment">
 
     <android.support.v4.widget.NestedScrollView
@@ -119,30 +120,41 @@
     </android.support.v4.widget.NestedScrollView>
 
     <!-- FAB & FAB Animation -->
-    <com.github.jorgecastilloprz.FABProgressCircle
-        android:id="@+id/fab_progress_circle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <RelativeLayout
+        android:layout_width="88dp"
+        android:layout_height="88dp"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="@dimen/fab_margin"
-        android:layout_marginEnd="@dimen/fab_margin"
-        app:arcColor="@color/fab_arc_color"
-        app:arcWidth="4dp"
-        app:finalIcon="@drawable/ic_done"
+        android:clickable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/fab_upload_file"
+        
+        <com.github.jorgecastilloprz.FABProgressCircle
+            android:id="@+id/fab_progress_circle_upload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_upload_file"
-            fab:fab_colorNormal="@color/accent"
-            fab:fab_colorPressed="@color/accent_dark"
-            fab:fab_colorRipple="@color/accent_light"
-            fab:fab_size="normal" />
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="@dimen/fab_margin"
+            android:layout_marginEnd="@dimen/fab_margin"
+            app:arcColor="@color/fab_arc_color"
+            app:arcWidth="4dp"
+            app:finalIcon="@drawable/ic_done"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-    </com.github.jorgecastilloprz.FABProgressCircle>
+            <com.github.clans.fab.FloatingActionButton
+                android:id="@+id/fab_upload_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_upload_file_white_24dp"
+                fab:fab_colorNormal="@color/accent"
+                fab:fab_colorPressed="@color/accent_dark"
+                fab:fab_colorRipple="@color/accent_light"
+                fab:fab_size="normal" />
+
+        </com.github.jorgecastilloprz.FABProgressCircle>
+
+
+    </RelativeLayout>
 
     <!-- File Not Found Text View -->
     <TextView

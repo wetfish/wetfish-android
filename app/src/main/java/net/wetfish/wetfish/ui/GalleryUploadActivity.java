@@ -12,25 +12,50 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.util.Log;
+import android.view.ViewGroup;
 
 import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.data.EditedFileData;
+import net.wetfish.wetfish.ui.viewpager.CustomLockingViewPager;
 import net.wetfish.wetfish.ui.viewpager.EditExifFragment;
 import net.wetfish.wetfish.ui.viewpager.EditFileFragment;
 import net.wetfish.wetfish.ui.viewpager.FileUploadFragment;
 import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GalleryUploadActivity extends AppCompatActivity implements
-        FileUploadFragment.OnFragmentInteractionListener,
+        FileUploadFragment.UploadFragmentUriUpdate,
         EditFileFragment.OnFragmentInteractionListener,
-        EditExifFragment.OnFragmentInteractionListener {
+        EditExifFragment.EditExifFragmentUriUpdate {
+
+    // Logging Tag
+    private static final String LOG_TAG = GalleryUploadActivity.class.getSimpleName();
+    /* Constants */
+    public static final int VIEWPAGER_OFF_SCREEN_PAGE_LIMIT = 2;
+    public static final int VIEWPAGER_UPLOAD_FRAGMENT = 0;
+    public static final int VIEWPAGER_EDIT_EXIF_FRAGMENT = 1;
+    public static final int VIEWPAGER_EDIT_FILE_FRAGMENT = 2;
+    // View Variables
+    private TabLayout tabLayout;
+    private CustomLockingViewPager mViewPager;
+
+    // Data Variables
+    private Uri fileUri;
+    private Uri mEditedFileUri;
+
+//    private boolean videoFile;
+
+    // ViewPager Variables
+    public SectionsPagerAdapter mSectionsPagerAdapter;
 
     /**
      * Callback for the result from requesting permissions. This method
@@ -83,56 +108,57 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         if (fileUri != null) {
             Log.d(LOG_TAG, "File Data URI: " + fileUri.toString());
         } else {
-            Log.d(LOG_TAG, "fileUri returned null");
+            Log.d(LOG_TAG, "mFileUri returned null");
             UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
                     "File location was not found", Snackbar.LENGTH_LONG);
         }
 
         // Setup ViewPager & ViewPager's adapter
-        viewPager = findViewById(R.id.vp_gallery_detail);
+        mViewPager = findViewById(R.id.vp_gallery_detail);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), fileUri, this);
-        viewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        // Setup off screen page limit
+        mViewPager.setOffscreenPageLimit(VIEWPAGER_OFF_SCREEN_PAGE_LIMIT);
 
         // Setup TabLayout to interact with ViewPager
         tabLayout = findViewById(R.id.tl_gallery_detail);
-        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setupWithViewPager(mViewPager);
 
         //Setup Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
     }
 
-    // Logging Tag
-    private static final String LOG_TAG = GalleryUploadActivity.class.getSimpleName();
-    // View Variables
-    private TabLayout tabLayout;
-
-    private ViewPager viewPager;
-    // Data Variables
-    private Uri fileUri;
-
-//    private boolean videoFile;
-
-    // ViewPager Variables
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-
-    //TODO: Implement all this
-    @Override
-    public void onUploadFragmentInteraction(Uri uri) {
-
-    }
 
     @Override
     public void onEditFileFragmentInteraction(Uri uri) {
 
     }
 
-
+    /**
+     * Fragment interaction from @{@link EditExifFragment} to the other viewpager fragments
+     *
+     *
+     * @param editedFileUri Uri of an edited image
+     */
     @Override
-    public void onEditExifFragmentInteraction(Uri uri) {
+    public void editExifTransferEditedFileData(EditedFileData editedFileUri) {
+        FileUploadFragment uploadFragment = (FileUploadFragment) mSectionsPagerAdapter.getFragment(VIEWPAGER_UPLOAD_FRAGMENT);
+        uploadFragment.receiveEditExifFragmentData(editedFileUri);
+    }
 
+    /**
+     * Fragment interaction from @{@link FileUploadFragment} to the other viewpager fragments
+     *
+     *
+     * @param editedFileUri Uri of an edited image
+     */
+    @Override
+    public void uploadTransferEditedFileData (EditedFileData editedFileUri) {
+        EditExifFragment editExifFragment = (EditExifFragment) mSectionsPagerAdapter.getFragment(VIEWPAGER_EDIT_EXIF_FRAGMENT);
+        editExifFragment.receiveUploadFragmentData(editedFileUri);
     }
 
     /**
@@ -141,11 +167,17 @@ public class GalleryUploadActivity extends AppCompatActivity implements
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        // Constants
+        /* Constants */
         private static final int PAGE_COUNT = 3;
 
-        // Data from intent
-        Uri fileUri;
+        /* Data */
+        //Data from intent
+        Uri mFileUri;
+        // Store fragment tags
+        private Map<Integer, String> mFragmentTags;
+        // Fragment Manager
+        private FragmentManager mFragmentManager;
+
 
         // Context
         Context mContext;
@@ -157,7 +189,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
                 getString(R.string.tv_title_edit_file)};
 
         private int[] imageResId = {
-                R.drawable.ic_upload_file,
+                R.drawable.ic_upload_file_white_24dp,
                 R.drawable.ic_exif_edit,
                 R.drawable.ic_file_edit};
 
@@ -167,10 +199,32 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         }
 
         // Custom constructor
-        SectionsPagerAdapter(FragmentManager fm, Uri uri, Context context) {
+        SectionsPagerAdapter(FragmentManager fm, Uri fileUri, Context context) {
             super(fm);
-            fileUri = uri;
+            mFileUri = fileUri;
+            mEditedFileUri = Uri.parse(""); // Placeholder value
             mContext = context;
+            mFragmentManager = fm;
+            mFragmentTags = new HashMap<Integer, String>();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Object obj = super.instantiateItem(container, position);
+            if (obj instanceof Fragment) {
+                Fragment fragment = (Fragment) obj;
+                String tag = fragment.getTag();
+                mFragmentTags.put(position, tag);
+            }
+            return obj;
+        }
+
+        public Fragment getFragment (int position) {
+            String tag = mFragmentTags.get(position);
+            if (tag == null) {
+                return null;
+            }
+            return mFragmentManager.findFragmentByTag(tag);
         }
 
         /**
@@ -183,10 +237,10 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         public Fragment getItem(int position) {
             switch(position) {
                 case 0:
-                    return FileUploadFragment.newInstance(position + 1, fileUri);
+                    return FileUploadFragment.newInstance(mEditedFileUri, mFileUri);
                 case 1:
                     //TODO: Implement EXIF editing
-                    return EditExifFragment.newInstance("TBA", fileUri);
+                    return EditExifFragment.newInstance(mEditedFileUri, mFileUri);
                 case 2:
                     //TODO: Implement File editing
                     return EditFileFragment.newInstance("Cat", "Cat");
@@ -222,5 +276,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             spannableString.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             return spannableString;
         }
+
+
     }
 }

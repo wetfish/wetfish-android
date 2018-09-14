@@ -6,6 +6,7 @@
     android:id="@+id/gallery_detail_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
     tools:context="net.wetfish.wetfish.ui.viewpager.FileUploadFragment">
 
     <android.support.v4.widget.NestedScrollView
@@ -40,10 +41,10 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- File View -->
-                <ImageView
-                    android:id="@+id/iv_fragment_file_upload"
-                    android:layout_width="0dp"
+                <!-- File View Container -->
+                <FrameLayout
+                    android:id="@+id/iv_fragment_file_upload_container"
+                    android:layout_width="match_parent"
                     android:layout_height="240dp"
                     android:layout_marginBottom="8dp"
                     android:layout_marginEnd="48dp"
@@ -54,7 +55,35 @@
                     app:layout_constraintBottom_toTopOf="@+id/ll_image_details"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/et_title" />
+                    app:layout_constraintTop_toBottomOf="@+id/et_title" >
+
+                    <!-- File Downscaling Progress Bar -->
+                    <ProgressBar
+                        android:id="@+id/pb_downscale_image"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="128dp"
+                        android:layout_height="128dp"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginStart="48dp"
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone" />
+
+                    <!-- File View -->
+                    <ImageView
+                        android:id="@+id/iv_fragment_file_upload"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginStart="48dp"
+                        android:layout_marginTop="16dp"
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter"/>
+
+                </FrameLayout>
+
 
                 <!-- File View Stats -->
                 <android.support.v7.widget.LinearLayoutCompat
@@ -66,7 +95,7 @@
                     android:layout_marginStart="48dp"
                     android:orientation="horizontal"
                     app:layout_constraintBottom_toTopOf="@+id/spinner_fragment_file_upload"
-                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload">
+                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload_container">
 
                     <android.support.v7.widget.AppCompatTextView
                         android:id="@+id/tv_image_resolution"
@@ -133,13 +162,22 @@
     </android.support.v4.widget.NestedScrollView>
 
     <!-- FAB & FAB Animation -->
+    <RelativeLayout
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_gravity="bottom|end"
+        android:clickable="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
     <com.github.jorgecastilloprz.FABProgressCircle
-        android:id="@+id/fab_progress_circle"
+        android:id="@+id/fab_progress_circle_upload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="@dimen/fab_margin"
         android:layout_marginEnd="@dimen/fab_margin"
+        android:visibility="visible"
         app:arcColor="@color/fab_arc_color"
         app:arcWidth="4dp"
         app:finalIcon="@drawable/ic_done"
@@ -150,13 +188,16 @@
             android:id="@+id/fab_upload_file"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_upload_file"
+            android:src="@drawable/ic_upload_file_white_24dp"
+            android:visibility="visible"
             fab:fab_colorNormal="@color/accent"
             fab:fab_colorPressed="@color/accent_dark"
             fab:fab_colorRipple="@color/accent_light"
             fab:fab_size="normal" />
 
     </com.github.jorgecastilloprz.FABProgressCircle>
+
+    </RelativeLayout>
 
     <!-- File Not Found Text View -->
     <TextView

@@ -72,9 +72,9 @@
         </provider>
 
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name=".ui.settings.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".ui.SettingsActivity">
+            android:parentActivityName=".ui.settings.SettingsActivity">
 
         </activity>
 
