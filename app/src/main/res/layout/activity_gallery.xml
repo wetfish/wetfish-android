@@ -120,7 +120,7 @@
                 fab:fab_size="mini" />
 
             <com.github.clans.fab.FloatingActionButton
-                android:id="@+id/fab_select_file"
+                android:id="@+id/fab_select_image_file"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
@@ -130,8 +130,36 @@
                 fab:fab_colorNormal="@color/accent"
                 fab:fab_colorPressed="@color/accent_dark"
                 fab:fab_colorRipple="@color/accent_light"
-                fab:fab_label="@string/fab_select_file"
+                fab:fab_label="@string/fab_select_image_file"
                 fab:fab_size="mini" />
+
+            <com.github.clans.fab.FloatingActionButton
+                android:id="@+id/fab_select_video_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginBottom="@dimen/fab_margin"
+                android:layout_marginEnd="@dimen/fab_margin"
+                android:src="@drawable/ic_add_file"
+                fab:fab_colorNormal="@color/accent"
+                fab:fab_colorPressed="@color/accent_dark"
+                fab:fab_colorRipple="@color/accent_light"
+                fab:fab_label="@string/fab_select_video_file"
+                fab:fab_size="mini" />
+
+            <!--<com.github.clans.fab.FloatingActionButton-->
+                <!--android:id="@+id/fab_select_file"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_gravity="bottom|end"-->
+                <!--android:layout_marginBottom="@dimen/fab_margin"-->
+                <!--android:layout_marginEnd="@dimen/fab_margin"-->
+                <!--android:src="@drawable/ic_add_file"-->
+                <!--fab:fab_colorNormal="@color/accent"-->
+                <!--fab:fab_colorPressed="@color/accent_dark"-->
+                <!--fab:fab_colorRipple="@color/accent_light"-->
+                <!--fab:fab_label="@string/fab_select_file"-->
+                <!--fab:fab_size="mini" />-->
 
         </com.github.clans.fab.FloatingActionMenu>
 

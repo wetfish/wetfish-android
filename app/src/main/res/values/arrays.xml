@@ -1,68 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    //TOOD: Move string arrays here
-    <!-- EXIF Data Values Array v23 and below -->
-    <string-array name="exif_attributes_v23_and_below_array">
-        <item>Aperture</item>
-        <item>Datetime</item>
-        <item>Exposure Time</item>
-        <item>Flash</item>
-        <item>Focal Length</item>
-        <item>GPS Altitude</item>
-        <item>GPS Altitude Ref</item>
-        <item>GPS Datestamp</item>
-        <item>GPS Dest Latitude</item>
-        <item>GPS Dest Latitude Ref</item>
-        <item>GPS Dest Longitude</item>
-        <item>GPS Dest Longitude Ref</item>
-        <item>GPS Processing Method</item>
-        <item>GPS Timestamp</item>
+    <!-- EXIF Tag Values: Layout-->
+    <string-array name="exif_tags_complete_array">
         <item>Image Length</item>
         <item>Image Width</item>
-        <item>ISO</item>
-        <item>Make</item>
-        <item>Model</item>
+        <item>Light Source</item>
         <item>Orientation</item>
-        <item>White Balance</item>
-        <item>White Balance Auto</item>
-        <item>White Balance Manual</item>
-    </string-array>
-
-
-    <!-- EXIF Data Values Array v23 and below -->
-    <string-array name="exif_attributes_v23_and_below_sensitive_array">
-        <item>Datetime</item>
-        <item>GPS Altitude</item>
-        <item>GPS Altitude Ref</item>
-        <item>GPS Datestamp</item>
-        <item>GPS Dest Latitude</item>
-        <item>GPS Dest Latitude Ref</item>
-        <item>GPS Dest Longitude</item>
-        <item>GPS Dest Longitude Ref</item>
-        <item>GPS Processing Method</item>
-        <item>GPS Timestamp</item>
-        <item>Make</item>
-        <item>Model</item>
-    </string-array>
-
-    <!-- EXIF Data Values Array v23 and below -->
-    <string-array name="exif_attributes_v23_and_below_general_array">
-        <item>Aperture</item>
-        <item>Exposure Time</item>
-        <item>Flash</item>
-        <item>Focal Length</item>
-        <item>Image Length</item>
-        <item>Image Width</item>
-        <item>ISO</item>
-        <item>Orientation</item>
-        <item>White Balance</item>
-        <item>White Balance Auto</item>
-        <item>White Balance Manual</item>
-    </string-array>
-
-    <!-- EXIF Data Values Array v24 and above -->
-    <string-array name="exif_attributes_v24_and_above_array">
-        <item>Aperture</item>
         <item>Aperture Value</item>
         <item>Artist</item>
         <item>Bits Per Sample</item>
@@ -96,8 +39,8 @@
         <item>Focal Length</item>
         <item>Focal Length in 35MM Film</item>
         <item>Focal Plane Resolution Unit</item>
-        <item>Focal Plane x Resolution</item>
-        <item>Focal Plane y Resolution</item>
+        <item>Focal Plane X Resolution</item>
+        <item>Focal Plane Y Resolution</item>
         <item>Gain Control</item>
         <item>GPS Altitude</item>
         <item>GPS Altitude Ref</item>
@@ -111,6 +54,14 @@
         <item>GPS Dest Latitude Ref</item>
         <item>GPS Dest Longitude</item>
         <item>GPS Dest Longitude Ref</item>
+        <item>GPS Differential</item>
+        <item>GPS DOP</item>
+        <item>GPS Img Direction</item>
+        <item>GPS Img Direction Ref</item>
+        <item>GPS Latitude</item>
+        <item>GPS Latitude Ref</item>
+        <item>GPS Longitude</item>
+        <item>GPS Longitude Ref</item>
         <item>GPS Map Datum</item>
         <item>GPS Measure Mode</item>
         <item>GPS Processing Method</item>
@@ -122,16 +73,12 @@
         <item>GPS Track</item>
         <item>GPS Track Ref</item>
         <item>GPS Version ID</item>
-        <item>Imagae Description</item>
-        <item>Image Length</item>
+        <item>Image Description</item>
         <item>Image Unique ID</item>
-        <item>Image Width</item>
         <item>Interoperability Index</item>
-        <item>ISO</item>
         <item>ISO Speed Ratings</item>
         <item>JPEG Interchange Format</item>
         <item>JPEG Interchange Format Length</item>
-        <item>Light Source</item>
         <item>Make</item>
         <item>Maker Note</item>
         <item>Max Aperture Value</item>
@@ -143,7 +90,6 @@
         <item>ORF Preview Image Length</item>
         <item>ORF Preview Image Start</item>
         <item>ORF Thumbnail Image</item>
-        <item>Orientation</item>
         <item>Photometric Interpretation</item>
         <item>Pixel X Dimension</item>
         <item>Pixel Y Dimension</item>
@@ -176,9 +122,9 @@
         <item>Subject Distance</item>
         <item>Subject Distance Range</item>
         <item>Subject Location</item>
-        <item>Subsec Time</item>
-        <item>Subsec Time Dig</item>
-        <item>Subsec Time Original</item>
+        <item>SubSec Time</item>
+        <item>SubSec Time Digitized</item>
+        <item>SubSec Time Original</item>
         <item>Thumbnail Image Length</item>
         <item>Thumbnail Image Width</item>
         <item>Transfer Function</item>
@@ -193,44 +139,11 @@
         <item>Whitebalance Auto</item>
         <item>Whitebalance Manual</item>
     </string-array>
-
-    <!-- EXIF Data Values Array v24 and above -->
-    <string-array name="exif_attributes_v24_and_above_sensitive_array">
-        <item>Artist</item>
-        <item>Datetime</item>
-        <item>Datetime Digitized</item>
-        <item>Datetime Original</item>
-        <item>GPS Altitude</item>
-        <item>GPS Altitude Ref</item>
-        <item>GPS Area Information</item>
-        <item>GPS Datestamp</item>
-        <item>GPS Dest Bearing</item>
-        <item>GPS Dest Bearing Ref</item>
-        <item>GPS Dest Distance</item>
-        <item>GPS Dest Distance Ref</item>
-        <item>GPS Dest Latitude</item>
-        <item>GPS Dest Latitude Ref</item>
-        <item>GPS Dest Longitude</item>
-        <item>GPS Dest Longitude Ref</item>
-        <item>GPS Map Datum</item>
-        <item>GPS Measure Mode</item>
-        <item>GPS Processing Method</item>
-        <item>GPS Satellites</item>
-        <item>GPS Speed</item>
-        <item>GPS Speed Ref</item>
-        <item>GPS Status</item>
-        <item>GPS Timestamp</item>
-        <item>GPS Track</item>
-        <item>GPS Track Ref</item>
-        <item>GPS Version ID</item>
-        <item>Imagae Description</item>
-        <item>Make</item>
-        <item>Maker Note</item>
-        <item>Model</item>
-    </string-array>
-
-    <!-- EXIF Data Values Array v24 and above -->
-    <string-array name="exif_attributes_v24_and_above_general_array">
+    <string-array name="exif_tags_general_array">
+        <item>Image Length</item>
+        <item>Image Width</item>
+        <item>Light Source</item>
+        <item>Orientation</item>
         <item>Aperture</item>
         <item>Aperture Value</item>
         <item>Bits Per Sample</item>
@@ -261,18 +174,15 @@
         <item>Focal Length</item>
         <item>Focal Length in 35MM Film</item>
         <item>Focal Plane Resolution Unit</item>
-        <item>Focal Plane x Resolution</item>
-        <item>Focal Plane y Resolution</item>
+        <item>Focal Plane X Resolution</item>
+        <item>Focal Plane Y Resolution</item>
         <item>Gain Control</item>
-        <item>Image Length</item>
         <item>Image Unique ID</item>
-        <item>Image Width</item>
         <item>Interoperability Index</item>
         <item>ISO</item>
         <item>ISO Speed Ratings</item>
         <item>JPEG Interchange Format</item>
         <item>JPEG Interchange Format Length</item>
-        <item>Light Source</item>
         <item>Max Aperture Value</item>
         <item>Metering Mode</item>
         <item>New Subfile Type</item>
@@ -281,7 +191,6 @@
         <item>ORF Preview Image Length</item>
         <item>ORF Preview Image Start</item>
         <item>ORF Thumbnail Image</item>
-        <item>Orientation</item>
         <item>Photometric Interpretation</item>
         <item>Pixel X Dimension</item>
         <item>Pixel Y Dimension</item>
@@ -314,9 +223,9 @@
         <item>Subject Distance</item>
         <item>Subject Distance Range</item>
         <item>Subject Location</item>
-        <item>Subsec Time</item>
-        <item>Subsec Time Dig</item>
-        <item>Subsec Time Original</item>
+        <item>SubSec Time</item>
+        <item>SubSec Time Digitized</item>
+        <item>SubSec Time Original</item>
         <item>Thumbnail Image Length</item>
         <item>Thumbnail Image Width</item>
         <item>Transfer Function</item>
@@ -330,5 +239,330 @@
         <item>Y Resolution</item>
         <item>Whitebalance Auto</item>
         <item>Whitebalance Manual</item>
+    </string-array>
+    <string-array name="exif_tags_sensitive_array">
+        <item>Artist</item>
+        <item>Datetime</item>
+        <item>Datetime Digitized</item>
+        <item>Datetime Original</item>
+        <item>GPS Altitude</item>
+        <item>GPS Altitude Ref</item>
+        <item>GPS Area Information</item>
+        <item>GPS Datestamp</item>
+        <item>GPS Dest Bearing</item>
+        <item>GPS Dest Bearing Ref</item>
+        <item>GPS Dest Distance</item>
+        <item>GPS Dest Distance Ref</item>
+        <item>GPS Dest Latitude</item>
+        <item>GPS Dest Latitude Ref</item>
+        <item>GPS Dest Longitude</item>
+        <item>GPS Dest Longitude Ref</item>
+        <item>GPS Differential</item>
+        <item>GPS DOP</item>
+        <item>GPS Img Direction</item>
+        <item>GPS Img Direction Ref</item>
+        <item>GPS Latitude</item>
+        <item>GPS Latitude Ref</item>
+        <item>GPS Longitude</item>
+        <item>GPS Longitude Ref</item>
+        <item>GPS Map Datum</item>
+        <item>GPS Measure Mode</item>
+        <item>GPS Processing Method</item>
+        <item>GPS Satellites</item>
+        <item>GPS Speed</item>
+        <item>GPS Speed Ref</item>
+        <item>GPS Status</item>
+        <item>GPS Timestamp</item>
+        <item>GPS Track</item>
+        <item>GPS Track Ref</item>
+        <item>GPS Version ID</item>
+        <item>Image Description</item>
+        <item>Make</item>
+        <item>Maker Note</item>
+        <item>Model</item>
+    </string-array>
+
+    <!-- EXIF Tag Values: ExifInterface-->
+    <string-array name="exif_tags_complete_array_interface">
+        <item>ImageLength</item>
+        <item>ImageWidth</item>
+        <item>LightSource</item>
+        <item>Orientation</item>
+        <item>Artist</item>
+        <item>DateTime</item>
+        <item>DateTimeDigitized</item>
+        <item>DateTimeOriginal</item>
+        <item>GPSAltitude</item>
+        <item>GPSAltitudeRef</item>
+        <item>GPSAreaInformation</item>
+        <item>GPSDateStamp</item>
+        <item>GPSDestBearing</item>
+        <item>GPSDestBearingRef</item>
+        <item>GPSDestDistance</item>
+        <item>GPSDestDistanceRef</item>
+        <item>GPSDestLatitude</item>
+        <item>GPSDestLatitudeRef</item>
+        <item>GPSDestLongitude</item>
+        <item>GPSDestLongitudeRef</item>
+        <item>GPSDifferential</item>
+        <item>GPSDOP</item>
+        <item>GPSImgDirection</item>
+        <item>GPSImgDirectionRef</item>
+        <item>GPSLatitude</item>
+        <item>GPSLatitudeRef</item>
+        <item>GPSLongitude</item>
+        <item>GPSLongitudeRef</item>
+        <item>GPSMapDatum</item>
+        <item>GPSMeasureMode</item>
+        <item>GPSProcessingMethod</item>
+        <item>GPSSatellites</item>
+        <item>GPSSpeed</item>
+        <item>GPSSpeedRef</item>
+        <item>GPSStatus</item>
+        <item>GPSTimestamp</item>
+        <item>GPSTrack</item>
+        <item>GPSTrackRef</item>
+        <item>GPSVersionID</item>
+        <item>ImageDescription</item>
+        <item>Make</item>
+        <item>MakerNote</item>
+        <item>Model</item>
+        <item>Aperture</item>
+        <item>ApertureValue</item>
+        <item>BitsPerSample</item>
+        <item>BrightnessValue</item>
+        <item>CFAPattern</item>
+        <item>ColorSpace</item>
+        <item>ComponentsConfiguration</item>
+        <item>CompressedBitsPerPixel</item>
+        <item>Compression</item>
+        <item>Contrast</item>
+        <item>Copyright</item>
+        <item>CustomRendered</item>
+        <item>DefaultCropSize</item>
+        <item>DeviceSettingDescription</item>
+        <item>DigitalZoomRatio</item>
+        <item>DNGVersion</item>
+        <item>EXIFVersion</item>
+        <item>ExposureBiasValue</item>
+        <item>ExposureIndex</item>
+        <item>ExposureMode</item>
+        <item>ExposureProgram</item>
+        <item>ExposureTime</item>
+        <item>FNumber</item>
+        <item>FileSource</item>
+        <item>Flash</item>
+        <item>FlashpixVersion</item>
+        <item>FlashEnergy</item>
+        <item>FocalLength</item>
+        <item>FocalLengthIn35MMFilm</item>
+        <item>FocalPlaneResolutionUnit</item>
+        <item>FocalPlaneXResolution</item>
+        <item>FocalPlaneYResolution</item>
+        <item>GainControl</item>
+        <item>ImageUniqueID</item>
+        <item>InteroperabilityIndex</item>
+        <item>ISO</item>
+        <item>ISOSpeedRatings</item>
+        <item>JPEGInterchangeFormat</item>
+        <item>JPEGInterchangeFormatLength</item>
+        <item>MaxApertureValue</item>
+        <item>MeteringMode</item>
+        <item>NewSubfileType</item>
+        <item>OECF</item>
+        <item>AspectFrame</item>
+        <item>PreviewImageLength</item>
+        <item>PreviewImageStart</item>
+        <item>ThumbnailImage</item>
+        <item>PhotometricInterpretation</item>
+        <item>PixelXDimension</item>
+        <item>PixelYDimension</item>
+        <item>PlanarConfiguration</item>
+        <item>PrimaryChromaticities</item>
+        <item>ReferenceBlackWhite</item>
+        <item>RelatedSoundFile</item>
+        <item>ResolutionUnit</item>
+        <item>RowsPerStrip</item>
+        <item>ISO</item>
+        <item>JpgFromRaw</item>
+        <item>SensorBottomBorder</item>
+        <item>SensorLeftBorder</item>
+        <item>SensorRightBorder</item>
+        <item>SensorTopBorder</item>
+        <item>SamplesPerPixel</item>
+        <item>Saturation</item>
+        <item>SceneCaptureType</item>
+        <item>SceneType</item>
+        <item>SensingMethod</item>
+        <item>Sharpness</item>
+        <item>ShutterSpeedValue</item>
+        <item>Software</item>
+        <item>SpatialFrequencyResponse</item>
+        <item>SpectralSensitivity</item>
+        <item>StripByteCounts</item>
+        <item>StripOffsets</item>
+        <item>SubfileType</item>
+        <item>SubjectArea</item>
+        <item>SubjectDistance</item>
+        <item>SubjectDistanceRange</item>
+        <item>SubjectLocation</item>
+        <item>SubSecTime</item>
+        <item>SubSecTimeDigitized</item>
+        <item>SubSecTimeOriginal</item>
+        <item>ThumbnailImageLength</item>
+        <item>ThumbnailImageWidth</item>
+        <item>TransferFunction</item>
+        <item>UserComment</item>
+        <item>WhiteBalance</item>
+        <item>WhitePoint</item>
+        <item>XResolution</item>
+        <item>YCbCrCoefficients</item>
+        <item>YCbCrPositioning</item>
+        <item>YCbCrSubSampling</item>
+        <item>YResolution</item>
+        <item>WhitebalanceAuto</item>
+        <item>WhitebalanceManual</item>
+    </string-array>
+    <string-array name="exif_tags_general_array_interface">
+        <item>ImageLength</item>
+        <item>ImageWidth</item>
+        <item>LightSource</item>
+        <item>Orientation</item>
+        <item>Aperture</item>
+        <item>ApertureValue</item>
+        <item>BitsPerSample</item>
+        <item>BrightnessValue</item>
+        <item>CFAPattern</item>
+        <item>ColorSpace</item>
+        <item>ComponentsConfiguration</item>
+        <item>CompressedBitsPerPixel</item>
+        <item>Compression</item>
+        <item>Contrast</item>
+        <item>Copyright</item>
+        <item>CustomRendered</item>
+        <item>DefaultCropSize</item>
+        <item>DeviceSettingDescription</item>
+        <item>DigitalZoomRatio</item>
+        <item>DNGVersion</item>
+        <item>EXIFVersion</item>
+        <item>ExposureBiasValue</item>
+        <item>ExposureIndex</item>
+        <item>ExposureMode</item>
+        <item>ExposureProgram</item>
+        <item>ExposureTime</item>
+        <item>FNumber</item>
+        <item>FileSource</item>
+        <item>Flash</item>
+        <item>FlashpixVersion</item>
+        <item>FlashEnergy</item>
+        <item>FocalLength</item>
+        <item>FocalLengthIn35MMFilm</item>
+        <item>FocalPlaneResolutionUnit</item>
+        <item>FocalPlaneXResolution</item>
+        <item>FocalPlaneYResolution</item>
+        <item>GainControl</item>
+        <item>ImageUniqueID</item>
+        <item>InteroperabilityIndex</item>
+        <item>ISO</item>
+        <item>ISOSpeedRatings</item>
+        <item>JPEGInterchangeFormat</item>
+        <item>JPEGInterchangeFormatLength</item>
+        <item>MaxApertureValue</item>
+        <item>MeteringMode</item>
+        <item>NewSubfileType</item>
+        <item>OECF</item>
+        <item>AspectFrame</item>
+        <item>PreviewImageLength</item>
+        <item>PreviewImageStart</item>
+        <item>ThumbnailImage</item>
+        <item>PhotometricInterpretation</item>
+        <item>PixelXDimension</item>
+        <item>PixelYDimension</item>
+        <item>PlanarConfiguration</item>
+        <item>PrimaryChromaticities</item>
+        <item>ReferenceBlackWhite</item>
+        <item>RelatedSoundFile</item>
+        <item>ResolutionUnit</item>
+        <item>RowsPerStrip</item>
+        <item>ISO</item>
+        <item>JpgFromRaw</item>
+        <item>SensorBottomBorder</item>
+        <item>SensorLeftBorder</item>
+        <item>SensorRightBorder</item>
+        <item>SensorTopBorder</item>
+        <item>SamplesPerPixel</item>
+        <item>Saturation</item>
+        <item>SceneCaptureType</item>
+        <item>SceneType</item>
+        <item>SensingMethod</item>
+        <item>Sharpness</item>
+        <item>ShutterSpeedValue</item>
+        <item>Software</item>
+        <item>SpatialFrequencyResponse</item>
+        <item>SpectralSensitivity</item>
+        <item>StripByteCounts</item>
+        <item>StripOffsets</item>
+        <item>SubfileType</item>
+        <item>SubjectArea</item>
+        <item>SubjectDistance</item>
+        <item>SubjectDistanceRange</item>
+        <item>SubjectLocation</item>
+        <item>SubSecTime</item>
+        <item>SubSecTimeDigitized</item>
+        <item>SubSecTimeOriginal</item>
+        <item>ThumbnailImageLength</item>
+        <item>ThumbnailImageWidth</item>
+        <item>TransferFunction</item>
+        <item>UserComment</item>
+        <item>WhiteBalance</item>
+        <item>WhitePoint</item>
+        <item>XResolution</item>
+        <item>YCbCrCoefficients</item>
+        <item>YCbCrPositioning</item>
+        <item>YCbCrSubSampling</item>
+        <item>YResolution</item>
+        <item>WhitebalanceAuto</item>
+        <item>WhitebalanceManual</item>
+    </string-array>
+    <string-array name="exif_tags_sensitive_array_interface">
+        <item>Artist</item>
+        <item>DateTime</item>
+        <item>DateTimeDigitized</item>
+        <item>DateTimeOriginal</item>
+        <item>GPSAltitude</item>
+        <item>GPSAltitudeRef</item>
+        <item>GPSAreaInformation</item>
+        <item>GPSDateStamp</item>
+        <item>GPSDestBearing</item>
+        <item>GPSDestBearingRef</item>
+        <item>GPSDestDistance</item>
+        <item>GPSDestDistanceRef</item>
+        <item>GPSDestLatitude</item>
+        <item>GPSDestLatitudeRef</item>
+        <item>GPSDestLongitude</item>
+        <item>GPSDestLongitudeRef</item>
+        <item>GPSDifferential</item>
+        <item>GPSDOP</item>
+        <item>GPSImgDirection</item>
+        <item>GPSImgDirectionRef</item>
+        <item>GPSLatitude</item>
+        <item>GPSLatitudeRef</item>
+        <item>GPSLongitude</item>
+        <item>GPSLongitudeRef</item>
+        <item>GPSMapDatum</item>
+        <item>GPSMeasureMode</item>
+        <item>GPSProcessingMethod</item>
+        <item>GPSSatellites</item>
+        <item>GPSSpeed</item>
+        <item>GPSSpeedRef</item>
+        <item>GPSStatus</item>
+        <item>GPSTimestamp</item>
+        <item>GPSTrack</item>
+        <item>GPSTrackRef</item>
+        <item>GPSVersionID</item>
+        <item>ImageDescription</item>
+        <item>Make</item>
+        <item>MakerNote</item>
+        <item>Model</item>
     </string-array>
 </resources>

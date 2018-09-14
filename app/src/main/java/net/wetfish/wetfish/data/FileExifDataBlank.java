@@ -22,6 +22,11 @@ public class FileExifDataBlank {
 
     }
 
+    public FileExifDataBlank (FileExifDataBlank fileExifDataBlank) {
+        // Do nothing, this is merely a place holder
+
+    }
+
     public String getNoExifDataFoundString() {
         return mNoExifDataFound;
     }

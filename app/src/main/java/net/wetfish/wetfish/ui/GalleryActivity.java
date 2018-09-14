@@ -64,6 +64,8 @@ public class GalleryActivity extends AppCompatActivity implements
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
     // Content Provider Auto Increment Buffer
     private int POSITION_BUFFER = 1;
+    // Constant triggers if the user is trying to take photos or videos
+    // TODO: Make the request fire the given feature if the user had previously requested it.
 
     /* Views */
     // Progress bar utilized during loader
@@ -81,7 +83,8 @@ public class GalleryActivity extends AppCompatActivity implements
     // FAM menu option FABs
     private FloatingActionButton mTakePictureFAB;
     private FloatingActionButton mTakeVideoFAB;
-    private FloatingActionButton mSelectFileFab;
+    private FloatingActionButton mSelectImageFileFAB;
+    private FloatingActionButton mSelectVideoFileFAB;
 
     /* Data */
     // Network information
@@ -138,7 +141,8 @@ public class GalleryActivity extends AppCompatActivity implements
         // FAB to start intent to select a file then pass the user to another activity
         mTakePictureFAB = findViewById(R.id.fab_take_picture);
         mTakeVideoFAB = findViewById(R.id.fab_take_video);
-        mSelectFileFab = findViewById(R.id.fab_select_file);
+        mSelectImageFileFAB = findViewById(R.id.fab_select_image_file);
+        mSelectVideoFileFAB = findViewById(R.id.fab_select_video_file);
 
         mTakePictureFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -151,6 +155,9 @@ public class GalleryActivity extends AppCompatActivity implements
                             || ContextCompat.checkSelfPermission(getBaseContext(),
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
+
+                        // Close FAM
+                        mFAM.close(true);
 
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
@@ -177,6 +184,9 @@ public class GalleryActivity extends AppCompatActivity implements
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
 
+                        // Close FAM
+                        mFAM.close(true);
+
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
 
@@ -190,11 +200,64 @@ public class GalleryActivity extends AppCompatActivity implements
             }
         });
 
-        mSelectFileFab.setOnClickListener(new View.OnClickListener() {
+        mSelectImageFileFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectFileToUpload();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED
+                            || ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                        // Close FAM
+                        mFAM.close(true);
+
+                        // Permissions have not been granted, inform the user and ask again
+                        requestStoragePermission();
+
+
+
+                    } else {
+                        // Storage permissions granted!
+                        selectImageFileToUpload();
+                    }
+                } else {
+                    selectImageFileToUpload();
+                }
             }
+
+        });
+
+        mSelectVideoFileFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED
+                            || ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                        // Close FAM
+                        mFAM.close(true);
+
+                        // Permissions have not been granted, inform the user and ask again
+                        requestStoragePermission();
+
+
+
+                    } else {
+                        // Storage permissions granted!
+                        selectVideoFileToUpload();
+                    }
+                } else {
+                    selectVideoFileToUpload();
+                }
+            }
+
         });
 
         // Acquire a connectivity manager to see network status
@@ -256,27 +319,53 @@ public class GalleryActivity extends AppCompatActivity implements
         updateFiles();
     }
 
+    // TODO: Reinstate later
     /**
      * Select an image or video to upload
      * //TODO: Is ready to also select more than video/* and image/*
      */
     private void selectFileToUpload() {
+//        // Attempt to open gallery
+//        try {
+//            // TODO: This chunk of code allows for files to be picked from the file system and allow for other file types to be added.
+////            Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+////            Intent pickFileIntentTwo = new Intent(Intent.ACTION_GET_CONTENT, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+////            pickFileIntent.setType(getString(R.string.file_mime_type));
+////            pickFileIntentTwo.setType(getString(R.string.file_mime_type));
+////
+////            Intent useCameraIntentPicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+////            Intent useCameraIntentVideo = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+////
+////            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.chooser_title));
+////            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{useCameraIntentPicture, useCameraIntentVideo, pickFileIntentTwo});
+//
+//            Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//            pickFileIntent.setType("video/*, image/*");
+//
+//            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.select_upload_file));
+//
+//            startActivityForResult(chooserIntent, REQUEST_PICK_FILE);
+//
+////            Intent pickFileIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+////            pickFileIntent.setType("*/*");
+////
+////            pickFileIntent.putExtra(Intent.EXTRA_MIME_TYPES, "video/*, image/*");
+////
+////            pickFileIntent.addCategory(Intent.CATEGORY_OPENABLE);
+////            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.select_upload_file));
+////
+////            startActivityForResult(chooserIntent, REQUEST_PICK_FILE);
+//        } catch (Exception e) {
+//            Log.d(LOG_TAG, "An exception occurred!: " + e.toString());
+//        }
+
+    }
+
+    private void selectImageFileToUpload() {
         // Attempt to open gallery
         try {
-            // TODO: This chunk of code allows for files to be picked from the file system and allow for other file types to be added.
-//            Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//            Intent pickFileIntentTwo = new Intent(Intent.ACTION_GET_CONTENT, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//            pickFileIntent.setType(getString(R.string.file_mime_type));
-//            pickFileIntentTwo.setType(getString(R.string.file_mime_type));
-//
-//            Intent useCameraIntentPicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//            Intent useCameraIntentVideo = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-//
-//            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.chooser_title));
-//            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{useCameraIntentPicture, useCameraIntentVideo, pickFileIntentTwo});
-
             Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            pickFileIntent.setType(getString(R.string.file_mime_type));
+            pickFileIntent.setType("image/*");
 
             Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.select_upload_file));
 
@@ -284,7 +373,20 @@ public class GalleryActivity extends AppCompatActivity implements
         } catch (Exception e) {
             Log.d(LOG_TAG, "An exception occurred!: " + e.toString());
         }
+    }
 
+    private void selectVideoFileToUpload() {
+        // Attempt to open gallery
+        try {
+            Intent pickFileIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            pickFileIntent.setType("video/*");
+
+            Intent chooserIntent = Intent.createChooser(pickFileIntent, getString(R.string.select_upload_file));
+
+            startActivityForResult(chooserIntent, REQUEST_PICK_FILE);
+        } catch (Exception e) {
+            Log.d(LOG_TAG, "An exception occurred!: " + e.toString());
+        }
     }
 
     /**
@@ -411,6 +513,9 @@ public class GalleryActivity extends AppCompatActivity implements
     protected void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
 
+        // Close FAM
+        mFAM.close(true);
+
         // Close FAM.
 //        mFAM.close(true);
 
@@ -464,7 +569,6 @@ public class GalleryActivity extends AppCompatActivity implements
             Snackbar.make(findViewById(android.R.id.content), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
 
             Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
-
         }
     }
 
