@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -65,6 +66,7 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
     private FloatingActionButton mFabEditFileExif;
     private FABProgressCircle mFabProgressCircleEditExif;
     private CustomLockingViewPager mViewpager;
+    private TabLayout mTabLayout;
 
     /* Data */
     private Uri mFileAbsolutePath;
@@ -137,6 +139,7 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
         mFabProgressCircleEditExif = mRootLayout.findViewById(R.id.fab_progress_circle_edit_exif);
         mFabProgressCircleEditExif.attachListener(this);
         mViewpager = getActivity().findViewById(R.id.vp_gallery_detail);
+        mTabLayout = getActivity().findViewById(R.id.tl_gallery_detail);
 
         // Create an adapter
         mExifDataAdapter = new ExifDataAdapter(getContext(), this);
@@ -151,17 +154,32 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
 
                 if (mExifDataAdapter.isEditedExifDataListInstantiated() && mExifDataAdapter.getCheckboxesSelectedAmount() > 0) {
                     if (mCallThreadEditExif == null) {
+                        // Start the progress circle and change the image to depict the FAB's new functionality
+                        mFabProgressCircleEditExif.show();
+                        mFabEditFileExif.setImageResource(R.drawable.ic_cancel_white_24dp);
+
                         // Disable Viewpager swiping
                         mViewpager.setViewpagerSwitching(false);
+
+                        // Get a reference to the mTabLayout's children views
+                        ViewGroup viewGroup = (ViewGroup) mTabLayout.getChildAt(0);
+
+                        // Determine the amount of tabs present
+                        int tabsCount = viewGroup.getChildCount();
+
+                        // Iterate through the tabs and disable them
+                        for (int i = 0; i < tabsCount; i++) {
+                            // Get the child view at position i
+                            ViewGroup viewGroupTag = (ViewGroup) viewGroup.getChildAt(i);
+
+                            // Disable the tab
+                            viewGroupTag.setEnabled(false);
+                        }
 
                         // Thread can be cancelled
                         mCancelableCallThreadEditExif = true;
 
-                        // The thread hasn't been instantiated yet. Begin the process of editing the file's EXIF
 
-                        // Start the progress circle and change the image to depict the FAB's new functionality
-                        mFabProgressCircleEditExif.show();
-                        mFabEditFileExif.setImageResource(R.drawable.ic_cancel_white_24dp);
 
                         // Make the adapter consume recycler view's touch events
                         mExifDataAdapter.setClickable(false);
@@ -250,6 +268,21 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
                             Log.d(LOG_TAG, "Canceling thread?");
                             // Enable Viewpager swiping
                             mViewpager.setViewpagerSwitching(true);
+
+                            // Get a reference to the mTabLayout's children views
+                            ViewGroup viewGroup = (ViewGroup) mTabLayout.getChildAt(0);
+
+                            // Determine the amount of tabs present
+                            int tabsCount = viewGroup.getChildCount();
+
+                            // Iterate through the tabs and enable them
+                            for (int i = 0; i < tabsCount; i++) {
+                                // Get the child view at position i
+                                ViewGroup viewGroupTag = (ViewGroup) viewGroup.getChildAt(i);
+
+                                // Enable the tab
+                                viewGroupTag.setEnabled(true);
+                            }
 
                             // If the thread has already been instantiated the user has indicated stopping it
                             // Remove callback and return thread back to normal
@@ -409,6 +442,21 @@ public class EditExifFragment extends Fragment implements FABProgressListener,
 
         // Enable Exif Adapter clicking
         mExifDataAdapter.setClickable(true);
+
+        // Get a reference to the mTabLayout's children views
+        ViewGroup viewGroup = (ViewGroup) mTabLayout.getChildAt(0);
+
+        // Determine the amount of tabs present
+        int tabsCount = viewGroup.getChildCount();
+
+        // Iterate through the tabs and enable them
+        for (int i = 0; i < tabsCount; i++) {
+            // Get the child view at position i
+            ViewGroup viewGroupTag = (ViewGroup) viewGroup.getChildAt(i);
+
+            // Enable the tab
+            viewGroupTag.setEnabled(true);
+        }
     }
 
     public interface EditExifFragmentUriUpdate {

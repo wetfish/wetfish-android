@@ -19,6 +19,7 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -98,6 +99,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private static final int NULL_INTEGER = 1;
     private static final int RESCALE_FAILED = 0;
     private int START_AT_MOST_RECENT_FIRST_INTEGER = 0;
+
     /* Views */
     private ImageView mFileView;
     private TextView mFileLength;
@@ -113,6 +115,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private View mRootLayout;
     private View fileUploadContent;
     private Spinner mSpinner;
+    private TabLayout mTabLayout;
+    private CustomLockingViewPager mViewpager;
 
     /* Data */
     // Temporary original file path variable
@@ -196,6 +200,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Determine the mime type
         mFileType = FileUtils.getFileExtensionFromUri(getContext(), mFileAbsolutePath);
         mMimeType = FileUtils.getMimeType(mFileType, getContext());
+
+        // Viewpager views
+        mViewpager = getActivity().findViewById(R.id.vp_gallery_detail);
+        mTabLayout = getActivity().findViewById(R.id.tl_gallery_detail);
 
         // Inflate the proper layout depending on the mime type
         switch (mMimeType) {
@@ -318,10 +326,27 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 } else {
                     // Thread to upload the file with a delay to allow easier cancellation
                     if (mCallThreadUpload == null) {
-                        // Start the progress circle and change the image to correctly represent the
-                        // FAB buttons new state
+                        // Start the progress circle and change the image to depict the FAB's new functionality
                         mFabProgressCircleUpload.show();
                         mFabUploadFile.setImageResource(R.drawable.ic_cancel_white_24dp);
+
+                        // Disable Viewpager swiping
+                        mViewpager.setViewpagerSwitching(false);
+
+                        // Get a reference to the mTabLayout's children views to disable tabs
+                        ViewGroup viewGroup = (ViewGroup) mTabLayout.getChildAt(0);
+
+                        // Determine the amount of tabs present
+                        int tabsCount = viewGroup.getChildCount();
+
+                        // Iterate through the tabs and enable them
+                        for (int i = 0; i < tabsCount; i++) {
+                            // Get the child view at position i
+                            ViewGroup viewGroupTag = (ViewGroup) viewGroup.getChildAt(i);
+
+                            // Disable the tab
+                            viewGroupTag.setEnabled(false);
+                        }
 
                         // Disable spinner during upload
                         if (mMimeType.equals(IMAGE_FILE)) {
@@ -346,9 +371,25 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 mCall.cancel();
                             }
 
-                            // Remove callback and return thread back to normal
-                            mCallThreadUpload.removeCallbacksAndMessages(null);
-                            mCallThreadUpload = null;
+                            // Enable Viewpager swiping
+                            mViewpager.setViewpagerSwitching(false);
+
+
+                            // Get a reference to the mTabLayout's children views to enable tabs
+                            ViewGroup viewGroup = (ViewGroup) mTabLayout.getChildAt(0);
+
+                            // Determine the amount of tabs present
+                            int tabsCount = viewGroup.getChildCount();
+
+                            // Iterate through the tabs and enable them
+                            for (int i = 0; i < tabsCount; i++) {
+                                // Get the child view at position i
+                                ViewGroup viewGroupTag = (ViewGroup) viewGroup.getChildAt(i);
+
+                                // Enable the tab
+                                viewGroupTag.setEnabled(true);
+                            }
+
 
                             // Reset the FAB and hide the upload progress bar
                             mFabProgressCircleUpload.hide();
@@ -360,6 +401,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             // Pass the user a success notification of cancellation
                             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
                                     .show();
+
+                            // Remove callback and return thread back to normal
+                            mCallThreadUpload.removeCallbacksAndMessages(null);
+                            mCallThreadUpload = null;
                         }
                     }
                 }
