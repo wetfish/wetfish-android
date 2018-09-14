@@ -2,6 +2,10 @@
 <resources>
     <!-- EXIF Tag Values: Layout-->
     <string-array name="exif_tags_complete_array">
+        <item>Image Length</item>
+        <item>Image Width</item>
+        <item>Light Source</item>
+        <item>Orientation</item>
         <item>Aperture Value</item>
         <item>Artist</item>
         <item>Bits Per Sample</item>
@@ -134,12 +138,12 @@
         <item>Y Resolution</item>
         <item>Whitebalance Auto</item>
         <item>Whitebalance Manual</item>
+    </string-array>
+    <string-array name="exif_tags_general_array">
         <item>Image Length</item>
         <item>Image Width</item>
         <item>Light Source</item>
         <item>Orientation</item>
-    </string-array>
-    <string-array name="exif_tags_general_array">
         <item>Aperture</item>
         <item>Aperture Value</item>
         <item>Bits Per Sample</item>
@@ -235,10 +239,6 @@
         <item>Y Resolution</item>
         <item>Whitebalance Auto</item>
         <item>Whitebalance Manual</item>
-        <item>Image Length</item>
-        <item>Image Width</item>
-        <item>Light Source</item>
-        <item>Orientation</item>
     </string-array>
     <string-array name="exif_tags_sensitive_array">
         <item>Artist</item>
@@ -284,6 +284,10 @@
 
     <!-- EXIF Tag Values: ExifInterface-->
     <string-array name="exif_tags_complete_array_interface">
+        <item>ImageLength</item>
+        <item>ImageWidth</item>
+        <item>LightSource</item>
+        <item>Orientation</item>
         <item>Artist</item>
         <item>DateTime</item>
         <item>DateTimeDigitized</item>
@@ -418,12 +422,12 @@
         <item>YResolution</item>
         <item>WhitebalanceAuto</item>
         <item>WhitebalanceManual</item>
+    </string-array>
+    <string-array name="exif_tags_general_array_interface">
         <item>ImageLength</item>
         <item>ImageWidth</item>
         <item>LightSource</item>
         <item>Orientation</item>
-    </string-array>
-    <string-array name="exif_tags_general_array_interface">
         <item>Aperture</item>
         <item>ApertureValue</item>
         <item>BitsPerSample</item>
@@ -519,10 +523,6 @@
         <item>YResolution</item>
         <item>WhitebalanceAuto</item>
         <item>WhitebalanceManual</item>
-        <item>ImageLength</item>
-        <item>ImageWidth</item>
-        <item>LightSource</item>
-        <item>Orientation</item>
     </string-array>
     <string-array name="exif_tags_sensitive_array_interface">
         <item>Artist</item>
