@@ -16,7 +16,7 @@
     <string name="tv_tags">Tags</string>
     <string name="tv_description">Description</string>
     <string name="tv_image_resolution">%1$d x %2$d</string>
-    <string name="tv_image_sizez_kb">%d kb</string>
+    <string name="tv_file_sizes_kb">%d kb</string>
     <string name="tv_file_size_mb">%.2f mb</string>
     <string name="tv_error_loading_db">Error Loading Database</string>
     <string name="tv_no_results">No Files Uploaded…</string>
@@ -240,6 +240,10 @@
     //EXIF Data layout
     <string name="exif_data_header_sensitive">Sensitive Exif Data</string>
     <string name="exif_data_header_general">General Exif Data</string>
+    <string name="tv_image_resolution_not_found">Resolution Unavailable</string>
+    <string name="tv_video_length_unobtained">Video Length Unavailable</string>
+    <string name="no_image_available_on_physical_storage">Image file not available on physical storage</string>
+    <string name="no_video_available_on_physical_storage">No video available on physical storage</string>
 
 
 </resources>
