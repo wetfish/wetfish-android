@@ -120,12 +120,12 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     /* Data */
     // Temporary original file path variable
-    private Uri mFileAbsolutePath;
-    // Temporary file path variable for downscaled images. Allows EXIF data to be transferred to @mEditedImageAbsolutePath
+    private Uri mOriginalFileAbsolutePath;
+    // Temporary file path variable for downscaled images. Allows EXIF data to be transferred to @mEditedFileAbsolutePath
     private Uri mRescaledImageAbsolutePath;
     // Final file path variable for all image edits.
-    private Uri mEditedImageAbsolutePath;
-    // Final file path variable for uploading @mEditedImageAbsolutePath if it exists or @mFileAbsolutePath otherwise
+    private Uri mEditedFileAbsolutePath;
+    // Final file path variable for uploading @mEditedFileAbsolutePath if it exists or @mOriginalFileAbsolutePath otherwise
     private Uri mUploadFileAbsolutePath;
     private String mFileType;
     private String mMimeType;
@@ -177,15 +177,16 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     /* Fragment interaction methods */
     public void receiveEditExifFragmentData(EditedFileData editedFileData) {
         mEditedFileData = editedFileData;
-        mEditedImageAbsolutePath = editedFileData.getEditedFileUri();
+        mEditedFileAbsolutePath = editedFileData.getEditedFileUri();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mEditedImageAbsolutePath = Uri.parse(getArguments().getString(ARG_EDITED_FILE_URI));
-            mFileAbsolutePath = Uri.parse(getArguments().getString(ARG_ORIGINAL_FILE_URI));
+            mEditedFileAbsolutePath = Uri.parse(getArguments().getString(ARG_EDITED_FILE_URI));
+            mOriginalFileAbsolutePath = Uri.parse(getArguments().getString(ARG_ORIGINAL_FILE_URI));
+            Log.d(LOG_TAG, mOriginalFileAbsolutePath.toString() + " " + mEditedFileAbsolutePath);
         }
 
         if (mEditedFileData == null) {
@@ -198,7 +199,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Determine the mime type
-        mFileType = FileUtils.getFileExtensionFromUri(getContext(), mFileAbsolutePath);
+        mFileType = FileUtils.getFileExtensionFromUri(getContext(), mOriginalFileAbsolutePath);
         mMimeType = FileUtils.getMimeType(mFileType, getContext());
 
         // Viewpager views
@@ -249,8 +250,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 mFileViewSize = mRootLayout.findViewById(R.id.tv_video_size);
 
                 // Setup view data
-                mFileViewSize.setText(FileUtils.getFileSize(mFileAbsolutePath, getContext()));
-                mFileLength.setText(FileUtils.getVideoLength(mFileAbsolutePath, getContext()));
+                mFileViewSize.setText(FileUtils.getFileSize(mOriginalFileAbsolutePath, getContext()));
+                mFileLength.setText(FileUtils.getVideoLength(mOriginalFileAbsolutePath, getContext()));
 
                 break;
             default:
@@ -272,11 +273,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mCallThreadDetermineImage.post(new Runnable() {
             @Override
             public void run() {
-                if (mEditedImageCreated || (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty())) {
-                    // If @mEditedImageAbsolutePath has been created or provided by another fragment, use it.
-                    determineFileViewContent(mEditedImageAbsolutePath);
+                if (mEditedImageCreated || (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty())) {
+                    // If @mEditedFileAbsolutePath has been created or provided by another fragment, use it.
+                    determineFileViewContent(mEditedFileAbsolutePath);
                 } else {
-                    determineFileViewContent(mFileAbsolutePath);
+                    determineFileViewContent(mOriginalFileAbsolutePath);
                 }
             }
         });
@@ -474,7 +475,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         // Check to see if mEditedFileData has an edited file Uri
         if (mEditedFileData.getEditedFileUri() != null && !mEditedFileData.getEditedFileUri().toString().isEmpty()) {
-            mEditedImageAbsolutePath = mEditedFileData.getEditedFileUri();
+            mEditedFileAbsolutePath = mEditedFileData.getEditedFileUri();
             mEditedImageCreated = true;
         }
 
@@ -486,13 +487,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mCallThreadDetermineImage.post(new Runnable() {
             @Override
             public void run() {
-                if (mEditedImageCreated || (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty())) {
+                if (mEditedImageCreated || (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty())) {
                     Log.d(LOG_TAG, "Edited Image Triggered");
 
-                    // If @mEditedImageAbsolutePath has been created or provided by another fragment, use it.
-                    determineFileViewContent(mEditedImageAbsolutePath);
+                    // If @mEditedFileAbsolutePath has been created or provided by another fragment, use it.
+                    determineFileViewContent(mEditedFileAbsolutePath);
                 } else {
-                    determineFileViewContent(mFileAbsolutePath);
+                    determineFileViewContent(mOriginalFileAbsolutePath);
                 }
             }
         });
@@ -511,7 +512,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         if (!mDatabaseAdditionSuccessful) {
 
             /* This is important if the application quits before the transaction between
-               @mRescaledImageAbsolutePath and @mEditedImageAbsolutePath occurs */
+               @mRescaledImageAbsolutePath and @mEditedFileAbsolutePath occurs */
             if (mRescaledImageCreated) {
                 deleteRescaledFile();
             }
@@ -663,11 +664,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 createRescaledImage(mCurrentSpinnerSelection);
                             } finally {
                                 // Update the view field with the newly rescaled image if successfully rescaled
-                                if (mEditedImageAbsolutePath != null) {
-                                    determineFileViewContent(mEditedImageAbsolutePath);
+                                if (mEditedFileAbsolutePath != null) {
+                                    determineFileViewContent(mEditedFileAbsolutePath);
                                 } else {
                                     mSpinner.setSelection(RESCALE_FAILED);
-                                    determineFileViewContent(mFileAbsolutePath);
+                                    determineFileViewContent(mOriginalFileAbsolutePath);
                                 }
                             }
                         }
@@ -695,11 +696,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 createRescaledImage(mCurrentSpinnerSelection);
                             } finally {
                                 // Update the view field with the newly rescaled image if successfully rescaled
-                                if (mEditedImageAbsolutePath != null) {
-                                    determineFileViewContent(mEditedImageAbsolutePath);
+                                if (mEditedFileAbsolutePath != null) {
+                                    determineFileViewContent(mEditedFileAbsolutePath);
                                 } else {
                                     mSpinner.setSelection(RESCALE_FAILED);
-                                    determineFileViewContent(mFileAbsolutePath);
+                                    determineFileViewContent(mOriginalFileAbsolutePath);
                                 }
                             }
                         }
@@ -736,11 +737,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             createRescaledImage(mCurrentSpinnerSelection);
                         } finally {
                             // Update the view field with the newly rescaled image if successfully rescaled
-                            if (mEditedImageAbsolutePath != null) {
-                                determineFileViewContent(mEditedImageAbsolutePath);
+                            if (mEditedFileAbsolutePath != null) {
+                                determineFileViewContent(mEditedFileAbsolutePath);
                             } else {
                                 mSpinner.setSelection(RESCALE_FAILED);
-                                determineFileViewContent(mFileAbsolutePath);
+                                determineFileViewContent(mOriginalFileAbsolutePath);
                             }
                         }
                     }
@@ -781,11 +782,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             createRescaledImage(mCurrentSpinnerSelection);
                         } finally {
                             // Update the view field with the newly rescaled image if successfully rescaled
-                            if (mEditedImageAbsolutePath != null) {
-                                determineFileViewContent(mEditedImageAbsolutePath);
+                            if (mEditedFileAbsolutePath != null) {
+                                determineFileViewContent(mEditedFileAbsolutePath);
                             } else {
                                 mSpinner.setSelection(RESCALE_FAILED);
-                                determineFileViewContent(mFileAbsolutePath);
+                                determineFileViewContent(mOriginalFileAbsolutePath);
                             }
                         }
                     }
@@ -825,11 +826,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             createRescaledImage(mCurrentSpinnerSelection);
                         } finally {
                             // Update the view field with the newly rescaled image if successfully rescaled
-                            if (mEditedImageAbsolutePath != null) {
-                                determineFileViewContent(mEditedImageAbsolutePath);
+                            if (mEditedFileAbsolutePath != null) {
+                                determineFileViewContent(mEditedFileAbsolutePath);
                             } else {
                                 mSpinner.setSelection(RESCALE_FAILED);
-                                determineFileViewContent(mFileAbsolutePath);
+                                determineFileViewContent(mOriginalFileAbsolutePath);
                             }
                         }
                     }
@@ -858,11 +859,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      */
     private void setupFileStats() {
         if (mEditedImageCreated) {
-            mFileViewSize.setText(FileUtils.getFileSize(mEditedImageAbsolutePath, getContext()));
-            mFileViewResolution.setText(FileUtils.getImageResolution(mEditedImageAbsolutePath, getContext()));
+            mFileViewSize.setText(FileUtils.getFileSize(mEditedFileAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getImageResolution(mEditedFileAbsolutePath, getContext()));
         } else {
-            mFileViewSize.setText(FileUtils.getFileSize(mFileAbsolutePath, getContext()));
-            mFileViewResolution.setText(FileUtils.getImageResolution(mFileAbsolutePath, getContext()));
+            mFileViewSize.setText(FileUtils.getFileSize(mOriginalFileAbsolutePath, getContext()));
+            mFileViewResolution.setText(FileUtils.getImageResolution(mOriginalFileAbsolutePath, getContext()));
         }
     }
 
@@ -905,7 +906,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     private boolean deleteEditedFile() {
         // Delete Previous File
-        File file = new File(mEditedImageAbsolutePath.toString());
+        File file = new File(mEditedFileAbsolutePath.toString());
 
         String canonicalPath;
 
@@ -921,7 +922,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             final String absolutePath = file.getAbsolutePath();
             if (!absolutePath.equals(canonicalPath)) {
                 getContext().getContentResolver().delete(uri,
-                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{mEditedImageAbsolutePath.toString()});
+                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{mEditedFileAbsolutePath.toString()});
             }
 
             // Successfully deleted the file
@@ -1045,7 +1046,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private void createRescaledImage(int rescaleRatioSelected) {
         //TODO: This will need to be edited when File Fragment Editing is available.
         // Create a bitmap of the original file
-        Bitmap bitmap = BitmapFactory.decodeFile(mFileAbsolutePath.toString());
+        Bitmap bitmap = BitmapFactory.decodeFile(mOriginalFileAbsolutePath.toString());
 
         // Create the file that the result will populate
         File imageFile = null;
@@ -1073,34 +1074,34 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             if (mRescaledImageCreated) {
                 // Verify that the image is actually rescaled appropriately
                 if (rescaleRatioSelected == 0) {
-                    mRescaledImageCreated = FileUtils.checkSuccessfulBitmapUpscale(mFileAbsolutePath,
+                    mRescaledImageCreated = FileUtils.checkSuccessfulBitmapUpscale(mOriginalFileAbsolutePath,
                             mRescaledImageAbsolutePath);
                     Log.d(LOG_TAG, "rescaleRatio: 0: " + mRescaledImageCreated);
                 } else {
-                    mRescaledImageCreated = FileUtils.checkSuccessfulBitmapDownscale(mFileAbsolutePath,
+                    mRescaledImageCreated = FileUtils.checkSuccessfulBitmapDownscale(mOriginalFileAbsolutePath,
                             mRescaledImageAbsolutePath);
                     Log.d(LOG_TAG, "rescaleRatio: " + SELECTIONRATIO[rescaleRatioSelected] + mRescaledImageCreated);
                 }
                 if (mRescaledImageCreated) {
                     // TODO: Look into catching the failed circumstances where EXIF is not transferred ETC.
                     // Figure out EXIF
-                    if (FileUtils.getFileExtensionFromUri(getContext(), mFileAbsolutePath).matches("(?i).jpeg|.jpg(?-i)")) {
+                    if (FileUtils.getFileExtensionFromUri(getContext(), mOriginalFileAbsolutePath).matches("(?i).jpeg|.jpg(?-i)")) {
                         // If the image is a jpeg/jpg check to see if there is a pre-created file with EXIF data.
-                        if (mExifEdited && mEditedImageCreated && !mEditedImageAbsolutePath.toString().isEmpty()) {
-                            Log.d(LOG_TAG, "mExifEdited is True | mEditedImageCreated is true | and mEditedImageAbsolutePath isn't empty");
+                        if (mExifEdited && mEditedImageCreated && !mEditedFileAbsolutePath.toString().isEmpty()) {
+                            Log.d(LOG_TAG, "mExifEdited is True | mEditedImageCreated is true | and mEditedFileAbsolutePath isn't empty");
                             // If an edited copy exists with altered EXIF gather the EXIF data from this instead of the original
-                            ExifUtils.transferExifData(mEditedImageAbsolutePath, mRescaledImageAbsolutePath, getContext());
+                            ExifUtils.transferExifData(mEditedFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
 
                             // Delete the previously created file after successful EXIF transfer
                             deleteEditedFile();
 
                             // Point resources to their appropriate variables
-                            mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
+                            mEditedFileAbsolutePath = mRescaledImageAbsolutePath;
                             mEditedImageCreated = true;
 
                             // Setup the EditedFileInfo object
                             mEditedFileData.setRescaledImageQuality(SELECTIONRATIO[rescaleRatioSelected]);
-                            mEditedFileData.setEditedFileUri(mEditedImageAbsolutePath);
+                            mEditedFileData.setEditedFileUri(mEditedFileAbsolutePath);
 
                             // Send the updated Uri to the other fragments and update them
                             mSendUri.uploadTransferEditedFileData(mEditedFileData);
@@ -1132,17 +1133,17 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             // TODO: Just check this swag out bruv.
                             // If no edited copy exists with altered EXIF gather EXIF data from the original image
                             if (mExifEdited) {
-                                ExifUtils.transferExifData(mEditedImageAbsolutePath, mRescaledImageAbsolutePath, getContext());
+                                ExifUtils.transferExifData(mEditedFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
                             } else {
-                                ExifUtils.transferExifData(mFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
+                                ExifUtils.transferExifData(mOriginalFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
                             }
 
                             // Point resources to their appropriate variables
-                            mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
+                            mEditedFileAbsolutePath = mRescaledImageAbsolutePath;
                             mEditedImageCreated = true;
 
                             // Setup the EditedFileInfo object
-                            mEditedFileData.setEditedFileUri(mEditedImageAbsolutePath);
+                            mEditedFileData.setEditedFileUri(mEditedFileAbsolutePath);
 
                             // Send the updated Uri to the other fragments and update them
                             mSendUri.uploadTransferEditedFileData(mEditedFileData);
@@ -1180,12 +1181,12 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         }
 
                         // Point resources to their appropriate variables
-                        mEditedImageAbsolutePath = mRescaledImageAbsolutePath;
+                        mEditedFileAbsolutePath = mRescaledImageAbsolutePath;
                         mEditedImageCreated = true;
 
                         // Setup the EditedFileInfo object
                         mEditedFileData.setRescaledImageQuality(SELECTIONRATIO[rescaleRatioSelected]);
-                        mEditedFileData.setEditedFileUri(mEditedImageAbsolutePath);
+                        mEditedFileData.setEditedFileUri(mEditedFileAbsolutePath);
 
                         // Send the updated Uri to the other fragments and update them
                         mSendUri.uploadTransferEditedFileData(mEditedFileData);
@@ -1355,20 +1356,22 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Create REST Interface
         RESTInterface restInterface = retrofit.create(RESTInterface.class);
 
+        Log.d(LOG_TAG, "mEditedImageCreated?: " + mEditedImageCreated + " " + mEditedFileAbsolutePath.toString());
+
         // Provide the correct image to Wetfish depending on the images currently available
         if (mEditedImageCreated) {
 
             // Should a rescaled image be present
             // Populate the file with the correct data to later pass to the  RequestBody instance
-            File file = new File(mEditedImageAbsolutePath.toString());
+            File file = new File(mEditedFileAbsolutePath.toString());
 
             // Gather file extension from chosen file for database
-            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), mEditedImageAbsolutePath);
+            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), mEditedFileAbsolutePath);
 
-            // Gather file URI from chosen file for database.
-            final String filePath = mEditedImageAbsolutePath.toString();
+            // Gather file URI from the chosen file for database.
+            final String filePath = mOriginalFileAbsolutePath.toString();
 
-            Log.d(LOG_TAG, "mFileAbsolutePath: " + mEditedImageAbsolutePath);
+            Log.d(LOG_TAG, "mFileEditedAbsolutePath: " + mEditedFileAbsolutePath);
             Log.d(LOG_TAG, "filePath: " + filePath);
 
             // Create RequestBody & MultipartBody to create a Call.
@@ -1388,7 +1391,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         //  Edited image path
                         String editedFilePath;
                         if (mEditedImageCreated) {
-                            editedFilePath = mEditedImageAbsolutePath.toString();
+                            editedFilePath = mEditedFileAbsolutePath.toString();
                         } else {
                             editedFilePath = "";
                         }
@@ -1530,15 +1533,15 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             // Should no edited image be present
 
             // Populate the file with the correct data to later pass to the  RequestBody instance
-            File file = new File(mFileAbsolutePath.toString());
+            File file = new File(mOriginalFileAbsolutePath.toString());
 
             // Gather file extension from chosen file for database
-            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), mFileAbsolutePath);
+            final String fileExtension = FileUtils.getFileExtensionFromUri(getContext(), mOriginalFileAbsolutePath);
 
             // Gather file URI from chosen file for database.
-            final String filePath = mFileAbsolutePath.toString();
+            final String filePath = mOriginalFileAbsolutePath.toString();
 
-            Log.d(LOG_TAG, "mFileAbsolutePath: " + mFileAbsolutePath);
+            Log.d(LOG_TAG, "mOriginalFileAbsolutePath: " + mOriginalFileAbsolutePath);
             Log.d(LOG_TAG, "filePath: " + filePath);
 
             // Create RequestBody & MultipartBody to create a Call.
