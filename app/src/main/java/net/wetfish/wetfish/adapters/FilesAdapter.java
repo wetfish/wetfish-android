@@ -165,7 +165,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
 
                 // Storage paths for all files saved to the database
                 String fileDeviceStoragePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
-                String editedFileDeviceStoragePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK));
+                String editedFileDeviceStoragePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK));
                 String fileWetfishPath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK));
 
 //                Log.d(LOG_TAG, "Original: " + fileDeviceStoragePath);
