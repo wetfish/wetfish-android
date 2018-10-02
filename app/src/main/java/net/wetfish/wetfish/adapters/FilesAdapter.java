@@ -6,7 +6,9 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +44,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
 
     // Activity cursor
     private Cursor mCursor;
-
 
     public FilesAdapter(Context mContext, FileAdapterOnClickHandler mClickHandler) {
         this.mClickHandler = mClickHandler;
@@ -161,75 +162,130 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
         }
 
         public void bind(Cursor fileCursor) {
+            Log.d(LOG_TAG, "What is this");
             if (fileCursor != null) {
 
                 // Storage paths for all files saved to the database
-                String fileDeviceStoragePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
-                String editedFileDeviceStoragePath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK));
+                String originalFileStorageLink = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
+                String editedFileStorageLink = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK));
                 String fileWetfishPath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK));
+                String fileType = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_TYPE_EXTENSION));
 
-//                Log.d(LOG_TAG, "Original: " + fileDeviceStoragePath);
-//                Log.d(LOG_TAG, "Edited: " + editedFileDeviceStoragePath);
-//                Log.d(LOG_TAG, "Online: " + fileWetfishPath);
+                // Boolean values to determine if a file exists or not
+                boolean originalFilePresent = FileUtils.checkIfFileExists(originalFileStorageLink);
+                boolean editedFilePresent = FileUtils.checkIfFileExists(editedFileStorageLink);
 
-                // Variable to store the appropriate storage path to use
-                String fileDevicePath;
-
-                // Determine whether to use the original file or an edited file should it exist
-                if (editedFileDeviceStoragePath != null) {
-                    if (!editedFileDeviceStoragePath.isEmpty() && !editedFileDeviceStoragePath.equals("")) {
-//                        Log.d(LOG_TAG, "editedFile exists and is not empty");
-                        fileDevicePath = editedFileDeviceStoragePath;
-                    } else {
-//                        Log.d(LOG_TAG, "file does not exist and/or is empty");
-                        fileDevicePath = fileDeviceStoragePath;
-                    }
-                } else {
-//                    Log.d(LOG_TAG, "file does not exist and/or is empty");
-                    fileDevicePath = fileDeviceStoragePath;
-                }
-
+                // Network information
                 ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 
+                // Check to see if the network is connected and available
                 if (networkInfo != null && networkInfo.isConnected()) {
-                    // If network is connected search the device for the stored image on the device
-                    // then wetfish if not found.
-                    if (FileUtils.representableByGlide(fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_TYPE_EXTENSION)))) {
+                    // Check to see if the file is representable by glide
+                    if (FileUtils.representableByGlide(fileType)) {
+                        // Check to see if the desired storage link is present and an edited file is present
+                        if (editedFilePresent) {
+                            Log.d(LOG_TAG, "Edited file present");
+                            // Load the edited file from the local storage if possible
+                            Glide.with(mContext)
+                                    .load(editedFileStorageLink)
+                                    .error(Glide.with(mContext)
+                                            .load(originalFileStorageLink)
+                                            .apply(RequestOptions.centerCropTransform()))
+                                    .error(Glide.with(mContext)
+                                            .load(fileWetfishPath)
+                                            .apply(RequestOptions.centerCropTransform()))
+                                    .error(Glide.with(mContext)
+                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
+                        } else if (originalFilePresent == true) {
+                            Log.d(LOG_TAG, "Original File Present");
+                            // Load original file from the local storage if possible
+                            Glide.with(mContext)
+                                    .load(originalFileStorageLink)
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .error(Glide.with(mContext)
+                                            .load(fileWetfishPath)
+                                            .apply(RequestOptions.centerCropTransform()))
+                                    .error(Glide.with(mContext)
+                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
+                        } else {
+                            Log.d(LOG_TAG, "Wetfish file present?");
+                            // Load from Wetfish if possible
+                            Glide.with(mContext)
+                                    .load(fileWetfishPath)
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .error(Glide.with(mContext)
+                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
+                        }
+                    } else { // FileUtils.representableByGlide(mFileType) else
+                        Log.d(LOG_TAG, "File is not representable by glide");
+                        // If the file is not representable by glide depict this to the user
                         Glide.with(mContext)
-                                .load(fileDevicePath)
-                                .error(Glide.with(mContext)
-                                        .load(fileWetfishPath)
-                                        .apply(RequestOptions.centerCropTransform()))
+                                .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
                                 .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                .apply(RequestOptions.centerCropTransform())
-                                .transition(DrawableTransitionOptions.withCrossFade())
-                                .into(fileView);
-                    } else {
-                        Glide.with(mContext)
-                                .load(null)
-                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
-                                .apply(RequestOptions.centerCropTransform())
+                                .apply(RequestOptions.fitCenterTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(fileView);
                     }
+                } else { // mNetworkInfo != null && mNetworkInfo.isConnected() else
+                    if (FileUtils.representableByGlide(fileType)) {
+                        if (editedFilePresent) {
+                            Log.d(LOG_TAG, "No network, edited file present");
+                            // Load the desired file storage link first, then
+                            Glide.with(mContext)
+                                    .load(editedFileStorageLink)
+                                    .error(Glide.with(mContext)
+                                            .load(originalFileStorageLink)
+                                            .apply(RequestOptions.centerCropTransform()))
+                                    .error(Glide.with(mContext)
+                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
+                        } else {
+                            Log.d(LOG_TAG, "No network, edited file not present");
+                            // Load the desired file storage link first, then
+                            Glide.with(mContext)
+                                    .load(originalFileStorageLink)
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .error(Glide.with(mContext)
+                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
 
-                } else {
-                    // If network is not connected search the device for the stored file on the
-                    // device then show a black image if not found.
-                    //TODO: Figure out a good method for this later. In the meantime, storage or black image.
-                    Glide.with(mContext)
-                            .load(fileDevicePath)
-                            .error(Glide.with(mContext)
-                                    .load(new ColorDrawable(Color.BLACK))
-                                    .apply(RequestOptions.fitCenterTransform()))
-                            .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                            .apply(RequestOptions.fitCenterTransform())
-                            .transition(DrawableTransitionOptions.withCrossFade())
-                            .into(fileView);
+                        }
+                    } else { // FileUtils.representableByGlide(mFileType) else
+                        Log.d(LOG_TAG, "File is not representable by glide");
+                        // If the file is not representable by glide depict this to the user
+                        Glide.with(mContext)
+                                .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
+                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.fitCenterTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(fileView);
+                    }
                 }
             }
-
         }
 
         @Override

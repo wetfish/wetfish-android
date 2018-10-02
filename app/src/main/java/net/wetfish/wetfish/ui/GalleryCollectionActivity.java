@@ -284,8 +284,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private boolean mOriginalFilePresent;
         // Boolean if the edited file exists
         private boolean mEditedFilePresent;
-        // Boolean if no files currently exist
-        private boolean mAnyFilePresent; //TODO: Probably delete
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -335,45 +334,16 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             // Boolean to determine if deletion links have been provided for the image
             boolean deletionLinkPresent;
 
-            // Determine if an edited version of the file has been provided for the given database entry and has an actual path
-                if (mFileInfo.getEditedFileDeviceStorageLink() != null && !mFileInfo.getEditedFileDeviceStorageLink().isEmpty() && !mFileInfo.getEditedFileDeviceStorageLink().equals("")) {
-                    // Determine if the either the edited or original file exists
-                    mOriginalFilePresent = FileUtils.checkIfFileExists(mFileInfo.getFileDeviceStorageLink());
-                    mEditedFilePresent = FileUtils.checkIfFileExists(mFileInfo.getEditedFileDeviceStorageLink());
+            // Determine if the original file exists and gather the file path for it
+            mOriginalFilePresent = FileUtils.checkIfFileExists(mFileInfo.getFileDeviceStorageLink());
+            mOriginalFileStorageLink = mFileInfo.getFileDeviceStorageLink();
 
-                    if (mOriginalFilePresent) {
-                        // If the original file exists acquire the appropriate file path
-                        mOriginalFileStorageLink = mFileInfo.getFileDeviceStorageLink();
-                        mAnyFilePresent = true;
-                    }
+            // Determine if the edited file exists and gather the file path for it
+            mEditedFilePresent = FileUtils.checkIfFileExists(mFileInfo.getEditedFileDeviceStorageLink());
+            mEditedFileStorageLink = mFileInfo.getFileDeviceStorageLink();
 
-                    if (mEditedFilePresent) {
-                        // If the edited file exists acquire the appropriate file path
-                        mEditedFileStorageLink = mFileInfo.getEditedFileDeviceStorageLink();
-                        mAnyFilePresent = true;
-                    } else if (!mOriginalFilePresent){
-                        // If the edited file doesn't exist and the original doesn't exist update mAnyFilePresent
-                        mAnyFilePresent = false;
-                    } else {
-                        mAnyFilePresent = true;
-                    }
-                } else {
-                    // Edited file does not exist
-                    mEditedFilePresent = false;
-                    mEditedFileStorageLink = null;
+            Log.d(LOG_TAG, "Check to see if these exist: " + mFileInfo.getEditedFileDeviceStorageLink() + mFileInfo.getFileDeviceStorageLink());
 
-                    // Determine if original file exists
-                    mOriginalFilePresent = FileUtils.checkIfFileExists(mFileInfo.getFileDeviceStorageLink());
-
-                    if (mOriginalFilePresent) {
-                        // If the edited file exists acquire the appropriate file path
-                        mOriginalFileStorageLink = mFileInfo.getFileDeviceStorageLink();
-                        mAnyFilePresent = true;
-                    } else {
-                        mOriginalFileStorageLink = null;
-                        mAnyFilePresent = false;
-                    }
-                }
 
             // Determine the mime type
             String mimeType = FileUtils.getMimeType(mFileInfo.getFileExtensionType(), getContext());
@@ -431,7 +401,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         // Setup view data for the original file
                         mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mOriginalFileStorageLink), getContext()));
                         mFileViewLength.setText(FileUtils.getVideoLength(Uri.parse(mOriginalFileStorageLink), getContext()));
-                } else {
+                    } else {
                         // TODO: Potentially gather the data from the online file
                         // Hide the views if there is no data to show
                         mFileViewSize.setVisibility(View.GONE);
@@ -458,47 +428,47 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                 if (FileUtils.representableByGlide(mFileType)) {
                     // Check to see if the desired storage link is present and an edited file is present
                     if (mEditedFilePresent) {
-                        // Load the desired file storage link first, then move down the next possibilities
+                        // Load the edited file from the local storage if possible
                         Glide.with(this)
                                 .load(mEditedFileStorageLink)
                                 .error(Glide.with(this)
                                         .load(mOriginalFileStorageLink)
-                                        .apply(RequestOptions.fitCenterTransform()))
+                                        .apply(RequestOptions.centerCropTransform()))
                                 .error(Glide.with(this)
                                         .load(mFileInfo.getFileWetfishStorageLink())
-                                        .apply(RequestOptions.fitCenterTransform()))
+                                        .apply(RequestOptions.centerCropTransform()))
                                 .error(Glide.with(this)
                                         .load(R.drawable.glide_file_not_found_anywhere)
                                         .apply(RequestOptions.fitCenterTransform()))
                                 .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                .apply(RequestOptions.fitCenterTransform())
+                                .apply(RequestOptions.centerCropTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(mFileView);
                     } else if (mOriginalFilePresent == true) {
-                        // Load the desired file storage link first, then move down the next possibilities
+                        // Load the original file from the local storage if possible
                         Glide.with(this)
                                 .load(mOriginalFileStorageLink)
-                                .apply(RequestOptions.fitCenterTransform())
+                                .apply(RequestOptions.centerCropTransform())
                                 .error(Glide.with(this)
                                         .load(mFileInfo.getFileWetfishStorageLink())
-                                        .apply(RequestOptions.fitCenterTransform()))
+                                        .apply(RequestOptions.centerCropTransform()))
                                 .error(Glide.with(this)
                                         .load(R.drawable.glide_file_not_found_anywhere)
                                         .apply(RequestOptions.fitCenterTransform()))
                                 .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                .apply(RequestOptions.fitCenterTransform())
+                                .apply(RequestOptions.centerCropTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(mFileView);
                     } else {
-                        // Load the desired file storage link first, then move down the next possibilities
+                        // Load from Wetfish if possible
                         Glide.with(this)
                                 .load(mFileInfo.getFileWetfishStorageLink())
-                                .apply(RequestOptions.fitCenterTransform())
+                                .apply(RequestOptions.centerCropTransform())
                                 .error(Glide.with(this)
                                         .load(R.drawable.glide_file_not_found_anywhere)
                                         .apply(RequestOptions.fitCenterTransform()))
                                 .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                .apply(RequestOptions.fitCenterTransform())
+                                .apply(RequestOptions.centerCropTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(mFileView);
                     }
@@ -507,48 +477,58 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     Glide.with(this)
                             .load(R.drawable.glide_not_representable)
                             .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                            .apply(RequestOptions.centerCropTransform())
+                            .apply(RequestOptions.fitCenterTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(mFileView);
                 }
-                } else { // mNetworkInfo != null && mNetworkInfo.isConnected() else
-                    if (FileUtils.representableByGlide(mFileType)) {
-                        if (mEditedFilePresent) {
-                            // Load the desired file storage link first, then
-                            Glide.with(this)
-                                    .load(mEditedFileStorageLink)
-                                    .error(Glide.with(this)
-                                            .load(mOriginalFileStorageLink)
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .error(Glide.with(this)
-                                            .load(R.drawable.glide_file_not_found_no_network)
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                    .apply(RequestOptions.fitCenterTransform())
-                                    .transition(DrawableTransitionOptions.withCrossFade())
-                                    .into(mFileView);
-                        } else
-                            // Load the desired file storage link first, then
-                            Glide.with(this)
-                                    .load(mOriginalFileStorageLink)
-                                    .apply(RequestOptions.fitCenterTransform())
-                                    .error(Glide.with(this)
-                                            .load(R.drawable.glide_file_not_found_no_network)
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                    .apply(RequestOptions.fitCenterTransform())
-                                    .transition(DrawableTransitionOptions.withCrossFade())
-                                    .into(mFileView);{
-                        }
+            } else { // mNetworkInfo != null && mNetworkInfo.isConnected() else
+                if (FileUtils.representableByGlide(mFileType)) {
+                    if (mEditedFilePresent) {
+                        // Load the edited file from local storage if possible
+                        Glide.with(this)
+                                .load(mEditedFileStorageLink)
+                                .error(Glide.with(this)
+                                        .load(mOriginalFileStorageLink)
+                                        .apply(RequestOptions.centerCropTransform()))
+                                .error(Glide.with(this)
+                                        .load(R.drawable.glide_file_not_found_no_network)
+                                        .apply(RequestOptions.fitCenterTransform()))
+                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.centerCropTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(mFileView);
+                    } else {
+                        // Load the original file from local storage if possible
+                        Glide.with(this)
+                                .load(mOriginalFileStorageLink)
+                                .apply(RequestOptions.centerCropTransform())
+                                .error(Glide.with(this)
+                                        .load(R.drawable.glide_file_not_found_no_network)
+                                        .apply(RequestOptions.fitCenterTransform()))
+                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.centerCropTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(mFileView);
+
+                    }
+                } else { // FileUtils.representableByGlide(mFileType) else
+                    Log.d(LOG_TAG, "File is not representable by glide");
+                    // If the file is not representable by glide depict this to the user
+                    Glide.with(this)
+                            .load(R.drawable.glide_not_representable)
+                            .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                            .apply(RequestOptions.fitCenterTransform())
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(mFileView);
                 }
             }
 
 
-                // Show file's title, description and tags.
-                mFileTitleTextView.setText(mFileInfo.getFileTitle());
-                mFileTagsTextView.setText(mFileInfo.getFileTags());
-                mFileDescriptionTextView.setText(mFileInfo.getFileDescription());
-            }
+            // Show file's title, description and tags.
+            mFileTitleTextView.setText(mFileInfo.getFileTitle());
+            mFileTagsTextView.setText(mFileInfo.getFileTags());
+            mFileDescriptionTextView.setText(mFileInfo.getFileDescription());
+        }
 
         private void setupOnInteractionListeners(boolean deletionLinkPresent) {
             // Close FAM if clicking outside of a button.
@@ -571,7 +551,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         fileProviderUri = FileProvider.getUriForFile(getContext(),
                                 getString(R.string.file_provider_authority),
                                 new File(mEditedFileStorageLink));
-                    } else if (mOriginalFilePresent){
+                    } else if (mOriginalFilePresent) {
                         fileProviderUri = FileProvider.getUriForFile(getContext(),
                                 getString(R.string.file_provider_authority),
                                 new File(mOriginalFileStorageLink));
