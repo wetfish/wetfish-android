@@ -3,6 +3,7 @@ package net.wetfish.wetfish.ui;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -25,6 +26,7 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.FileProvider;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -112,7 +114,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         // Sort By Most Recent sorting method
         private boolean mSortByMostRecent;
 
-        public GalleryCollectionPagerAdapter(FragmentManager fm, Context context, boolean sortByMostRecentSetting) {
+        GalleryCollectionPagerAdapter(FragmentManager fm, Context context, boolean sortByMostRecentSetting) {
             super(fm);
             mContext = context;
             mSortByMostRecent = sortByMostRecentSetting;
@@ -121,7 +123,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         /**
          * Return the Fragment associated with a specified position.
          *
-         * @param position
+         * @param position of item
          */
         @Override
         public Fragment getItem(int position) {
@@ -168,14 +170,16 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     return amountOfEntries;
                 } else {
                     // Close cursor
-                    filesData.close();
+                    if (filesData != null) {
+                        filesData.close();
+                    }
 
                     // Cursor was null, no entries
                     return 0;
                 }
             } finally {
                 if (filesData != null) {
-                    // Gather amonut of entries
+                    // Gather amount of entries
                     int amountOfEntries = filesData.getCount();
 
                     // Close cursor
@@ -534,33 +538,45 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             // Close FAM if clicking outside of a button.
             mFAM.setClosedOnTouchOutside(true);
 
+
+
             // Setup file interaction
             mFileView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // Boolean to determine what click method to use
+                    boolean localStorageDefault = false;
+                    boolean onlineStorageDefault = false;
+
                     // Intent to find proper app to open file
                     Intent selectViewingApp = new Intent();
                     selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     selectViewingApp.setAction(Intent.ACTION_VIEW);
 
                     // Uri path to the file
-                    Uri fileProviderUri;
+                    Uri fileProviderUri = null;
 
                     // Use FileProvider to get an appropriate URI compatible with version Nougat+
                     if (mEditedFilePresent) {
+                        localStorageDefault = true;
                         fileProviderUri = FileProvider.getUriForFile(getContext(),
                                 getString(R.string.file_provider_authority),
                                 new File(mEditedFileStorageLink));
                     } else if (mOriginalFilePresent) {
+                        localStorageDefault = true;
                         fileProviderUri = FileProvider.getUriForFile(getContext(),
                                 getString(R.string.file_provider_authority),
                                 new File(mOriginalFileStorageLink));
+                    } else if (mNetworkInfo != null && mNetworkInfo.isConnected()) {
+                        localStorageDefault = false;
+                        onlineStorageDefault = true;
                     } else {
-                        fileProviderUri = null;
+                        localStorageDefault = false;
+                        onlineStorageDefault = false;
                     }
 
 
-                    if (fileProviderUri != null) {
+                    if (localStorageDefault) {
                         // Setup the data and type
                         // Appropriately determine mime type for the file
                         selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, getContext()));
@@ -579,8 +595,48 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         } else {
                             Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_no_app_available), Snackbar.LENGTH_LONG).show();
                         }
-                    } else {
+                    } else if (onlineStorageDefault) {
                         //TODO: Setup the capacity to boot up a webview when clicking the image if the file doesn't exist on the storage system.
+                        //TODO: Setup if approved
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which){
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        //Yes button clicked
+                                        break;
+
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        //No button clicked
+                                        break;
+                                }
+                            }
+                        };
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+                                .setNegativeButton("No", dialogClickListener).show();
+                    } else {
+                        //TODO: Setup a basic comment to let the user know no file can be opened OR simply do nothing
+                        //TODO: Setup if approved
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which){
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        //Yes button clicked
+                                        break;
+
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        //No button clicked
+                                        break;
+                                }
+                            }
+                        };
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+                                .setNegativeButton("No", dialogClickListener).show();
                     }
                 }
             });
