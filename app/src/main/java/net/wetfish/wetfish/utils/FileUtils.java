@@ -36,8 +36,7 @@ public class FileUtils {
     private static final double UNIT_CONVERSION = 1000;
     private static final double ROUNDING_NUMBER = 100.0;
 
-    private static final double HEIGHT_NOT_LESS_THAN_ONE_PIXEL = 1;
-    private static final double WIDTH_NOT_LESS_THAN_ONE_PIXEL = 1;
+    private static final double MINIMUM_BITMAP_RESOLUTION = 1;
 
     public static String getAbsolutePathFromUri(Context context, Uri contentUri) {
         String fileProviderString = "(/net.wetfish.wetfish/)";
@@ -259,12 +258,12 @@ public class FileUtils {
         double destinationHeight = bitmapToDownscale.getHeight() * scaleRatio;
         double destinationWidth = bitmapToDownscale.getWidth() * scaleRatio;
 
-        if (destinationWidth < HEIGHT_NOT_LESS_THAN_ONE_PIXEL) {
-            destinationWidth = HEIGHT_NOT_LESS_THAN_ONE_PIXEL;
+        if (destinationWidth < MINIMUM_BITMAP_RESOLUTION) {
+            destinationWidth = MINIMUM_BITMAP_RESOLUTION;
         }
 
-        if (destinationHeight < WIDTH_NOT_LESS_THAN_ONE_PIXEL) {
-            destinationHeight = WIDTH_NOT_LESS_THAN_ONE_PIXEL;
+        if (destinationHeight < MINIMUM_BITMAP_RESOLUTION) {
+            destinationHeight = MINIMUM_BITMAP_RESOLUTION;
         }
 
         // Return a new bitmap that's a downscaled version of the provided bitmap
