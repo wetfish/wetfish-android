@@ -183,9 +183,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                 if (networkInfo != null && networkInfo.isConnected()) {
                     // Check to see if the file is representable by glide
                     if (FileUtils.representableByGlide(fileType)) {
-                        // Check to see if the desired storage link is present and an edited file is present
-                        if (editedFilePresent) {
-                            Log.d(LOG_TAG, "Edited file present");
                             // Load the edited file from the local storage if possible
                             Glide.with(mContext)
                                     .load(editedFileStorageLink)
@@ -202,36 +199,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                     .apply(RequestOptions.centerCropTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
-                        } else if (originalFilePresent == true) {
-                            Log.d(LOG_TAG, "Original File Present");
-                            // Load original file from the local storage if possible
-                            Glide.with(mContext)
-                                    .load(originalFileStorageLink)
-                                    .apply(RequestOptions.centerCropTransform())
-                                    .error(Glide.with(mContext)
-                                            .load(fileWetfishPath)
-                                            .apply(RequestOptions.centerCropTransform()))
-                                    .error(Glide.with(mContext)
-                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                    .apply(RequestOptions.centerCropTransform())
-                                    .transition(DrawableTransitionOptions.withCrossFade())
-                                    .into(fileView);
-                        } else {
-                            Log.d(LOG_TAG, "Wetfish file present?");
-                            // Load from Wetfish if possible
-                            Glide.with(mContext)
-                                    .load(fileWetfishPath)
-                                    .apply(RequestOptions.centerCropTransform())
-                                    .error(Glide.with(mContext)
-                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                    .apply(RequestOptions.centerCropTransform())
-                                    .transition(DrawableTransitionOptions.withCrossFade())
-                                    .into(fileView);
-                        }
                     } else { // FileUtils.representableByGlide(mFileType) else
                         Log.d(LOG_TAG, "File is not representable by glide");
                         // If the file is not representable by glide depict this to the user
@@ -244,7 +211,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                     }
                 } else { // mNetworkInfo != null && mNetworkInfo.isConnected() else
                     if (FileUtils.representableByGlide(fileType)) {
-                        if (editedFilePresent) {
                             Log.d(LOG_TAG, "No network, edited file present");
                             // Load the desired file storage link first, then
                             Glide.with(mContext)
@@ -259,21 +225,6 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                     .apply(RequestOptions.centerCropTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
-                        } else {
-                            Log.d(LOG_TAG, "No network, edited file not present");
-                            // Load the desired file storage link first, then
-                            Glide.with(mContext)
-                                    .load(originalFileStorageLink)
-                                    .apply(RequestOptions.centerCropTransform())
-                                    .error(Glide.with(mContext)
-                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                    .apply(RequestOptions.centerCropTransform())
-                                    .transition(DrawableTransitionOptions.withCrossFade())
-                                    .into(fileView);
-
-                        }
                     } else { // FileUtils.representableByGlide(mFileType) else
                         Log.d(LOG_TAG, "File is not representable by glide");
                         // If the file is not representable by glide depict this to the user
