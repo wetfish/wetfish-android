@@ -56,7 +56,7 @@ public class FileDbHelper extends SQLiteOpenHelper {
                         FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK + " TEXT NOT NULL, " +
                         FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK + " TEXT NOT NULL, " +
                         FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK + " TEXT NOT NULL," +
-                        FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK + " TEXT);";
+                        FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK + " TEXT);";
 
         db.execSQL(SQL_CREATE_FILES_TABLE);
     }
@@ -81,7 +81,7 @@ public class FileDbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < DATABASE_VERSION_2) {
             String upgradeQuery = "ALTER TABLE " + Files.TABLE_NAME + " ADD COLUMN " +
-                    FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK + " TEXT";
+                    FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK + " TEXT";
             db.execSQL(upgradeQuery);
         }
 

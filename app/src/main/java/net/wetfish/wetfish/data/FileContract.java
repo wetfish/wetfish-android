@@ -55,7 +55,7 @@ public class FileContract {
         public static final String COLUMN_FILE_WETFISH_DELETION_LINK = "wetfishDeletionLink";
 
         // File Wetfish Uploader Modified Storage Link
-        public static final String COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK =  "deviceLocationLinkEditedVersion";
+        public static final String COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK =  "deviceLocationLinkEditedVersion";
 
     }
 }
