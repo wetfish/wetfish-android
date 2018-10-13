@@ -128,8 +128,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         dialog.show();
     }
 
-    //TODO: Possibly remove
-//    private boolean imageFile;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -154,6 +152,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 //            UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
 //                    "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
         }
+
         // Set view data
         if (fileUri != null) {
             Log.d(LOG_TAG, "File Data URI: " + fileUri.toString());
@@ -180,32 +179,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
-
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        if (keyCode == KeyEvent.KEYCODE_BACK) {
-//            AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogThemeAppVersionSummary);
-//
-//            builder.setMessage(R.string.ad_message_return_home_warning)
-//                    .setTitle(R.string.ad_title_return_home)
-//                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            // User decided to return to the home screen
-//                            finish();
-//                        }})
-//                    .setNegativeButton(R.string.ad_cancel, new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            // Do nothing
-//                        }});
-//            AlertDialog dialog = builder.create();
-//            dialog.show();
-//            return true;
-//        } else {
-//            return super.onKeyDown(keyCode, event);
-//        }
-//    }
 
     @Override
     public void onEditFileFragmentInteraction(Uri uri) {
@@ -309,7 +282,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
                 case 0:
                     return FileUploadFragment.newInstance(mEditedFileUri, mFileUri);
                 case 1:
-                    //TODO: Implement EXIF editing
                     return EditExifFragment.newInstance(mEditedFileUri, mFileUri);
                 case 2:
                     //TODO: Implement File editing
