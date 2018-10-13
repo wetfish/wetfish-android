@@ -35,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.github.clans.fab.FloatingActionButton;
@@ -267,8 +268,6 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private Uri mUri;
         // FileInfo object that holds all data
         private FileInfo mFileInfo;
-        // String to hold the desired storage link to use
-        private String mDesiredFileStorageLink;
         // String to hold the original file storage link
         private String mOriginalFileStorageLink;
         // String to hold the edited file storage link
@@ -432,6 +431,8 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             if (mNetworkInfo != null && mNetworkInfo.isConnected()) {
                 // Check to see if the file is representable by glide
                 if (FileUtils.representableByGlide(mFileType)) {
+                    // Image file loading for glide
+                    if(mimeType.equals(getString(R.string.image_mime_type))) {
                         // Load the edited file from the local storage if possible, then move down the options
                         Glide.with(this)
                                 .load(mEditedFileStorageLink)
@@ -448,6 +449,22 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                 .apply(RequestOptions.fitCenterTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(mFileView);
+                    } else {
+                        // Video file loading for glide
+                        Glide.with(this)
+                                .load(mOriginalFileStorageLink)
+                                .error(Glide.with(this)
+                                        .load(mWetfishFileStorageLink)
+                                        .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
+                                        .apply(RequestOptions.fitCenterTransform()))
+                                .error(Glide.with(this)
+                                        .load(R.drawable.glide_file_not_found_anywhere)
+                                        .apply(RequestOptions.fitCenterTransform()))
+                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.fitCenterTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(mFileView);
+                    }
                 } else { // FileUtils.representableByGlide(mFileType) else
                     Log.d(LOG_TAG, "File is not representable by glide");
                     // If the file is not representable by glide depict this to the user
@@ -460,6 +477,8 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                 }
             } else { // mNetworkInfo != null && mNetworkInfo.isConnected() else
                 if (FileUtils.representableByGlide(mFileType)) {
+                    // Image file loading for glide
+                    if(mimeType.equals(getString(R.string.image_mime_type))) {
                         Log.d(LOG_TAG, "No network, edited file present");
                         // Load the desired file storage link first, then
                         Glide.with(this)
@@ -474,6 +493,19 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                 .apply(RequestOptions.fitCenterTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(mFileView);
+                    } else {
+                        Log.d(LOG_TAG, "No network, edited file present");
+                        // Load the desired file storage link first, then
+                        Glide.with(this)
+                                .load(mOriginalFileStorageLink)
+                                .error(Glide.with(this)
+                                        .load(R.drawable.glide_file_not_found_no_network)
+                                        .apply(RequestOptions.fitCenterTransform()))
+                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.fitCenterTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(mFileView);
+                    }
                 } else { // FileUtils.representableByGlide(mFileType) else
                     Log.d(LOG_TAG, "File is not representable by glide");
                     // If the file is not representable by glide depict this to the user
@@ -491,6 +523,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             mFileDescriptionTextView.setText(fileInfo.getFileDescription());
 
         }
+
 
         private void setupOnInteractionListeners(boolean deletionLinkPresent) {
 

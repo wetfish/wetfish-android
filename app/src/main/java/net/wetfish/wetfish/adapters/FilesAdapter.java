@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 
@@ -31,6 +32,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
 
     // Logging Tag
     private static final String LOG_TAG = FilesAdapter.class.getSimpleName();
+    private static final String IMAGE_MIME_TYPE = "image/*";
+    private static final String VIDEO_MIME_TYPE = "video/*";
+
 
     // ViewType tags
     private static final int VIEW_TYPE_IMAGE_FILE = 0;
@@ -162,27 +166,30 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
         }
 
         public void bind(Cursor fileCursor) {
-            Log.d(LOG_TAG, "What is this");
             if (fileCursor != null) {
+
+                // Constant
+
 
                 // Storage paths for all files saved to the database
                 String originalFileStorageLink = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK));
                 String editedFileStorageLink = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK));
                 String fileWetfishPath = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK));
                 String fileType = fileCursor.getString(fileCursor.getColumnIndex(FileContract.FileColumns.COLUMN_FILE_TYPE_EXTENSION));
-
-                // Boolean values to determine if a file exists or not
-                boolean originalFilePresent = FileUtils.checkIfFileExists(originalFileStorageLink);
-                boolean editedFilePresent = FileUtils.checkIfFileExists(editedFileStorageLink);
+                String mimeType = FileUtils.getMimeType(fileType, mContext);
 
                 // Network information
                 ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 
+
+
                 // Check to see if the network is connected and available
                 if (networkInfo != null && networkInfo.isConnected()) {
                     // Check to see if the file is representable by glide
                     if (FileUtils.representableByGlide(fileType)) {
+                        // Image file loading for glide
+                        if(mimeType.equals(IMAGE_MIME_TYPE)) {
                             // Load the edited file from the local storage if possible
                             Glide.with(mContext)
                                     .load(editedFileStorageLink)
@@ -199,18 +206,36 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                     .apply(RequestOptions.centerCropTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
+                        } else {
+                            // Video file loading for glide
+                            Glide.with(mContext)
+                                    .load(originalFileStorageLink)
+                                    .error(Glide.with(mContext)
+                                            .load(fileWetfishPath)
+                                            .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
+                                            .apply(RequestOptions.centerCropTransform()))
+                                    .error(Glide.with(mContext)
+                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
+                                            .apply(RequestOptions.centerCropTransform()))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
+                        }
                     } else { // FileUtils.representableByGlide(mFileType) else
                         Log.d(LOG_TAG, "File is not representable by glide");
                         // If the file is not representable by glide depict this to the user
-                        Glide.with(mContext)
-                                .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
-                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                                .apply(RequestOptions.fitCenterTransform())
-                                .transition(DrawableTransitionOptions.withCrossFade())
-                                .into(fileView);
+                            Glide.with(mContext)
+                                    .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.fitCenterTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
                     }
                 } else { // mNetworkInfo != null && mNetworkInfo.isConnected() else
                     if (FileUtils.representableByGlide(fileType)) {
+                        // Image file loading for glide
+                        if(mimeType.equals(IMAGE_MIME_TYPE)) {
                             Log.d(LOG_TAG, "No network, edited file present");
                             // Load the desired file storage link first, then
                             Glide.with(mContext)
@@ -225,6 +250,20 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                     .apply(RequestOptions.centerCropTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
+                        } else {
+                            // Video file loading for glide
+                            Log.d(LOG_TAG, "No network, edited file present");
+                            // Load the desired file storage link first, then
+                            Glide.with(mContext)
+                                    .load(originalFileStorageLink)
+                                    .error(Glide.with(mContext)
+                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.centerCropTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(fileView);
+                        }
                     } else { // FileUtils.representableByGlide(mFileType) else
                         Log.d(LOG_TAG, "File is not representable by glide");
                         // If the file is not representable by glide depict this to the user
