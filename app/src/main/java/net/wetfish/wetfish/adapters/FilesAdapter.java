@@ -2,8 +2,6 @@ package net.wetfish.wetfish.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v4.content.ContextCompat;
@@ -16,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 
@@ -198,11 +195,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                         .load(editedFileStorageLink)
                                         .error(Glide.with(mContext)
                                                 .load(fileWetfishPath)
+//                                                .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
                                                 .apply(RequestOptions.centerCropTransform()))
-                                        .error(Glide.with(mContext)
-                                                .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
-                                                .apply(RequestOptions.fitCenterTransform()))
-                                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                        .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere)))
                                         .apply(RequestOptions.centerCropTransform())
                                         .transition(DrawableTransitionOptions.withCrossFade())
                                         .into(fileView);
@@ -212,10 +207,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                         .error(Glide.with(mContext)
                                                 .load(fileWetfishPath)
                                                 .apply(RequestOptions.centerCropTransform()))
-                                        .error(Glide.with(mContext)
-                                                .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
-                                                .apply(RequestOptions.fitCenterTransform()))
-                                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                        .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere)))
                                         .apply(RequestOptions.centerCropTransform())
                                         .transition(DrawableTransitionOptions.withCrossFade())
                                         .into(fileView);
@@ -226,12 +218,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                     .load(originalFileStorageLink)
                                     .error(Glide.with(mContext)
                                             .load(fileWetfishPath)
-                                            .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
+//                                            .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
                                             .apply(RequestOptions.centerCropTransform()))
-                                    .error(Glide.with(mContext)
-                                            .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere))
-                                            .apply(RequestOptions.centerCropTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere)))
                                     .apply(RequestOptions.centerCropTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
@@ -241,7 +230,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                         // If the file is not representable by glide depict this to the user
                         Glide.with(mContext)
                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
-                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable)))
                                 .apply(RequestOptions.fitCenterTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(fileView);
@@ -258,7 +247,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                         .error(Glide.with(mContext)
                                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
                                                 .apply(RequestOptions.fitCenterTransform()))
-                                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                        .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network)))
                                         .apply(RequestOptions.centerCropTransform())
                                         .transition(DrawableTransitionOptions.withCrossFade())
                                         .into(fileView);
@@ -268,7 +257,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                         .error(Glide.with(mContext)
                                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
                                                 .apply(RequestOptions.fitCenterTransform()))
-                                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                        .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network)))
                                         .apply(RequestOptions.centerCropTransform())
                                         .transition(DrawableTransitionOptions.withCrossFade())
                                         .into(fileView);
@@ -282,7 +271,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                     .error(Glide.with(mContext)
                                             .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
                                             .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network)))
                                     .apply(RequestOptions.centerCropTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
@@ -292,7 +281,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                         // If the file is not representable by glide depict this to the user
                         Glide.with(mContext)
                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
-                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable)))
                                 .apply(RequestOptions.fitCenterTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(fileView);

@@ -35,7 +35,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.github.clans.fab.FloatingActionButton;
@@ -439,10 +438,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                     .error(Glide.with(this)
                                             .load(mWetfishFileStorageLink)
                                             .apply(RequestOptions.fitCenterTransform()))
-                                    .error(Glide.with(this)
-                                            .load(R.drawable.glide_file_not_found_anywhere)
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_anywhere))
                                     .apply(RequestOptions.fitCenterTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(mFileView);
@@ -452,10 +448,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                     .error(Glide.with(this)
                                             .load(mWetfishFileStorageLink)
                                             .apply(RequestOptions.fitCenterTransform()))
-                                    .error(Glide.with(this)
-                                            .load(R.drawable.glide_file_not_found_anywhere)
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_anywhere))
                                     .apply(RequestOptions.fitCenterTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(mFileView);
@@ -466,12 +459,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                 .load(mOriginalFileStorageLink)
                                 .error(Glide.with(this)
                                         .load(mWetfishFileStorageLink)
-                                        .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
+//                                        .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
                                         .apply(RequestOptions.fitCenterTransform()))
-                                .error(Glide.with(this)
-                                        .load(R.drawable.glide_file_not_found_anywhere)
-                                        .apply(RequestOptions.fitCenterTransform()))
-                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_anywhere))
                                 .apply(RequestOptions.fitCenterTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(mFileView);
@@ -498,7 +488,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                     .error(Glide.with(this)
                                             .load(R.drawable.glide_file_not_found_no_network)
                                             .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
                                     .apply(RequestOptions.fitCenterTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(mFileView);
@@ -508,7 +498,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                     .error(Glide.with(this)
                                             .load(R.drawable.glide_file_not_found_no_network)
                                             .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                    .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
                                     .apply(RequestOptions.fitCenterTransform())
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(mFileView);
@@ -521,7 +511,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                 .error(Glide.with(this)
                                         .load(R.drawable.glide_file_not_found_no_network)
                                         .apply(RequestOptions.fitCenterTransform()))
-                                .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                                .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
                                 .apply(RequestOptions.fitCenterTransform())
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(mFileView);
@@ -531,7 +521,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     // If the file is not representable by glide depict this to the user
                     Glide.with(this)
                             .load(R.drawable.glide_not_representable)
-                            .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
+                            .apply(RequestOptions.placeholderOf(R.drawable.glide_not_representable))
                             .apply(RequestOptions.fitCenterTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(mFileView);
