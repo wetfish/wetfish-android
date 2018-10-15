@@ -46,6 +46,11 @@
         <item name="android:layout_marginStart">8dp</item>
     </style>
 
+    <style name="TextViewBodyFileDetails" parent="TextViewBody">
+        <item name="android:textColor">@color/primary_text_body</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
     <!-- Text View variation style for Headers in EXIF settings-->
     <style name="TextViewHeaderExif">
         <item name="android:textColor">@color/primary_text_header</item>

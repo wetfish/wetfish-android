@@ -24,6 +24,7 @@
     <string name="tv_file_not_found_on_system">File not on local filesystem</string>
     <string name="tv_image_resolution_not_found">Resolution Not Found</string>
     <string name="tv_video_length_unobtained">Video Length Not Found</string>
+    <string name="iv_gallery_item_detail_description">Thumbnail of the uploaded file</string>
     <string name="et_description_hint">Description</string>
     <string name="et_tags_hint">Tags</string>
     <string name="et_title_hint">Title</string>
