@@ -195,10 +195,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                         .load(editedFileStorageLink)
                                         .error(Glide.with(mContext)
                                                 .load(fileWetfishPath)
-//                                                .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
                                                 .apply(RequestOptions.centerCropTransform()))
-                                        .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere)))
                                         .apply(RequestOptions.centerCropTransform())
+                                        .apply(RequestOptions.placeholderOf(R.color.white))
                                         .transition(DrawableTransitionOptions.withCrossFade())
                                         .into(fileView);
                             } else {
@@ -207,8 +206,8 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                         .error(Glide.with(mContext)
                                                 .load(fileWetfishPath)
                                                 .apply(RequestOptions.centerCropTransform()))
-                                        .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere)))
                                         .apply(RequestOptions.centerCropTransform())
+                                        .apply(RequestOptions.placeholderOf(R.color.white))
                                         .transition(DrawableTransitionOptions.withCrossFade())
                                         .into(fileView);
                             }
@@ -220,8 +219,8 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                             .load(fileWetfishPath)
 //                                            .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
                                             .apply(RequestOptions.centerCropTransform()))
-                                    .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_anywhere)))
                                     .apply(RequestOptions.centerCropTransform())
+                                    .apply(RequestOptions.placeholderOf(R.color.white))
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
                         }
@@ -230,8 +229,8 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                         // If the file is not representable by glide depict this to the user
                         Glide.with(mContext)
                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
-                                .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable)))
-                                .apply(RequestOptions.fitCenterTransform())
+                                .apply(RequestOptions.centerCropTransform())
+                                .apply(RequestOptions.placeholderOf(R.color.white))
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(fileView);
                     }
@@ -246,9 +245,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                         .load(editedFileStorageLink)
                                         .error(Glide.with(mContext)
                                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
-                                                .apply(RequestOptions.fitCenterTransform()))
-                                        .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network)))
+                                                .apply(RequestOptions.centerCropTransform()))
                                         .apply(RequestOptions.centerCropTransform())
+                                        .apply(RequestOptions.placeholderOf(R.color.white))
                                         .transition(DrawableTransitionOptions.withCrossFade())
                                         .into(fileView);
                             } else {
@@ -256,9 +255,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                         .load(originalFileStorageLink)
                                         .error(Glide.with(mContext)
                                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
-                                                .apply(RequestOptions.fitCenterTransform()))
-                                        .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network)))
+                                                .apply(RequestOptions.centerCropTransform()))
                                         .apply(RequestOptions.centerCropTransform())
+                                        .apply(RequestOptions.placeholderOf(R.color.white))
                                         .transition(DrawableTransitionOptions.withCrossFade())
                                         .into(fileView);
                             }
@@ -270,9 +269,9 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                     .load(originalFileStorageLink)
                                     .error(Glide.with(mContext)
                                             .load(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network))
-                                            .apply(RequestOptions.fitCenterTransform()))
-                                    .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_file_not_found_no_network)))
+                                            .apply(RequestOptions.centerCropTransform()))
                                     .apply(RequestOptions.centerCropTransform())
+                                    .apply(RequestOptions.placeholderOf(R.color.white))
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
                         }
@@ -281,8 +280,8 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                         // If the file is not representable by glide depict this to the user
                         Glide.with(mContext)
                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
-                                .apply(RequestOptions.placeholderOf(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable)))
-                                .apply(RequestOptions.fitCenterTransform())
+                                .apply(RequestOptions.centerCropTransform())
+                                .apply(RequestOptions.placeholderOf(R.color.white))
                                 .transition(DrawableTransitionOptions.withCrossFade())
                                 .into(fileView);
                     }
