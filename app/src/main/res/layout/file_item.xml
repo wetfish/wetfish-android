@@ -5,10 +5,13 @@
     <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/c_view"
-        android:layout_width="96dp"
+        android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_gravity="center_horizontal"
-        android:layout_margin="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:elevation="2dp"
         card_view:cardCornerRadius="3dp"
         card_view:cardMaxElevation="4dp">
@@ -18,6 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:adjustViewBounds="true"
+            android:contentDescription="@string/iv_gallery_item_detail_description"
             android:scaleType="fitCenter" />
 
     </android.support.v7.widget.CardView>
