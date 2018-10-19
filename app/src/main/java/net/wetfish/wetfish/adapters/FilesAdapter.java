@@ -200,7 +200,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FileViewHold
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(fileView);
                     } else { // FileUtils.representableByGlide(mFileType) else
-                        Log.d(LOG_TAG, "File is not representable by glide");
+                        Log.d(LOG_TAG, "File is n ot representable by glide");
                         // If the file is not representable by glide depict this to the user
                         Glide.with(mContext)
                                 .load(ContextCompat.getDrawable(mContext, R.drawable.glide_not_representable))
