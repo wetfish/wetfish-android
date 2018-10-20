@@ -115,7 +115,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private View mRootLayout;
     private View fileUploadContent;
     private Spinner mSpinner;
-    private TabLayout mTabLayout;
+    private CustomTabLayout mTabLayout;
     private CustomLockingViewPager mViewpager;
 
     /* Data */
@@ -252,6 +252,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Setup view data
                 mFileViewSize.setText(FileUtils.getFileSize(mOriginalFileAbsolutePath, getContext()));
                 mFileLength.setText(FileUtils.getVideoLength(mOriginalFileAbsolutePath, getContext()));
+
+                // Remove unused tabs for now
+                removeTabsForVideoFiles();
 
                 break;
             default:
@@ -497,6 +500,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 }
             }
         });
+
+        // Check to see if this is a video file. If so, remove all unnecessary tabs.
+        if (mMimeType.equals(VIDEO_FILE)) {
+            removeTabsForVideoFiles();
+        }
     }
 
     // TODO: This call me be the one causing additional lagging on the UI thread...
@@ -1269,8 +1277,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         }
     }
 
-    // TODO: Here is the problem area.
-
     /**
      * Creates an image file with a given name at the location
      *
@@ -1693,6 +1699,26 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             });
         }
     }
+
+    // TODO: Reintegrate tab 2 if & when video editing is added
+    private void removeTabsForVideoFiles() {
+        TabLayout.Tab uploadTab =  mTabLayout.getTabAt(0);
+        TabLayout.Tab exifTab = mTabLayout.getTabAt(1);
+        TabLayout.Tab editTab = mTabLayout.getTabAt(2);
+
+        if (exifTab != null) {
+            mTabLayout.removeTab(exifTab);
+        }
+
+        if (editTab != null) {
+            mTabLayout.removeTab(editTab);
+        }
+
+        mTabLayout.setTabMode(TabLayout.MODE_FIXED);
+        mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+    }
+
 
     public interface UploadFragmentUriUpdate {
         void uploadTransferEditedFileData(EditedFileData editedFileData);
