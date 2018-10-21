@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -26,6 +25,7 @@ import android.view.ViewGroup;
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.EditedFileData;
 import net.wetfish.wetfish.ui.viewpager.CustomLockingViewPager;
+import net.wetfish.wetfish.ui.viewpager.CustomTabLayout;
 import net.wetfish.wetfish.ui.viewpager.EditExifFragment;
 import net.wetfish.wetfish.ui.viewpager.EditFileFragment;
 import net.wetfish.wetfish.ui.viewpager.FileUploadFragment;
@@ -51,7 +51,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
     // ViewPager Variables
     public SectionsPagerAdapter mSectionsPagerAdapter;
     // View Variables
-    private TabLayout tabLayout;
+    private CustomTabLayout tabLayout;
     private CustomLockingViewPager mViewPager;
     // Data Variables
     private Uri fileUri;
@@ -321,6 +321,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             return spannableString;
         }
 
-
     }
+
 }
