@@ -34,7 +34,7 @@ public class CustomTabLayout extends TabLayout {
         int tabMaxWidth = displayMetrics.widthPixels;
 
         if (childCount == 1) {
-            tabLayout.getChildAt(0).setMinimumWidth(tabMaxWidth + 3000);
+            tabLayout.getChildAt(0).setMinimumWidth(tabMaxWidth);
         } else {
             for (int i = 0; i < childCount; i++) {
                 tabLayout.getChildAt(i).setMinimumWidth(tabMinWidth);
