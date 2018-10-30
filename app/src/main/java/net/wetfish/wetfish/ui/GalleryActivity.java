@@ -247,8 +247,6 @@ public class GalleryActivity extends AppCompatActivity implements
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
 
-
-
                     } else {
                         // Storage permissions granted!
                         selectVideoFileToUpload();

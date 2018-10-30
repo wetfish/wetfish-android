@@ -16,10 +16,10 @@
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="24dp"
-            android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
             android:clickable="true"
             android:focusable="true"
             android:focusableInTouchMode="true">
@@ -41,34 +41,59 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- TODO: Potentially change to a video player-->
-                <!-- File View -->
-                <ImageView
-                    android:id="@+id/iv_fragment_file_upload"
-                    android:layout_width="0dp"
+                <!-- File View Container -->
+                <FrameLayout
+                    android:id="@+id/iv_fragment_file_upload_container"
+                    android:layout_width="match_parent"
                     android:layout_height="240dp"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="48dp"
                     android:layout_marginStart="48dp"
                     android:layout_marginTop="16dp"
-                    android:adjustViewBounds="true"
+                    android:layout_marginEnd="48dp"
+                    android:layout_marginBottom="8dp"
                     android:scaleType="fitCenter"
                     app:layout_constraintBottom_toTopOf="@+id/ll_image_details"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/et_title" />
+                    app:layout_constraintTop_toBottomOf="@+id/et_title">
+
+                    <!-- File View -->
+                    <ImageView
+                        android:id="@+id/iv_fragment_file_upload"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="48dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginBottom="8dp"
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter" />
+
+                    <!-- File Processing Progress Bar -->
+                    <ProgressBar
+                        android:id="@+id/pb_processing_file"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="128dp"
+                        android:layout_height="128dp"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="48dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone" />
+
+                </FrameLayout>
 
                 <!-- File View Stats -->
                 <android.support.v7.widget.LinearLayoutCompat
                     android:id="@+id/ll_image_details"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="48dp"
                     android:layout_marginStart="48dp"
+                    android:layout_marginEnd="48dp"
+                    android:layout_marginBottom="8dp"
                     android:orientation="horizontal"
                     app:layout_constraintBottom_toTopOf="@+id/et_tags"
-                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload">
+                    app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload_container">
 
                     <android.support.v7.widget.AppCompatTextView
                         android:id="@+id/tv_video_length"
@@ -127,14 +152,14 @@
         android:clickable="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-        
+
         <com.github.jorgecastilloprz.FABProgressCircle
             android:id="@+id/fab_progress_circle_upload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginBottom="@dimen/fab_margin"
             android:layout_marginEnd="@dimen/fab_margin"
+            android:layout_marginBottom="@dimen/fab_margin"
             app:arcColor="@color/fab_arc_color"
             app:arcWidth="4dp"
             app:finalIcon="@drawable/ic_done"
@@ -165,6 +190,7 @@
         android:text="@string/file_not_found"
         android:textColor="@color/primary_text_header"
         android:textSize="36sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:visibility="gone" />
 
 </android.support.constraint.ConstraintLayout>

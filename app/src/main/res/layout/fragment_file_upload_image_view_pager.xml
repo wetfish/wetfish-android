@@ -16,10 +16,10 @@
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="24dp"
-            android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
             android:clickable="true"
             android:focusable="true"
             android:focusableInTouchMode="true">
@@ -46,53 +46,52 @@
                     android:id="@+id/iv_fragment_file_upload_container"
                     android:layout_width="match_parent"
                     android:layout_height="240dp"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="48dp"
                     android:layout_marginStart="48dp"
                     android:layout_marginTop="16dp"
-                    android:adjustViewBounds="true"
+                    android:layout_marginEnd="48dp"
+                    android:layout_marginBottom="8dp"
                     android:scaleType="fitCenter"
                     app:layout_constraintBottom_toTopOf="@+id/ll_image_details"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/et_title" >
-
-                    <!-- File Downscaling Progress Bar -->
-                    <ProgressBar
-                        android:id="@+id/pb_downscale_image"
-                        style="?android:attr/progressBarStyle"
-                        android:layout_width="128dp"
-                        android:layout_height="128dp"
-                        android:layout_gravity="center"
-                        android:layout_marginBottom="8dp"
-                        android:layout_marginEnd="48dp"
-                        android:layout_marginStart="48dp"
-                        android:layout_marginTop="16dp"
-                        android:visibility="gone" />
+                    app:layout_constraintTop_toBottomOf="@+id/et_title">
 
                     <!-- File View -->
                     <ImageView
                         android:id="@+id/iv_fragment_file_upload"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_marginBottom="8dp"
-                        android:layout_marginEnd="48dp"
                         android:layout_marginStart="48dp"
                         android:layout_marginTop="16dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginBottom="8dp"
                         android:adjustViewBounds="true"
-                        android:scaleType="fitCenter"/>
+                        android:scaleType="fitCenter" />
+
+
+                    <!-- File Processing Progress Bar -->
+                    <ProgressBar
+                        android:id="@+id/pb_processing_file"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="128dp"
+                        android:layout_height="128dp"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="48dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="48dp"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone" />
 
                 </FrameLayout>
-
 
                 <!-- File View Stats -->
                 <android.support.v7.widget.LinearLayoutCompat
                     android:id="@+id/ll_image_details"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="48dp"
                     android:layout_marginStart="48dp"
+                    android:layout_marginEnd="48dp"
+                    android:layout_marginBottom="8dp"
                     android:orientation="horizontal"
                     app:layout_constraintBottom_toTopOf="@+id/spinner_fragment_file_upload"
                     app:layout_constraintTop_toBottomOf="@+id/iv_fragment_file_upload_container">
@@ -122,9 +121,9 @@
                     style="@style/Spinner"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginEnd="48dp"
                     android:layout_marginStart="48dp"
+                    android:layout_marginEnd="48dp"
+                    android:layout_marginBottom="16dp"
                     app:backgroundTint="@color/light_background_highlights"
                     app:layout_constraintBottom_toTopOf="@+id/et_tags"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -170,32 +169,32 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-    <com.github.jorgecastilloprz.FABProgressCircle
-        android:id="@+id/fab_progress_circle_upload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="@dimen/fab_margin"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:visibility="visible"
-        app:arcColor="@color/fab_arc_color"
-        app:arcWidth="4dp"
-        app:finalIcon="@drawable/ic_done"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/fab_upload_file"
+        <com.github.jorgecastilloprz.FABProgressCircle
+            android:id="@+id/fab_progress_circle_upload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_upload_file_white_24dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="@dimen/fab_margin"
+            android:layout_marginBottom="@dimen/fab_margin"
             android:visibility="visible"
-            fab:fab_colorNormal="@color/accent"
-            fab:fab_colorPressed="@color/accent_dark"
-            fab:fab_colorRipple="@color/accent_light"
-            fab:fab_size="normal" />
+            app:arcColor="@color/fab_arc_color"
+            app:arcWidth="4dp"
+            app:finalIcon="@drawable/ic_done"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-    </com.github.jorgecastilloprz.FABProgressCircle>
+            <com.github.clans.fab.FloatingActionButton
+                android:id="@+id/fab_upload_file"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_upload_file_white_24dp"
+                android:visibility="visible"
+                fab:fab_colorNormal="@color/accent"
+                fab:fab_colorPressed="@color/accent_dark"
+                fab:fab_colorRipple="@color/accent_light"
+                fab:fab_size="normal" />
+
+        </com.github.jorgecastilloprz.FABProgressCircle>
 
     </RelativeLayout>
 
@@ -208,6 +207,7 @@
         android:text="@string/file_not_found"
         android:textColor="@color/primary_text_header"
         android:textSize="36sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:visibility="gone" />
 
 </android.support.constraint.ConstraintLayout>

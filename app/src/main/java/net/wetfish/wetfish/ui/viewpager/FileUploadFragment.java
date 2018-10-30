@@ -111,7 +111,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private EditText mFileEditDescriptionView;
     private FloatingActionButton mFabUploadFile;
     private FABProgressCircle mFabProgressCircleUpload;
-    private ProgressBar mRescaleImageProgressBar;
+    private ProgressBar mFileProcessingBar;
     private View mRootLayout;
     private View fileUploadContent;
     private Spinner mSpinner;
@@ -268,19 +268,30 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mFileEditTagsView = mRootLayout.findViewById(R.id.et_tags);
         mFileEditDescriptionView = mRootLayout.findViewById(R.id.et_description);
         mFabProgressCircleUpload = mRootLayout.findViewById(R.id.fab_progress_circle_upload);
-        mRescaleImageProgressBar = mRootLayout.findViewById(R.id.pb_downscale_image);
         mFileNotFoundView = mRootLayout.findViewById(R.id.tv_file_not_found);
+        mFileProcessingBar = mRootLayout.findViewById(R.id.pb_processing_file);
+
+        // Show the process bar to indicate the beginning of the image loading
+        mFileProcessingBar.setVisibility(View.VISIBLE);
 
         // Setup mFileView's image and onClickListener with the correct file Uri
         mCallThreadDetermineImage = new Handler();
         mCallThreadDetermineImage.post(new Runnable() {
             @Override
             public void run() {
+
                 if (mEditedImageCreated || (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty())) {
-                    // If @mEditedFileAbsolutePath has been created or provided by another fragment, use it.
+                    // If @mEditedFileAbsolutePath has been created or provided by another fragment, use it
                     determineFileViewContent(mEditedFileAbsolutePath);
+
+                    // Hide the process bar to indicate the end of the image loading
+                    mFileProcessingBar.setVisibility(View.INVISIBLE);
                 } else {
+                    // If @mEditedFileAbsolutePath has not been created or provided by another fragment, use the original
                     determineFileViewContent(mOriginalFileAbsolutePath);
+
+                    // Hide the process bar to indicate the end of the image loading
+                    mFileProcessingBar.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -653,7 +664,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Check to see if a file has been generated before this
                 if (mExifEdited) {
                     // Show the progress bar
-                    mRescaleImageProgressBar.setVisibility(View.VISIBLE);
+                    mFileProcessingBar.setVisibility(View.VISIBLE);
 
                     // Hide the image view
                     mFileView.setVisibility(View.INVISIBLE);
@@ -685,7 +696,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     // If handler is broken or doesn't instantiate re-enable spinner
                     if (mCallThreadRescaleImage == null) {
                         // Hide the progress bar
-                        mRescaleImageProgressBar.setVisibility(View.GONE);
+                        mFileProcessingBar.setVisibility(View.GONE);
 
                         // Show the image view
                         mFileView.setVisibility(View.VISIBLE);
@@ -718,16 +729,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 break;
             case LARGE_SIZE_SELECTION:
                 // Show the progress bar
-                mRescaleImageProgressBar.setVisibility(View.VISIBLE);
-
-                // Hide the image view
-                mFileView.setVisibility(View.INVISIBLE);
-
-                // Disable the spinner while the thread processes the request
-                mSpinner.setEnabled(false);
-
-                // Show the progress bar
-                mRescaleImageProgressBar.setVisibility(View.VISIBLE);
+                mFileProcessingBar.setVisibility(View.VISIBLE);
 
                 // Hide the image view
                 mFileView.setVisibility(View.INVISIBLE);
@@ -758,7 +760,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // If handler is broken or doesn't instantiate re-enable spinner
                 if (mCallThreadRescaleImage == null) {
                     // Hide the progress bar
-                    mRescaleImageProgressBar.setVisibility(View.GONE);
+                    mFileProcessingBar.setVisibility(View.GONE);
 
                     // Show the image view
                     mFileView.setVisibility(View.VISIBLE);
@@ -772,7 +774,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 break;
             case MEDIUM_SIZE_SELECTION:
                 // Show the progress bar
-                mRescaleImageProgressBar.setVisibility(View.VISIBLE);
+                mFileProcessingBar.setVisibility(View.VISIBLE);
 
                 // Hide the image view
                 mFileView.setVisibility(View.INVISIBLE);
@@ -803,7 +805,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // If handler is broken or doesn't instantiate re-enable spinner
                 if (mCallThreadRescaleImage == null) {
                     // Hide the progress bar
-                    mRescaleImageProgressBar.setVisibility(View.GONE);
+                    mFileProcessingBar.setVisibility(View.GONE);
 
                     // Show the image view
                     mFileView.setVisibility(View.VISIBLE);
@@ -816,7 +818,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
             case SMALL_SIZE_SELECTION:
                 // Show the progress bar
-                mRescaleImageProgressBar.setVisibility(View.VISIBLE);
+                mFileProcessingBar.setVisibility(View.VISIBLE);
 
                 // Hide the image view
                 mFileView.setVisibility(View.INVISIBLE);
@@ -847,7 +849,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // If handler is broken or doesn't instantiate re-enable spinner
                 if (mCallThreadRescaleImage == null) {
                     // Hide the progress bar
-                    mRescaleImageProgressBar.setVisibility(View.GONE);
+                    mFileProcessingBar.setVisibility(View.GONE);
 
                     // Show the image view
                     mFileView.setVisibility(View.VISIBLE);
@@ -884,7 +886,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // If handler is broken or doesn't instantiate re-enable spinner
         if (mCallThreadRescaleImage == null) {
             // Hide the progress bar
-            mRescaleImageProgressBar.setVisibility(View.GONE);
+            mFileProcessingBar.setVisibility(View.GONE);
             try {
                 canonicalPath = file.getCanonicalPath();
             } catch (IOException e) {
@@ -1124,7 +1126,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             mSpinner.setEnabled(true);
 
                             // Hide the progress bar
-                            mRescaleImageProgressBar.setVisibility(View.GONE);
+                            mFileProcessingBar.setVisibility(View.GONE);
 
                             // Show the image view
                             mFileView.setVisibility(View.VISIBLE);
@@ -1166,7 +1168,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             mSpinner.setEnabled(true);
 
                             // Hide the progress bar
-                            mRescaleImageProgressBar.setVisibility(View.GONE);
+                            mFileProcessingBar.setVisibility(View.GONE);
 
                             // Show the image view
                             mFileView.setVisibility(View.VISIBLE);
@@ -1209,7 +1211,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         mSpinner.setEnabled(true);
 
                         // Hide the progress bar
-                        mRescaleImageProgressBar.setVisibility(View.GONE);
+                        mFileProcessingBar.setVisibility(View.GONE);
 
                         // Show the image view
                         mFileView.setVisibility(View.VISIBLE);
@@ -1238,7 +1240,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     mSpinner.setEnabled(true);
 
                     // Hide the progress bar
-                    mRescaleImageProgressBar.setVisibility(View.GONE);
+                    mFileProcessingBar.setVisibility(View.GONE);
                     // Show the image view
                     mFileView.setVisibility(View.VISIBLE);
 
@@ -1251,7 +1253,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 mSpinner.setEnabled(true);
 
                 // Hide the progress bar
-                mRescaleImageProgressBar.setVisibility(View.GONE);
+                mFileProcessingBar.setVisibility(View.GONE);
 
                 // Show the image view
                 mFileView.setVisibility(View.VISIBLE);
@@ -1266,7 +1268,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             mSpinner.setEnabled(true);
 
             // Hide the progress bar
-            mRescaleImageProgressBar.setVisibility(View.GONE);
+            mFileProcessingBar.setVisibility(View.GONE);
 
             // Show the image view
             mFileView.setVisibility(View.VISIBLE);
