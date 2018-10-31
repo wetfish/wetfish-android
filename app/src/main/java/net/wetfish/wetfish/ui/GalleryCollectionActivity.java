@@ -612,9 +612,6 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             if (mEditedFilePresent) {
                 // if the original file is present, show the button to access it on the file system
                 if (mOriginalFilePresent) {
-                    // Edited file is present
-                    mViewOriginalFile.setVisibility(View.VISIBLE);
-
                     // Setup onClickListener to access the file
                     mViewOriginalFile.setOnClickListener(new View.OnClickListener() {
                         @Override
