@@ -1426,6 +1426,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         responseDeleteURL,
                                         editedFilePath);
 
+                                Log.d(LOG_TAG, "\nFilePath: " + filePath + "\nEditedFilePath: " + editedFilePath);
+
                                 /**
                                  *  Check to see if upload was successful to determine if the rescaled image
                                  * should be kept or deleted
@@ -1590,6 +1592,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         responseViewURL,
                                         responseDeleteURL,
                                         editedFilePath);
+
+                                Log.d(LOG_TAG, "\nFilePath: " + filePath + "\nEditedFilePath: " + editedFilePath);
 
                                 /**
                                  *  Check to see if upload was successful to determine if the edited image

@@ -370,12 +370,15 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
                     // Setup view data
                     if (mEditedFilePresent) {
+                        Log.d(LOG_TAG, "mEditedFilePresent");
                         mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mEditedFileStorageLink), getContext()));
                         mFileViewResolution.setText(FileUtils.getImageResolution(Uri.parse(mEditedFileStorageLink), getContext()));
                     } else if (mOriginalFilePresent) {
+                        Log.d(LOG_TAG, "mOriginalFilePresent");
                         mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mOriginalFileStorageLink), getContext()));
                         mFileViewResolution.setText(FileUtils.getImageResolution(Uri.parse(mOriginalFileStorageLink), getContext()));
                     } else {
+                        Log.d(LOG_TAG, "None Present");
                         mFileViewSize.setVisibility(View.GONE);
                         mFileViewResolution.setVisibility(View.GONE);
                         mFileViewPresentOnSystem.setVisibility(View.VISIBLE);
@@ -398,12 +401,15 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
                     // Setup view data
                     if (mEditedFilePresent) {
+                        Log.d(LOG_TAG, "mEditedFilePresent");
                         mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mEditedFileStorageLink), getContext()));
                         mFileViewLength.setText(FileUtils.getVideoLength(Uri.parse(mEditedFileStorageLink), getContext()));
                     } else if (mOriginalFilePresent) {
+                        Log.d(LOG_TAG, "mOriginalFilePresent");
                         mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mOriginalFileStorageLink), getContext()));
                         mFileViewLength.setText(FileUtils.getVideoLength(Uri.parse(mOriginalFileStorageLink), getContext()));
                     } else {
+                        Log.d(LOG_TAG, "None Present");
                         mFileViewSize.setVisibility(View.GONE);
                         mFileViewLength.setVisibility(View.GONE);
                         mFileViewPresentOnSystem.setVisibility(View.VISIBLE);
@@ -604,43 +610,49 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
             // Setup mViewOriginalFile FAB if an edited file is present
             if (mEditedFilePresent) {
-                // Edited file is present
-                mViewOriginalFile.setVisibility(View.VISIBLE);
+                // if the original file is present, show the button to access it on the file system
+                if (mOriginalFilePresent) {
+                    // Edited file is present
+                    mViewOriginalFile.setVisibility(View.VISIBLE);
 
-                mViewOriginalFile.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Intent to find proper app to open file
-                        Intent selectViewingApp = new Intent();
-                        selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        selectViewingApp.setAction(Intent.ACTION_VIEW);
+                    // Setup onClickListener to access the file
+                    mViewOriginalFile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // Intent to find proper app to open file
+                            Intent selectViewingApp = new Intent();
+                            selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            selectViewingApp.setAction(Intent.ACTION_VIEW);
 
-                        // Uri path to the file
-                        Uri fileProviderUri;
+                            // Uri path to the file
+                            Uri fileProviderUri;
 
-                        // Use FileProvider to get an appropriate URI compatible with version Nougat+
-                        fileProviderUri = FileProvider.getUriForFile(getContext(),
-                                getString(R.string.file_provider_authority),
-                                new File(mEditedFileStorageLink));
+                            // Use FileProvider to get an appropriate URI
+                            fileProviderUri = FileProvider.getUriForFile(getContext(),
+                                    getString(R.string.file_provider_authority),
+                                    new File(mOriginalFileStorageLink));
 
-                        // Setup the data and type
-                        // Appropriately determine mime type for the file
-                        selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, getContext()));
+                            // Setup the data and type
+                            // Appropriately determine mime type for the file
+                            selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, getContext()));
 
-                        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
-                            selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
-                            selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                                selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
+                                selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            }
+
+                            // Check to see if an app can open this file. If so, do so, if not, inform the user
+                            PackageManager packageManager = getContext().getPackageManager();
+                            if (selectViewingApp.resolveActivity(packageManager) != null) {
+                                startActivity(selectViewingApp);
+                            } else {
+                                Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
+                            }
                         }
-
-                        // Check to see if an app can open this file. If so, do so, if not, inform the user
-                        PackageManager packageManager = getContext().getPackageManager();
-                        if (selectViewingApp.resolveActivity(packageManager) != null) {
-                            startActivity(selectViewingApp);
-                        } else {
-                            Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
-                        }
-                    }
-                });
+                    });
+                } else {
+                    mViewOriginalFile.setVisibility(View.GONE);
+                }
             } else {
                 // Edited file is not present
                 mViewOriginalFile.setVisibility(View.GONE);
