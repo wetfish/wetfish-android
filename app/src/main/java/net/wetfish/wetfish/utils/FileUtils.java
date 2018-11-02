@@ -36,6 +36,8 @@ public class FileUtils {
     private static final double UNIT_CONVERSION = 1000;
     private static final double ROUNDING_NUMBER = 100.0;
 
+    private static final double MINIMUM_BITMAP_RESOLUTION = 1;
+
     public static String getAbsolutePathFromUri(Context context, Uri contentUri) {
         String fileProviderString = "(/net.wetfish.wetfish/)";
         String capturedFileString = "(CAPTURED_FILE_)";
@@ -189,7 +191,7 @@ public class FileUtils {
         cv.put(FileColumns.COLUMN_FILE_DEVICE_STORAGE_LINK, fileDeviceUri);
         cv.put(FileColumns.COLUMN_FILE_WETFISH_STORAGE_LINK, fileWetfishLocationUrl);
         cv.put(FileColumns.COLUMN_FILE_WETFISH_DELETION_LINK, fileWetfishDeletionUrl);
-        cv.put(FileColumns.COLUMN_FILE_WETFISH_EDITED_FILE_STORAGE_LINK, editedFileDeviceUri);
+        cv.put(FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK, editedFileDeviceUri);
 
         // Insert the content values into the database and get the position
         return Integer.valueOf(((context.getContentResolver().insert(Files.CONTENT_URI, cv)).getLastPathSegment()).toString());
@@ -255,6 +257,14 @@ public class FileUtils {
         // Height and width downscaled by the scaleRatio
         double destinationHeight = bitmapToDownscale.getHeight() * scaleRatio;
         double destinationWidth = bitmapToDownscale.getWidth() * scaleRatio;
+
+        if (destinationWidth < MINIMUM_BITMAP_RESOLUTION) {
+            destinationWidth = MINIMUM_BITMAP_RESOLUTION;
+        }
+
+        if (destinationHeight < MINIMUM_BITMAP_RESOLUTION) {
+            destinationHeight = MINIMUM_BITMAP_RESOLUTION;
+        }
 
         // Return a new bitmap that's a downscaled version of the provided bitmap
         Bitmap bitmap = Bitmap.createScaledBitmap(bitmapToDownscale, (int) destinationWidth, (int) destinationHeight, true);
@@ -400,7 +410,7 @@ public class FileUtils {
         // Return the gathered file size, rounded up to mb
         if (fileSize / UNIT_CONVERSION < 1) {
             // File Size is within the kilobyte range, return the appropriate string
-            return context.getString(R.string.tv_image_sizez_kb, Math.round(fileSize));
+            return context.getString(R.string.tv_file_sizes_kb, Math.round(fileSize));
         } else if (fileSize / UNIT_CONVERSION >= 1 && !(fileSize / UNIT_CONVERSION >= 1000)) {
             // File Size is within the megabyte range, convert to mb
             fileSize = (float) (fileSize / UNIT_CONVERSION);
@@ -409,9 +419,9 @@ public class FileUtils {
             return context.getString(R.string.tv_file_size_mb, Math.round(fileSize * ROUNDING_NUMBER) / ROUNDING_NUMBER);
         } else {
             // TODO: This shouldn't feasibly happen, but must be dealt with. This will be implemented when desired functionality is discussed for this edge case.
+            // TODO: For now, just return the currently available file size
+            return context.getString(R.string.tv_file_sizes_kb, Math.round(file.length()));
         }
-        return context.getString(R.string.tv_file_size_mb, Math.round(file.length()));
-
     }
 
     /**
@@ -425,8 +435,12 @@ public class FileUtils {
         // Get the bitmap we want the resolution from
         Bitmap bitmap = BitmapFactory.decodeFile(fileUri.toString());
 
-        // Grab the height and width and return it in the form a resolution
-        return context.getString(R.string.tv_image_resolution, bitmap.getWidth(), bitmap.getHeight());
+        // Grab the height and width and return it in the form a resolution if the image isn't null
+        if (bitmap != null){
+            return context.getString(R.string.tv_image_resolution, bitmap.getWidth(), bitmap.getHeight());
+        } else {
+            return context.getString(R.string.tv_image_resolution_not_found);
+        }
     }
 
     /**
@@ -442,19 +456,40 @@ public class FileUtils {
         // file to be used
         retriever.setDataSource(context, fileUri);
         String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        long timeInMillisec = Long.parseLong(time);
 
-        // Get the time in minutes, then get the time in seconds minus the total time in seconds converted to minutes to obtain seconds
+        // Check to see if the time was obtained or not
+        if (time != null) {
+            long timeInMillisec = Long.parseLong(time);
 
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillisec);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillisec) -
-                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeInMillisec));
+            // Get the time in minutes, then get the time in seconds minus the total time in seconds converted to minutes to obtain seconds
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(timeInMillisec);
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(timeInMillisec) -
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeInMillisec));
 
 
-        if (seconds < 10) {
-            return context.getString(R.string.tv_video_length_below_ten_seconds, minutes, seconds);
+            if (seconds < 10) {
+                return context.getString(R.string.tv_video_length_below_ten_seconds, minutes, seconds);
+            } else {
+                return context.getString(R.string.tv_video_length_above_ten_seconds, minutes, seconds);
+            }
         } else {
-            return context.getString(R.string.tv_video_length_above_ten_seconds, minutes, seconds);
+            // Should the time be null reflect that in the return string
+            return context.getString(R.string.tv_video_length_unobtained);
+        }
+    }
+
+    /**
+     *
+     */
+    public static boolean checkIfFileExists (String filePath) {
+        // Create a file object and see if the given file exists
+        File file = new File(filePath);
+        if (file.exists()) {
+            // If the file exists return true after closing the file
+            return true;
+        } else {
+            // If the file doesn't exist return false after closing the file
+            return false;
         }
     }
 }

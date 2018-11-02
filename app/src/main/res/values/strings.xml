@@ -16,12 +16,15 @@
     <string name="tv_tags">Tags</string>
     <string name="tv_description">Description</string>
     <string name="tv_image_resolution">%1$d x %2$d</string>
-    <string name="tv_image_sizez_kb">%d kb</string>
+    <string name="tv_file_sizes_kb">%d kb</string>
     <string name="tv_file_size_mb">%.2f mb</string>
     <string name="tv_error_loading_db">Error Loading Database</string>
     <string name="tv_no_results">No Files Uploaded…</string>
     <string name="tv_cloud_upload_complete">Upload Complete!</string>
-    <string name="sb_cloud_upload_cancelled">Upload Cancelled</string>
+    <string name="tv_file_not_found_on_system">File not on local filesystem</string>
+    <string name="tv_image_resolution_not_found">Resolution Not Found</string>
+    <string name="tv_video_length_unobtained">Video Length Not Found</string>
+    <string name="iv_gallery_item_detail_description">Thumbnail of the uploaded file</string>
     <string name="et_description_hint">Description</string>
     <string name="et_tags_hint">Tags</string>
     <string name="et_title_hint">Title</string>
@@ -31,6 +34,10 @@
     <string name="fab_select_image_file">Select Image File</string>
     <string name="fab_select_video_file">Select Video File</string>
     <string name="cb_exif_remove_data">Remove Data</string>
+    <string name="ad_cancel">Cancel</string>
+    <string name="ad_message_return_home_warning">Return to the home screen? All changes will be lost.</string>
+    <string name="ad_title_return_home">Return to Home Screen</string>
+
 
     <!-- Snackbar Strings -->
     <string name="ok">OK</string>
@@ -40,18 +47,21 @@
     <string name="sb_url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
     <string name="sb_exif_transfer_data_unsuccessful">Transferring EXIF data was unsuccessful</string>
     <string name="sb_exif_transfer_data_successful">Transferring EXIF data was successful</string>
-    <string name="sb_image_successfully_exif_edited">Image\'s EXIF succesfully edited</string>
+    <string name="sb_image_successfully_exif_edited">Image\'s EXIF successfully edited</string>
     <string name="sb_edit_exif_cancelled">EXIF edit successfully cancelled</string>
     <string name="sb_image_successfully_rescaled">Image successfully rescaled</string>
     <string name="sb_image_unsuccessfully_rescaled">Image unsuccessfully rescaled</string>
     <string name="sb_image_unsuccessfully_deleted">Image was unsuccessfully deleted</string>
     <string name="sb_not_representable_by_glide">The given file is currently unsupported. Please view at Wetfish.</string>
-    <string name="sb_network_not_connected">Currently unconnected to a network.</string>
+    <string name="sb_network_not_connected">Currently not connected to a network.</string>
     <string name="sb_no_app_available">No app installed can interact with this file.</string>
     <string name="sb_unable_to_obtain_file">Unable to obtain chosen file.</string>
     <string name="sb_no_file_selected">No file selected.</string>
     <string name="sb_image_unsuccessfully_created">Image creation failed</string>
     <string name="sb_edit_exif_no_changes">No changes selected</string>
+    <string name="sb_no_image_available_on_local_storage">Image file not available on local storage</string>
+    <string name="sb_no_video_available_on_local_storage">Video file available on local storage</string>
+    <string name="sb_cloud_upload_cancelled">Upload Cancelled</string>
 
     <!-- Database Strings -->
     <string name="not_implemented">N/A</string>
@@ -136,28 +146,24 @@
     <string name="pref_appVersionSummary_key">pref_appVersionSummary_key</string>
     <string name="pref_appVersionSummary_title">Version Summary</string>
     <string name="pref_appVersionSummary">
-        <b>Settings</b>\n
-        - About page crediting libraries &amp; licenses, version history, &amp; version changes.\n\n
+    <b>Gallery Activity</b>\n
+    - Card View Spacing now takes more space \n\n
 
-        <b>Gallery &amp; Hotifx</b>\n
-        - FAM properly closing\n
-        - FABs for selecting image &amp; video files.\n
-        - Scrolling Fix\n\n
+    <b>Gallery Collection Activity</b>\n
+    - Fix crashing when various files aren\'t present while moving through items\n
+    - PNG pictures of appropriate file states\n
+    - File clicking will now redirect the user to Wetfish if not on the file system\n
+    - File clicking will now appropriately open up the correct image\n\n
 
-        <b>Upload Page</b>\n
-        - Prevent tab switching during upload.\n
-        - FAB progress circle.\n
-        - No immediate focus on text field.\n\n
+    <b>Upload Page</b>\n
+    - An alert dialog will now pop up when moving back screens\n
+    - Video Uploading now has one tab\n
+    - View alignment fixed\n
+    - Loading Tab on devices greater than v24\n\n
 
-        <b>EXIF Page</b>\n
-        - Prevent tab switching during EXIF edits.\n
-        - FAB to finalize EXIF edits.\n
-        - FAB progress circle.\n
-        - All versions have all tag/value pairs within ExifInterface\n
-        - Scrolling inertia.\n\n
-
-       <b>Misc.</b>\n
-        - Multithreading</string>
+    <b>Misc.</b>\n
+    - Fix for crashes on bitmap rescaling\n
+    </string>
     <string name="pref_appVersionSummary_prompt">Click here for Wetfish version details</string>
     <string name="dialog_acknowledged">Okay</string>
 
@@ -240,7 +246,6 @@
     //EXIF Data layout
     <string name="exif_data_header_sensitive">Sensitive Exif Data</string>
     <string name="exif_data_header_general">General Exif Data</string>
-
 
 </resources>
 

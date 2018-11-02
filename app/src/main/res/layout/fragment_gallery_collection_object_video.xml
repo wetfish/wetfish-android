@@ -55,6 +55,7 @@
                 android:layout_marginStart="48dp"
                 android:layout_marginTop="16dp"
                 android:adjustViewBounds="true"
+                android:contentDescription="@string/iv_gallery_item_detail_description"
                 android:scaleType="fitCenter"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -68,26 +69,37 @@
                 android:layout_marginBottom="8dp"
                 android:layout_marginEnd="48dp"
                 android:layout_marginStart="48dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintTop_toBottomOf="@+id/iv_gallery_item_detail">
 
                 <android.support.v7.widget.AppCompatTextView
                     android:id="@+id/tv_video_length"
-                    style="@style/TextViewBody"
+                    style="@style/TextViewBodyFileDetails"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
                     android:layout_weight="1"
                     android:gravity="start" />
 
                 <android.support.v7.widget.AppCompatTextView
                     android:id="@+id/tv_video_size"
-                    style="@style/TextViewBody"
+                    style="@style/TextViewBodyFileDetails"
+                    android:layout_width="0dp"
+                    android:paddingEnd="10dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end" />
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/tv_video_not_on_local_file_system"
+                    style="@style/TextViewBodyFileDetails"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="end"
-                    android:paddingEnd="8dp" />
+                    android:gravity="center"
+                    android:text="@string/tv_file_not_found_on_system"
+                    android:visibility="gone" />
 
             </android.support.v7.widget.LinearLayoutCompat>
 

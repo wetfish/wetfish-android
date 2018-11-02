@@ -1,6 +1,7 @@
 package net.wetfish.wetfish.ui;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -8,21 +9,23 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.EditedFileData;
 import net.wetfish.wetfish.ui.viewpager.CustomLockingViewPager;
+import net.wetfish.wetfish.ui.viewpager.CustomTabLayout;
 import net.wetfish.wetfish.ui.viewpager.EditExifFragment;
 import net.wetfish.wetfish.ui.viewpager.EditFileFragment;
 import net.wetfish.wetfish.ui.viewpager.FileUploadFragment;
@@ -37,25 +40,24 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         EditFileFragment.OnFragmentInteractionListener,
         EditExifFragment.EditExifFragmentUriUpdate {
 
-    // Logging Tag
-    private static final String LOG_TAG = GalleryUploadActivity.class.getSimpleName();
     /* Constants */
     public static final int VIEWPAGER_OFF_SCREEN_PAGE_LIMIT = 2;
     public static final int VIEWPAGER_UPLOAD_FRAGMENT = 0;
     public static final int VIEWPAGER_EDIT_EXIF_FRAGMENT = 1;
     public static final int VIEWPAGER_EDIT_FILE_FRAGMENT = 2;
-    // View Variables
-    private TabLayout tabLayout;
-    private CustomLockingViewPager mViewPager;
-
-    // Data Variables
-    private Uri fileUri;
-    private Uri mEditedFileUri;
-
-//    private boolean videoFile;
-
+    public static final int ACTIVITY_REQUEST_CODE = 1;
+    // Logging Tag
+    private static final String LOG_TAG = GalleryUploadActivity.class.getSimpleName();
     // ViewPager Variables
     public SectionsPagerAdapter mSectionsPagerAdapter;
+    // View Variables
+    private CustomTabLayout tabLayout;
+    private CustomLockingViewPager mViewPager;
+    // Data Variables
+    private Uri fileUri;
+
+//    private boolean videoFile;
+    private Uri mEditedFileUri;
 
     /**
      * Callback for the result from requesting permissions. This method
@@ -78,8 +80,54 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    //TODO: Possibly remove
-//    private boolean imageFile;
+    /**
+     * This hook is called whenever an item in your options menu is selected.
+     * The default implementation simply returns false to have the normal
+     * processing happen (calling the item's Runnable or sending a message to
+     * its Handler as appropriate).  You can use this method for any items
+     * for which you would like to do processing without those other
+     * facilities.
+     * <p>
+     * <p>Derived classes should call through to the base class for it to
+     * perform the default menu handling.</p>
+     *
+     * @param item The menu item that was selected.
+     * @return boolean Return false to allow normal menu processing to
+     * proceed, true to consume it here.
+     * @see #onCreateOptionsMenu
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                //finish();
+                onBackPressed();
+                break;
+        }
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogThemeAppVersionSummary);
+
+        builder.setMessage(R.string.ad_message_return_home_warning)
+                .setTitle(R.string.ad_title_return_home)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // User decided to return to the home screen
+                        finish();
+                    }})
+                .setNegativeButton(R.string.ad_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Do nothing
+                    }});
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +152,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 //            UIUtils.generateSnackbar(getApplicationContext(), findViewById(android.R.id.content),
 //                    "Unable to obtain chosen file", Snackbar.LENGTH_LONG);
         }
+
         // Set view data
         if (fileUri != null) {
             Log.d(LOG_TAG, "File Data URI: " + fileUri.toString());
@@ -131,7 +180,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-
     @Override
     public void onEditFileFragmentInteraction(Uri uri) {
 
@@ -139,7 +187,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 
     /**
      * Fragment interaction from @{@link EditExifFragment} to the other viewpager fragments
-     *
      *
      * @param editedFileUri Uri of an edited image
      */
@@ -152,11 +199,10 @@ public class GalleryUploadActivity extends AppCompatActivity implements
     /**
      * Fragment interaction from @{@link FileUploadFragment} to the other viewpager fragments
      *
-     *
      * @param editedFileUri Uri of an edited image
      */
     @Override
-    public void uploadTransferEditedFileData (EditedFileData editedFileUri) {
+    public void uploadTransferEditedFileData(EditedFileData editedFileUri) {
         EditExifFragment editExifFragment = (EditExifFragment) mSectionsPagerAdapter.getFragment(VIEWPAGER_EDIT_EXIF_FRAGMENT);
         editExifFragment.receiveUploadFragmentData(editedFileUri);
     }
@@ -173,17 +219,14 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         /* Data */
         //Data from intent
         Uri mFileUri;
+        // Context
+        Context mContext;
         // Store fragment tags
         private Map<Integer, String> mFragmentTags;
         // Fragment Manager
         private FragmentManager mFragmentManager;
-
-
-        // Context
-        Context mContext;
-
         // Title and Image arrays for tabs
-        private String tabTitles[] = new String[] {
+        private String tabTitles[] = new String[]{
                 getString(R.string.tv_title_upload),
                 getString(R.string.tv_title_edit_exif),
                 getString(R.string.tv_title_edit_file)};
@@ -219,7 +262,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             return obj;
         }
 
-        public Fragment getFragment (int position) {
+        public Fragment getFragment(int position) {
             String tag = mFragmentTags.get(position);
             if (tag == null) {
                 return null;
@@ -235,11 +278,10 @@ public class GalleryUploadActivity extends AppCompatActivity implements
          */
         @Override
         public Fragment getItem(int position) {
-            switch(position) {
+            switch (position) {
                 case 0:
                     return FileUploadFragment.newInstance(mEditedFileUri, mFileUri);
                 case 1:
-                    //TODO: Implement EXIF editing
                     return EditExifFragment.newInstance(mEditedFileUri, mFileUri);
                 case 2:
                     //TODO: Implement File editing
@@ -254,6 +296,8 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             // Show 3 total pages.
             return PAGE_COUNT;
         }
+
+
 
         /**
          * This method may be called by the ViewPager to obtain a title string
@@ -277,6 +321,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             return spannableString;
         }
 
-
     }
+
 }

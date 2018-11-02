@@ -112,7 +112,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         // Sort By Most Recent sorting method
         private boolean mSortByMostRecent;
 
-        public GalleryCollectionPagerAdapter(FragmentManager fm, Context context, boolean sortByMostRecentSetting) {
+        GalleryCollectionPagerAdapter(FragmentManager fm, Context context, boolean sortByMostRecentSetting) {
             super(fm);
             mContext = context;
             mSortByMostRecent = sortByMostRecentSetting;
@@ -121,7 +121,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         /**
          * Return the Fragment associated with a specified position.
          *
-         * @param position
+         * @param position of item
          */
         @Override
         public Fragment getItem(int position) {
@@ -168,14 +168,16 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     return amountOfEntries;
                 } else {
                     // Close cursor
-                    filesData.close();
+                    if (filesData != null) {
+                        filesData.close();
+                    }
 
                     // Cursor was null, no entries
                     return 0;
                 }
             } finally {
                 if (filesData != null) {
-                    // Gather amonut of entries
+                    // Gather amount of entries
                     int amountOfEntries = filesData.getCount();
 
                     // Close cursor
@@ -211,9 +213,6 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
     public static class GalleryObjectFragment extends Fragment implements
             LoaderManager.LoaderCallbacks<Cursor> {
-        /* Constants */
-        // Logging Tag
-        private static final String LOG_TAG = GalleryObjectFragment.class.getSimpleName();
         // Loader ID
         private static final int FILES_DETAIL_LOADER = 1;
         // Bundle keys
@@ -224,7 +223,11 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private static final String IMAGE_FILE = "image/*";
         // Video file switch constant
         private static final String VIDEO_FILE = "video/*";
-
+        /* Constants */
+        // Logging Tag
+        private final String LOG_TAG = GalleryObjectFragment.class.getSimpleName();
+        // Connectivity manager
+        ConnectivityManager mConnectivityManager;
         /* FAM & FABs */
         // Display FABs
         private FloatingActionMenu mFAM;
@@ -238,7 +241,6 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private FloatingActionButton mCopyFileDeleteURLFAB;
         // View the original image
         private FloatingActionButton mViewOriginalFile;
-
         /* Views */
         // File image view TODO: Implement exoplayer later if video playback is desired
         private ImageView mFileView;
@@ -254,18 +256,24 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private TextView mFileViewSize;
         // File resolution text view
         private TextView mFileViewResolution;
+        // File presence on file system
+        private View mFileViewPresentOnSystem;
         // Layout include reference
         private View mIncludeLayout;
         // Layout rootView
         private View mRootView;
-
         /* Data */
         // Uri for the sent cursor
         private Uri mUri;
         // FileInfo object that holds all data
         private FileInfo mFileInfo;
-        // FileInfo string that holds file location
-        private String desiredFileStorageLink;
+        // Default storage link for the given
+        // String to hold the original file storage link
+        private String mOriginalFileStorageLink;
+        // String to hold the edited file storage link
+        private String mEditedFileStorageLink;
+        // String to hold the wetfish file storage link
+        private String mWetfishFileStorageLink;
         // FileType string that holds the file extension type
         private String mFileType;
         // Sorting Settings
@@ -276,6 +284,11 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private boolean mFragmentCreated;
         // Network Info
         private NetworkInfo mNetworkInfo;
+        // Boolean if the original file exists
+        private boolean mOriginalFilePresent;
+        // Boolean if the edited file exists
+        private boolean mEditedFilePresent;
+        //
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -322,42 +335,19 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         }
 
         public void displayFileDetails(FileInfo fileInfo) {
-            // String to determine the appropriate Uri to use
-            String desiredFileStorageLink;
-
             // String only present should there be an edited copy populating desiredFileStorageLink
-            String originalFileStorageLink = null;
-
-            // Boolean to determine if an edited image exists
-            boolean editedFilePresent;
 
             // Boolean to determine if deletion links have been provided for the image
             boolean deletionLinkPresent;
 
-            // Determine if an edited version of the file has been provided for the given database entry
-            if (fileInfo.getEditedFileDeviceStorageLink() != null) {
-                if (!fileInfo.getEditedFileDeviceStorageLink().isEmpty() && !fileInfo.getEditedFileDeviceStorageLink().equals("")) {
-                    // Setup the desiredFileStorageLink to reference the correct uri and show mViewOriginalImage FAB
-                    Log.d(LOG_TAG, "editedFile exists and is not empty");
+            // Gather the file info Uris and links
+            mOriginalFileStorageLink = mFileInfo.getFileDeviceStorageLink();
+            mEditedFileStorageLink = mFileInfo.getEditedFileDeviceStorageLink();
+            mWetfishFileStorageLink = mFileInfo.getFileWetfishStorageLink();
 
-
-                    editedFilePresent = true;
-                    originalFileStorageLink = fileInfo.getFileDeviceStorageLink();
-                    desiredFileStorageLink = fileInfo.getEditedFileDeviceStorageLink();
-                } else {
-                    // Setup the desiredFileStorageLink to reference the correct uri and hide mViewOriginalImage FAB
-//                    Log.d(LOG_TAG, "file does not exist and/or is empty");
-
-                    editedFilePresent = false;
-                    desiredFileStorageLink = fileInfo.getFileDeviceStorageLink();
-                }
-            } else {
-                // Setup the desiredFileStorageLink to reference the correct uri and hide mViewOriginalImage FAB
-//                Log.d(LOG_TAG, "file does not exist and/or is empty");
-
-                editedFilePresent = false;
-                desiredFileStorageLink = fileInfo.getFileDeviceStorageLink();
-            }
+            // Boolean values to determine if a file exists or not
+            mOriginalFilePresent = FileUtils.checkIfFileExists(mOriginalFileStorageLink);
+            mEditedFilePresent = FileUtils.checkIfFileExists(mEditedFileStorageLink);
 
             // Determine the mime type
             String mimeType = FileUtils.getMimeType(fileInfo.getFileExtensionType(), getContext());
@@ -376,10 +366,24 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
                     mFileViewSize = mIncludeLayout.findViewById(R.id.tv_image_size);
                     mFileViewResolution = mIncludeLayout.findViewById(R.id.tv_image_resolution);
+                    mFileViewPresentOnSystem = mIncludeLayout.findViewById(R.id.tv_image_not_on_local_file_system);
 
                     // Setup view data
-                    mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(desiredFileStorageLink), getContext()));
-                    mFileViewResolution.setText(FileUtils.getImageResolution(Uri.parse(desiredFileStorageLink), getContext()));
+                    if (mEditedFilePresent) {
+                        Log.d(LOG_TAG, "mEditedFilePresent");
+                        mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mEditedFileStorageLink), getContext()));
+                        mFileViewResolution.setText(FileUtils.getImageResolution(Uri.parse(mEditedFileStorageLink), getContext()));
+                    } else if (mOriginalFilePresent) {
+                        Log.d(LOG_TAG, "mOriginalFilePresent");
+                        mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mOriginalFileStorageLink), getContext()));
+                        mFileViewResolution.setText(FileUtils.getImageResolution(Uri.parse(mOriginalFileStorageLink), getContext()));
+                    } else {
+                        Log.d(LOG_TAG, "None Present");
+                        mFileViewSize.setVisibility(View.GONE);
+                        mFileViewResolution.setVisibility(View.GONE);
+                        mFileViewPresentOnSystem.setVisibility(View.VISIBLE);
+                    }
+
 
                     break;
                 case VIDEO_FILE: // This layout is for video files
@@ -396,9 +400,20 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     mFileViewLength = mIncludeLayout.findViewById(R.id.tv_video_length);
 
                     // Setup view data
-                    mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(desiredFileStorageLink), getContext()));
-                    mFileViewLength.setText(FileUtils.getVideoLength(Uri.parse(desiredFileStorageLink), getContext()));
-
+                    if (mEditedFilePresent) {
+                        Log.d(LOG_TAG, "mEditedFilePresent");
+                        mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mEditedFileStorageLink), getContext()));
+                        mFileViewLength.setText(FileUtils.getVideoLength(Uri.parse(mEditedFileStorageLink), getContext()));
+                    } else if (mOriginalFilePresent) {
+                        Log.d(LOG_TAG, "mOriginalFilePresent");
+                        mFileViewSize.setText(FileUtils.getFileSize(Uri.parse(mOriginalFileStorageLink), getContext()));
+                        mFileViewLength.setText(FileUtils.getVideoLength(Uri.parse(mOriginalFileStorageLink), getContext()));
+                    } else {
+                        Log.d(LOG_TAG, "None Present");
+                        mFileViewSize.setVisibility(View.GONE);
+                        mFileViewLength.setVisibility(View.GONE);
+                        mFileViewPresentOnSystem.setVisibility(View.VISIBLE);
+                    }
                     break;
                 default:
                     //TODO: Potentially make an error page
@@ -410,62 +425,114 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     !(fileInfo.getFileWetfishDeletionLink().isEmpty()) || !(fileInfo.getFileWetfishDeletionLink().equals("")));
 
             // Setup the interaction listeners now that the appropriate data has been received
-            setupOnInteractionListeners(editedFilePresent, deletionLinkPresent, originalFileStorageLink);
+            setupOnInteractionListeners(deletionLinkPresent);
 
             mFileType = fileInfo.getFileExtensionType();
 
-            // If network is connected search the device for the stored image, then wetfish if not found
-            if (mNetworkInfo != null && mNetworkInfo.isConnected()) {
-                // Check to see if the image is representable by glide. If not, let the user know.
-                if (FileUtils.representableByGlide(mFileType)) {
-//                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
-//                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
-//                    Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
+            mConnectivityManager = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
 
+            if (mNetworkInfo != null && mNetworkInfo.isConnected()) {
+                // Check to see if the file is representable by glide
+                if (FileUtils.representableByGlide(mFileType)) {
+                    // Image file loading for glide
+                    if (mimeType.equals(getString(R.string.image_mime_type))) {
+                        // Load the edited file from the local storage if possible, then move down the options
+                        if (mEditedFilePresent) {
+                            Glide.with(this)
+                                    .load(mEditedFileStorageLink)
+                                    .error(Glide.with(this)
+                                            .load(mWetfishFileStorageLink)
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_anywhere))
+                                    .apply(RequestOptions.fitCenterTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(mFileView);
+                        } else {
+                            Glide.with(this)
+                                    .load(mOriginalFileStorageLink)
+                                    .error(Glide.with(this)
+                                            .load(mWetfishFileStorageLink)
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_anywhere))
+                                    .apply(RequestOptions.fitCenterTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(mFileView);
+                        }
+                    } else {
+                        // Video file loading for glide
+                        Glide.with(this)
+                                .load(mOriginalFileStorageLink)
+                                .error(Glide.with(this)
+                                        .load(mWetfishFileStorageLink)
+//                                        .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
+                                        .apply(RequestOptions.fitCenterTransform()))
+                                .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_anywhere))
+                                .apply(RequestOptions.fitCenterTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(mFileView);
+                    }
+                } else { // FileUtils.representableByGlide(mFileType) else
+                    Log.d(LOG_TAG, "File is not representable by glide");
+                    // If the file is not representable by glide depict this to the user
                     Glide.with(this)
-                            .load(desiredFileStorageLink)
-                            .error(Glide.with(this)
-                                    .load(fileInfo.getFileWetfishStorageLink())
-                                    .apply(RequestOptions.centerCropTransform()))
+                            .load(R.drawable.glide_not_representable)
                             .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
                             .apply(RequestOptions.fitCenterTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(mFileView);
-                } else {
-//                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileWetfishStorageLink());
-//                    Log.d(LOG_TAG, "Representable By Glide: " + fileInfo.getFileDeviceStorageLink());
-//                    Log.d(LOG_TAG, "Representable by Glide: " + fileInfo.getEditedFileDeviceStorageLink());
-                    // If not, let the user know
-                    //TODO: Figure out a method to better illustrate errors
+                }
+            } else { // mNetworkInfo != null && mNetworkInfo.isConnected() else
+                if (FileUtils.representableByGlide(mFileType)) {
+                    // Image file loading for glide
+                    if (mimeType.equals(getString(R.string.image_mime_type))) {
+                        // Load the edited file from the local storage if possible, then move down the options
+                        if (mEditedFilePresent) {
+                            Log.d(LOG_TAG, "No network, edited file present");
+                            Glide.with(this)
+                                    .load(mEditedFileStorageLink)
+                                    .error(Glide.with(this)
+                                            .load(R.drawable.glide_file_not_found_no_network)
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
+                                    .apply(RequestOptions.fitCenterTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(mFileView);
+                        } else {
+                            Glide.with(this)
+                                    .load(mOriginalFileStorageLink)
+                                    .error(Glide.with(this)
+                                            .load(R.drawable.glide_file_not_found_no_network)
+                                            .apply(RequestOptions.fitCenterTransform()))
+                                    .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
+                                    .apply(RequestOptions.fitCenterTransform())
+                                    .transition(DrawableTransitionOptions.withCrossFade())
+                                    .into(mFileView);
+                        }
+                    } else {
+                        // Video File loading for glide
+                        Log.d(LOG_TAG, "No network, edited file present");
+                        Glide.with(this)
+                                .load(mOriginalFileStorageLink)
+                                .error(Glide.with(this)
+                                        .load(R.drawable.glide_file_not_found_no_network)
+                                        .apply(RequestOptions.fitCenterTransform()))
+                                .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
+                                .apply(RequestOptions.fitCenterTransform())
+                                .transition(DrawableTransitionOptions.withCrossFade())
+                                .into(mFileView);
+                    }
+                } else { // FileUtils.representableByGlide(mFileType) else
+                    Log.d(LOG_TAG, "File is not representable by glide");
+                    // If the file is not representable by glide depict this to the user
                     Glide.with(this)
-                            .load(null)
-                            .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.CYAN)))
+                            .load(R.drawable.glide_not_representable)
+                            .apply(RequestOptions.placeholderOf(R.drawable.glide_not_representable))
                             .apply(RequestOptions.fitCenterTransform())
                             .transition(DrawableTransitionOptions.withCrossFade())
                             .into(mFileView);
-
-                    Snackbar.make(mIncludeLayout, getString(R.string.sb_not_representable_by_glide), Snackbar.LENGTH_LONG).show();
                 }
-            } else {
-                // If network is not connected search the device for the stored file on the
-                // device then show a black image if not found.
-                //TODO: Figure out a method to better illustrate errors
-                Glide.with(this)
-                        .load(fileInfo.getFileDeviceStorageLink())
-                        .error(Glide.with(this)
-                                .load(new ColorDrawable(Color.BLACK))
-                                .apply(RequestOptions.fitCenterTransform()))
-                        .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
-                        .apply(RequestOptions.fitCenterTransform())
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(mFileView);
-
-                Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_network_not_connected), Snackbar.LENGTH_LONG).show();
             }
-
-            // File storage link to be used as a passed value for the intent when the file is clicked
-            this.desiredFileStorageLink = desiredFileStorageLink;
-
             // Show file's title, description and tags.
             mFileTitleTextView.setText(fileInfo.getFileTitle());
             mFileTagsTextView.setText(fileInfo.getFileTags());
@@ -473,10 +540,8 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
         }
 
-        private void setupOnInteractionListeners(boolean editedFilePresent, boolean deletionLinkPresent,
-                                                 final String originalImageStorageLink) {
-            // String of the originalImageStorageLink
-            final String originalDesiredFileStorageLink = originalImageStorageLink;
+
+        private void setupOnInteractionListeners(boolean deletionLinkPresent) {
 
             // Close FAM if clicking outside of a button.
             mFAM.setClosedOnTouchOutside(true);
@@ -485,62 +550,27 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             mFileView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // Intent to find proper app to open file
-                    Intent selectViewingApp = new Intent();
-                    selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    selectViewingApp.setAction(Intent.ACTION_VIEW);
 
                     // Uri path to the file
-                    Uri fileProviderUri;
+                    Uri fileProviderUri = null;
 
                     // Use FileProvider to get an appropriate URI compatible with version Nougat+
-                    Log.d(LOG_TAG, "File Storage Link: " + desiredFileStorageLink);
-                    fileProviderUri = FileProvider.getUriForFile(getContext(),
-                            getString(R.string.file_provider_authority),
-                            new File(desiredFileStorageLink));
-
-                    // Setup the data and type
-                    // Appropriately determine mime type for the file
-                    selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, getContext()));
-
-                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
-                        selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
-                        selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    if (mEditedFilePresent) {
+                        fileProviderUri = FileProvider.getUriForFile(getContext(),
+                                getString(R.string.file_provider_authority),
+                                new File(mEditedFileStorageLink));
+                    } else if (mOriginalFilePresent) {
+                        fileProviderUri = FileProvider.getUriForFile(getContext(),
+                                getString(R.string.file_provider_authority),
+                                new File(mOriginalFileStorageLink));
                     }
 
-                    Log.d(LOG_TAG, "Quack: " + fileProviderUri.toString());
-
-                    // Check to see if an app can open this file. If so, do so, if not, inform the user
-                    PackageManager packageManager = getContext().getPackageManager();
-                    if (selectViewingApp.resolveActivity(packageManager) != null) {
-                        startActivity(selectViewingApp);
-                    } else {
-                        Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_no_app_available), Snackbar.LENGTH_LONG).show();
-                    }
-                }
-            });
-
-            // Setup mViewOriginalFile FAB if an edited file is present
-            if (editedFilePresent && originalDesiredFileStorageLink != null) {
-                // Edited file is present
-                mViewOriginalFile.setVisibility(View.VISIBLE);
-
-                mViewOriginalFile.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+                    // If file provider doesn't result in null open the file on the system, otherwise use Wetfish
+                    if (fileProviderUri != null) {
                         // Intent to find proper app to open file
                         Intent selectViewingApp = new Intent();
                         selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         selectViewingApp.setAction(Intent.ACTION_VIEW);
-
-                        // Uri path to the file
-                        Uri fileProviderUri;
-
-                        // Use FileProvider to get an appropriate URI compatible with version Nougat+
-                        Log.d(LOG_TAG, "File Storage Link: " + originalDesiredFileStorageLink);
-                        fileProviderUri = FileProvider.getUriForFile(getContext(),
-                                getString(R.string.file_provider_authority),
-                                new File(originalDesiredFileStorageLink));
 
                         // Setup the data and type
                         // Appropriately determine mime type for the file
@@ -551,17 +581,75 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                             selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         }
 
-                        Log.d(LOG_TAG, "Quack: " + fileProviderUri.toString());
-
                         // Check to see if an app can open this file. If so, do so, if not, inform the user
                         PackageManager packageManager = getContext().getPackageManager();
                         if (selectViewingApp.resolveActivity(packageManager) != null) {
                             startActivity(selectViewingApp);
                         } else {
-                            Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_no_app_available), Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
                         }
+                    } else {
+                        // Intent to find proper app to open file.
+                        if (mNetworkInfo != null && mNetworkInfo.isConnected()) {
+                            // If the file doesn't exist on the local file system and the user is connected to the internet, load from Wetfish
+                            Intent selectViewingApp = new Intent(Intent.ACTION_VIEW, Uri.parse(mFileInfo.fileWetfishStorageLink));
+                            PackageManager packageManager = getContext().getPackageManager();
+                            if (selectViewingApp.resolveActivity(packageManager) != null) {
+                                startActivity(selectViewingApp);
+                            } else {
+                                Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Snackbar.make(mIncludeLayout, R.string.sb_network_not_connected, Snackbar.LENGTH_LONG).show();
+                        }
+
                     }
-                });
+
+                }
+            });
+
+            // Setup mViewOriginalFile FAB if an edited file is present
+            if (mEditedFilePresent) {
+                // if the original file is present, show the button to access it on the file system
+                if (mOriginalFilePresent) {
+                    // Setup onClickListener to access the file
+                    mViewOriginalFile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // Intent to find proper app to open file
+                            Intent selectViewingApp = new Intent();
+                            selectViewingApp.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            selectViewingApp.setAction(Intent.ACTION_VIEW);
+
+                            // Uri path to the file
+                            Uri fileProviderUri;
+
+                            // Use FileProvider to get an appropriate URI
+                            fileProviderUri = FileProvider.getUriForFile(getContext(),
+                                    getString(R.string.file_provider_authority),
+                                    new File(mOriginalFileStorageLink));
+
+                            // Setup the data and type
+                            // Appropriately determine mime type for the file
+                            selectViewingApp.setDataAndType(fileProviderUri, FileUtils.getMimeType(mFileType, getContext()));
+
+                            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                                selectViewingApp.setClipData(ClipData.newRawUri("", fileProviderUri));
+                                selectViewingApp.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            }
+
+                            // Check to see if an app can open this file. If so, do so, if not, inform the user
+                            PackageManager packageManager = getContext().getPackageManager();
+                            if (selectViewingApp.resolveActivity(packageManager) != null) {
+                                startActivity(selectViewingApp);
+                            } else {
+                                Snackbar.make(mIncludeLayout, R.string.sb_no_app_available, Snackbar.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+                } else {
+                    mViewOriginalFile.setVisibility(View.GONE);
+                }
             } else {
                 // Edited file is not present
                 mViewOriginalFile.setVisibility(View.GONE);
@@ -602,10 +690,10 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
                     // Check to see if the clipboard data link equals the database stored link
                     if (clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
-                        Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_url_clipboard_success),
+                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
                                 Snackbar.LENGTH_SHORT).show();
                     } else {
-                        Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_url_clipboard_failure),
+                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_failure,
                                 Snackbar.LENGTH_SHORT).show();
                     }
 
@@ -646,7 +734,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishDeletionLink()));
 
                         if (clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
-                            Snackbar.make(mRootView.findViewById(R.id.gallery_detail_container), getString(R.string.sb_url_clipboard_success),
+                            Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
                                     Snackbar.LENGTH_LONG);
                         }
                     }
