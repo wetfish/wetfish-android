@@ -146,28 +146,24 @@
     <string name="pref_appVersionSummary_key">pref_appVersionSummary_key</string>
     <string name="pref_appVersionSummary_title">Version Summary</string>
     <string name="pref_appVersionSummary">
-        <b>Settings</b>\n
-        - About page crediting libraries &amp; licenses, version history, &amp; version changes.\n\n
+    <b>Gallery Activity</b>\n
+    - Card View Spacing now takes more space \n\n
 
-        <b>Gallery &amp; Hotifx</b>\n
-        - FAM properly closing\n
-        - FABs for selecting image &amp; video files.\n
-        - Scrolling Fix\n\n
+    <b>Gallery Collection Activity</b>\n
+    - Fix crashing when various files aren\'t present while moving through items\n
+    - PNG pictures of appropriate file states\n
+    - File clicking will now redirect the user to Wetfish if not on the file system\n
+    - File clicking will now appropriately open up the correct image\n\n
 
-        <b>Upload Page</b>\n
-        - Prevent tab switching during upload.\n
-        - FAB progress circle.\n
-        - No immediate focus on text field.\n\n
+    <b>Upload Page</b>\n
+    - An alert dialog will now pop up when moving back screens\n
+    - Video Uploading now has one tab\n
+    - View alignment fixed\n
+    - Loading Tab on devices greater than v24\n\n
 
-        <b>EXIF Page</b>\n
-        - Prevent tab switching during EXIF edits.\n
-        - FAB to finalize EXIF edits.\n
-        - FAB progress circle.\n
-        - All versions have all tag/value pairs within ExifInterface\n
-        - Scrolling inertia.\n\n
-
-       <b>Misc.</b>\n
-        - Multithreading</string>
+    <b>Misc.</b>\n
+    - Fix for crashes on bitmap rescaling\n
+    </string>
     <string name="pref_appVersionSummary_prompt">Click here for Wetfish version details</string>
     <string name="dialog_acknowledged">Okay</string>
 

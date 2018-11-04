@@ -86,6 +86,7 @@
                     android:id="@+id/tv_video_size"
                     style="@style/TextViewBodyFileDetails"
                     android:layout_width="0dp"
+                    android:paddingEnd="10dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="end" />
