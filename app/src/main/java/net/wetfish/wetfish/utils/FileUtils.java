@@ -483,13 +483,18 @@ public class FileUtils {
      */
     public static boolean checkIfFileExists (String filePath) {
         // Create a file object and see if the given file exists
-        File file = new File(filePath);
-        if (file.exists()) {
-            // If the file exists return true after closing the file
-            return true;
+        if (filePath != null  && !(filePath.isEmpty())) {
+            File file = new File(filePath);
+            if (file.exists()) {
+                // If the file exists return true after closing the file
+                return true;
+            } else {
+                // If the file doesn't exist return false after closing the file
+                return false;
+            }
         } else {
-            // If the file doesn't exist return false after closing the file
             return false;
         }
+
     }
 }
