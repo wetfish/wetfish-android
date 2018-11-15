@@ -49,7 +49,6 @@ import net.wetfish.wetfish.retrofit.RetrofitClient;
 import net.wetfish.wetfish.ui.GalleryActivity;
 import net.wetfish.wetfish.ui.GalleryCollectionActivity;
 import net.wetfish.wetfish.ui.GalleryUploadActivity;
-import net.wetfish.wetfish.utils.ExifUtils;
 import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
 
@@ -125,6 +124,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private Uri mOriginalFileAbsolutePath;
     // Temporary file path variable for downscaled images. Allows EXIF data to be transferred to @mEditedFileAbsolutePath
     private Uri mRescaledImageAbsolutePath;
+    //TODO: @mEditedFileAbsolutePath will likely not be used until image editing is implemented
     // Final file path variable for all image edits.
     private Uri mEditedFileAbsolutePath;
     // Final file path variable for uploading @mEditedFileAbsolutePath if it exists or @mOriginalFileAbsolutePath otherwise
@@ -133,11 +133,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private String mMimeType;
     private String responseViewURL;
     private String responseDeleteURL;
-    private boolean mExifEdited = false;
     private boolean mImageEdited = false;
     private boolean mSuccessfulExifEdit;
     private boolean mEditedImageCreated = false;
     private boolean mRescaledImageCreated = false;
+    private boolean mRescaledImageDownscaled = false;
     private boolean mDatabaseAdditionSuccessful = false;
     private boolean mCancelableCallThreadUpload;
     private int uploadID;
@@ -178,6 +178,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         return fragment;
     }
 
+    // TODO: This is now obsolete but will be used for image editing.
     /* Fragment interaction methods */
     public void receiveEditExifFragmentData(EditedFileData editedFileData) {
         mEditedFileData = editedFileData;
@@ -278,7 +279,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Show the process bar to indicate the beginning of the image loading
         mFileProcessingBar.setVisibility(View.VISIBLE);
 
-        // Setup mFileView's image and onClickListener with the correct file Uri
+        // Setup mFileView's image and onClickListener with the correct file Uri during app start
         mCallThreadDetermineImage = new Handler();
         mCallThreadDetermineImage.post(new Runnable() {
             @Override
@@ -387,7 +388,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                                 // Edit the EXIF data of the image based on the user's preferences, be it the edited or original image
                                 if (mRescaledImageAbsolutePath != null && !mRescaledImageAbsolutePath.toString().isEmpty()) {
-                                   // Initialize our boolean
+                                    // Initialize our boolean
                                     mSuccessfulExifEdit = false;
 
                                     // If @mRescaledImageAbsolutePath exists and isn't empty, transfer the EXIF data to the file
@@ -561,13 +562,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         Log.d(LOG_TAG, "onResume: FileUploadFragment");
 
         // Check to see if mEditedFileData has an edited file Uri
-        if (mEditedFileData.getEditedFileUri() != null && !mEditedFileData.getEditedFileUri().toString().isEmpty()) {
+        if (mEditedFileData != null && mEditedFileData.getEditedFileUri() != null && !mEditedFileData.getEditedFileUri().toString().isEmpty()) {
             mEditedFileAbsolutePath = mEditedFileData.getEditedFileUri();
             mEditedImageCreated = true;
         }
-
-        // Determine if the EXIF has been edited
-        mExifEdited = mEditedFileData.getExifChanged();
 
         // Setup mFileView's image and onClickListener with the correct file Uri
         mCallThreadDetermineImage = new Handler();
@@ -735,7 +733,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             case ORIGINAL_SIZE_SELECTION:
                 // Only if the user has EXIF changes to save when selecting original resolution refer back to original image
                 // Check to see if a file has been generated before this
-                if (mExifEdited) {
+                if (mEditedImageCreated) {
                     // Show the progress bar
                     mFileProcessingBar.setVisibility(View.VISIBLE);
 
@@ -745,40 +743,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     // Disable the spinner while the thread processes the request
                     mSpinner.setEnabled(false);
 
-                    // Generate medium sized image (75%)) and setup mFileView accordingly
-                    mCallThreadRescaleImage = new Handler();
-                    mCallThreadRescaleImage.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                // Create a rescaled image
-                                Log.d(LOG_TAG, "Current Spinner Selection: " + position);
-                                createRescaledImage(mCurrentSpinnerSelection);
-                            } finally {
-                                // Update the view field with the newly rescaled image if successfully rescaled
-                                if (mEditedFileAbsolutePath != null) {
-                                    determineFileViewContent(mEditedFileAbsolutePath);
-                                } else {
-                                    mSpinner.setSelection(RESCALE_FAILED);
-                                    determineFileViewContent(mOriginalFileAbsolutePath);
-                                }
-                            }
-                        }
-                    }, 0 /* No delay for file deletion*/);
-
-                    // If handler is broken or doesn't instantiate re-enable spinner
-                    if (mCallThreadRescaleImage == null) {
-                        // Hide the progress bar
-                        mFileProcessingBar.setVisibility(View.GONE);
-
-                        // Show the image view
-                        mFileView.setVisibility(View.VISIBLE);
-
-                        // Disable the spinner while the thread processes the request
-                        mSpinner.setEnabled(true);
-
-                    }
-                } else if (mEditedImageCreated) {
                     mCallThreadRescaleImage = new Handler();
                     mCallThreadRescaleImage.postDelayed(new Runnable() {
                         @Override
@@ -797,6 +761,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             }
                         }
                     }, 0 /* No delay for file deletion */);
+                }
+
+                // If handler is broken or doesn't instantiate re-enable spinner
+                if (mCallThreadRescaleImage == null) {
+                    // Hide the progress bar
+                    mFileProcessingBar.setVisibility(View.GONE);
+
+                    // Show the image view
+                    mFileView.setVisibility(View.VISIBLE);
+
+                    // Disable the spinner while the thread processes the request
+                    mSpinner.setEnabled(true);
                 }
 
                 break;
@@ -1157,199 +1133,87 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             if (mRescaledImageCreated) {
                 // Verify that the image is actually rescaled appropriately
                 if (rescaleRatioSelected == 0) {
-                    mRescaledImageCreated = FileUtils.checkSuccessfulBitmapUpscale(mOriginalFileAbsolutePath,
+                    mRescaledImageDownscaled = FileUtils.checkSuccessfulBitmapUpscale(mOriginalFileAbsolutePath,
                             mRescaledImageAbsolutePath);
                     Log.d(LOG_TAG, "rescaleRatio: 0: " + mRescaledImageCreated);
                 } else {
-                    mRescaledImageCreated = FileUtils.checkSuccessfulBitmapDownscale(mOriginalFileAbsolutePath,
+                    mRescaledImageDownscaled = FileUtils.checkSuccessfulBitmapDownscale(mOriginalFileAbsolutePath,
                             mRescaledImageAbsolutePath);
                     Log.d(LOG_TAG, "rescaleRatio: " + SELECTIONRATIO[rescaleRatioSelected] + mRescaledImageCreated);
                 }
-                if (mRescaledImageCreated) {
-                    // TODO: Look into catching the failed circumstances where EXIF is not transferred ETC.
-                    // Figure out EXIF
-                    if (FileUtils.getFileExtensionFromUri(getContext(), mOriginalFileAbsolutePath).matches("(?i).jpeg|.jpg(?-i)")) {
-                        // If the image is a jpeg/jpg check to see if there is a pre-created file with EXIF data.
-                        if (mExifEdited && mEditedImageCreated && !mEditedFileAbsolutePath.toString().isEmpty()) {
-                            Log.d(LOG_TAG, "mExifEdited is True | mEditedImageCreated is true | and mEditedFileAbsolutePath isn't empty");
-                            // If an edited copy exists with altered EXIF gather the EXIF data from this instead of the original
-                            ExifUtils.transferExifData(mEditedFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
 
-                            // Delete the previously created file after successful EXIF transfer
-                            deleteEditedFile();
-
-                            // Point resources to their appropriate variables
-                            mEditedFileAbsolutePath = mRescaledImageAbsolutePath;
-                            mEditedImageCreated = true;
-
-                            // Setup the EditedFileInfo object
-                            mEditedFileData.setRescaledImageQuality(SELECTIONRATIO[rescaleRatioSelected]);
-                            mEditedFileData.setEditedFileUri(mEditedFileAbsolutePath);
-
-                            // Send the updated Uri to the other fragments and update them
-                            mSendUri.uploadTransferEditedFileData(mEditedFileData);
-                            ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
-                                    .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_EXIF_FRAGMENT).onResume();
-
-                            // Remove rescaled image absolute path uri
-                            mRescaledImageAbsolutePath = null;
-                            mRescaledImageCreated = false;
-
-                            // Enable the spinner
-                            mSpinner.setEnabled(true);
-
-                            // Hide the progress bar
-                            mFileProcessingBar.setVisibility(View.GONE);
-
-                            // Show the image view
-                            mFileView.setVisibility(View.VISIBLE);
-
-
-                            // Let the user know the image was successfully downscaled
-                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                                    R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
-
-                            // Delete the thread
-                            mCallThreadRescaleImage.removeCallbacksAndMessages(null);
-                        } else {
-                            Log.d(LOG_TAG, "Else Stuff, no eXIF WAS EDITED");
-                            // TODO: Just check this swag out bruv.
-                            // If no edited copy exists with altered EXIF gather EXIF data from the original image
-                            if (mExifEdited) {
-                                ExifUtils.transferExifData(mEditedFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
-                            } else {
-                                ExifUtils.transferExifData(mOriginalFileAbsolutePath, mRescaledImageAbsolutePath, getContext());
-                            }
-
-                            // Point resources to their appropriate variables
-                            mEditedFileAbsolutePath = mRescaledImageAbsolutePath;
-                            mEditedImageCreated = true;
-
-                            // Setup the EditedFileInfo object
-                            mEditedFileData.setEditedFileUri(mEditedFileAbsolutePath);
-
-                            // Send the updated Uri to the other fragments and update them
-                            mSendUri.uploadTransferEditedFileData(mEditedFileData);
-                            ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
-                                    .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_EXIF_FRAGMENT).onResume();
-
-                            // Remove rescaled image absolute path uri
-                            mRescaledImageAbsolutePath = null;
-                            mRescaledImageCreated = false;
-
-                            // Enable the spinner
-                            mSpinner.setEnabled(true);
-
-                            // Hide the progress bar
-                            mFileProcessingBar.setVisibility(View.GONE);
-
-                            // Show the image view
-                            mFileView.setVisibility(View.VISIBLE);
-
-                            // Let the user know the image was successfully rescaled
-                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                                    R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
-
-                            mEditedFileData.setRescaledImageQuality(SELECTIONRATIO[rescaleRatioSelected]);
-
-                            // Delete the thread
-                            mCallThreadRescaleImage.removeCallbacksAndMessages(null);
-                        }
-                    } else {
-                        Log.d(LOG_TAG, "Not a JPEG/JPG");
-                        // The file is not a JPEG/JPG and has no EXIF data to worry about
-                        // Delete the previously created file after successful EXIF transfer
-                        if (mExifEdited) {
-                            deleteEditedFile();
-                        }
-
-                        // Point resources to their appropriate variables
-                        mEditedFileAbsolutePath = mRescaledImageAbsolutePath;
-                        mEditedImageCreated = true;
-
-                        // Setup the EditedFileInfo object
-                        mEditedFileData.setRescaledImageQuality(SELECTIONRATIO[rescaleRatioSelected]);
-                        mEditedFileData.setEditedFileUri(mEditedFileAbsolutePath);
-
-                        // Send the updated Uri to the other fragments and update them
-                        mSendUri.uploadTransferEditedFileData(mEditedFileData);
-                        ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
-                                .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_EXIF_FRAGMENT).onResume();
-
-                        // Remove rescaled image absolute path uri
-                        mRescaledImageAbsolutePath = null;
-                        mRescaledImageCreated = false;
-
-                        // Enable the spinner
-                        mSpinner.setEnabled(true);
-
-                        // Hide the progress bar
-                        mFileProcessingBar.setVisibility(View.GONE);
-
-                        // Show the image view
-                        mFileView.setVisibility(View.VISIBLE);
-
-                        // Let the user know the image was successfully rescaled
-                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                                R.string.sb_image_successfully_rescaled, Snackbar.LENGTH_LONG).show();
-
-
-                        // Delete the thread
-                        mCallThreadRescaleImage.removeCallbacksAndMessages(null);
-                    }
-                } else {
-                    Log.d(LOG_TAG, "Image was created but not properly rescaled");
-
-                    if (mExifEdited) {
+                //
+                if (mRescaledImageDownscaled) {
+                    // if an edited image exists delete it
+                    if (mEditedImageCreated && !mEditedFileAbsolutePath.toString().isEmpty()) {
                         deleteEditedFile();
-                        deleteRescaledFile();
                     }
+
+                    // Point resources to their appropriate variables
+                    mEditedFileAbsolutePath = mRescaledImageAbsolutePath;
+                    mEditedImageCreated = true;
+
+                    // Setup the EditedFileInfo object
+                    mEditedFileData.setRescaledImageQuality(SELECTIONRATIO[rescaleRatioSelected]);
+
+                    // Send the updated Uri to the other fragments and update them
+                    mSendUri.uploadTransferEditedFileData(mEditedFileData);
+                    ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
+                            .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_EXIF_FRAGMENT).onResume();
 
                     // Remove rescaled image absolute path uri
                     mRescaledImageAbsolutePath = null;
                     mRescaledImageCreated = false;
 
-                    // Enable the spinner
-                    mSpinner.setEnabled(true);
+                    // Return the UI back to normal
+                    closeOutRescaleImageThread(getString(R.string.sb_image_successfully_rescaled));
+                } else {
+                    Log.d(LOG_TAG, "Created image wasn't rescaled properly");
 
-                    // Hide the progress bar
-                    mFileProcessingBar.setVisibility(View.GONE);
-                    // Show the image view
-                    mFileView.setVisibility(View.VISIBLE);
+                    // Delete the rescaled file
+                    deleteRescaledFile();
 
-                    // Let the user know the image was successfully rescaled
-                    Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                            R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
+                    // Remove rescaled image absolute path uri
+                    mRescaledImageAbsolutePath = null;
+                    mRescaledImageCreated = false;
+
+                    // Return the UI back to normal
+                    closeOutRescaleImageThread(getString(R.string.sb_image_unsuccessfully_rescaled));
                 }
             } else {
-                // Enable the spinner
-                mSpinner.setEnabled(true);
+                Log.d(LOG_TAG, "Created image wasn't created properly");
 
-                // Hide the progress bar
-                mFileProcessingBar.setVisibility(View.GONE);
-
-                // Show the image view
-                mFileView.setVisibility(View.VISIBLE);
-
-                // Let the user know the image was successfully rescaled
-                Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                        R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
+                // Return the UI back to normal
+                closeOutRescaleImageThread(getString(R.string.sb_image_unsuccessfully_created));
             }
         } else {
             Log.d(LOG_TAG, "No image file was created");
-            // Enable the spinner
-            mSpinner.setEnabled(true);
 
-            // Hide the progress bar
-            mFileProcessingBar.setVisibility(View.GONE);
-
-            // Show the image view
-            mFileView.setVisibility(View.VISIBLE);
-
-            // Let the user know the image was successfully rescaled
-            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                    R.string.sb_image_unsuccessfully_rescaled, Snackbar.LENGTH_LONG).show();
+            // Return the UI back to normal
+            closeOutRescaleImageThread(getString(R.string.sb_image_unsuccessfully_created));
         }
+    }
+
+    /**
+     * Enables and shows the views disabled and hidden during @mCallThreadRescaleImage and hides
+     * the processing bar before closing out thread
+     */
+    private void closeOutRescaleImageThread(String snackbarMessage) {
+        // Enable the spinner
+        mSpinner.setEnabled(true);
+
+        // Hide the progress bar
+        mFileProcessingBar.setVisibility(View.GONE);
+
+        // Show the image view
+        mFileView.setVisibility(View.VISIBLE);
+
+        // Let the user know the image was successfully rescaled
+        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                snackbarMessage, Snackbar.LENGTH_LONG).show();
+
+        // Delete the thread
+        mCallThreadRescaleImage.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -1781,7 +1645,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     // TODO: Reintegrate tab 2 if & when video editing is added
     private void removeTabsForVideoFiles() {
-        TabLayout.Tab uploadTab =  mTabLayout.getTabAt(0);
+        TabLayout.Tab uploadTab = mTabLayout.getTabAt(0);
         TabLayout.Tab exifTab = mTabLayout.getTabAt(1);
         TabLayout.Tab editTab = mTabLayout.getTabAt(2);
 
@@ -1797,14 +1661,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
     }
-
-    public interface UploadFragmentUriUpdate {
-        void uploadTransferEditedFileData(EditedFileData editedFileData);
-    }
-
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-    /** Methods for the EXIF portion of the handler thread **/
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
     /**
      * Utilizes @createFile to generate an image file that's a copy of @mFileAbsolutePath save
@@ -1891,6 +1747,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         }
     }
 
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+    /** Methods for the EXIF portion of the handler thread **/
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
     /**
      * Method to update @mEditedImageAbsolutePath's EXIF
      *
@@ -1899,7 +1759,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     public boolean updateEditedFileExif() {
         Log.d(LOG_TAG, "This is new EXIF data population");
         if (transferEditedExifData(mExifDataAdapter.getEditedExifDataTransferList(), mEditedImageAbsolutePath, mEditedImageAbsolutePathTemp)) {
-            Log.d(LOG_TAG, "Boom check shit"  +  mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
+            Log.d(LOG_TAG, "Boom check shit" + mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
 
             // EXIF  transfer successful, delete the base edited file
             if (!deleteEditedFile()) {
@@ -1930,8 +1790,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     public boolean initializeEditedFileExif() {
         Log.d(LOG_TAG, "This is new EXIF data population");
         if (transferEditedExifData(mExifDataAdapter.getEditedExifDataTransferList(), mFileAbsolutePath, mEditedImageAbsolutePathTemp)) {
-            Log.d(LOG_TAG, "Boom check shit"  +  mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
-            Log.d(LOG_TAG, "Boom check shit"  +  mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
+            Log.d(LOG_TAG, "Boom check shit" + mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
+            Log.d(LOG_TAG, "Boom check shit" + mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
 
             // EXIF creation successful, make the t mep file the new base edited file
             mEditedImageAbsolutePath = mEditedImageAbsolutePathTemp;
@@ -1950,5 +1810,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             // Initialization failed
             return false;
         }
+    }
+
+    public interface UploadFragmentUriUpdate {
+        void uploadTransferEditedFileData(EditedFileData editedFileData);
     }
 }
