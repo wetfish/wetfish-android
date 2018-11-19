@@ -46,7 +46,7 @@
     <string name="sb_url_clipboard_success">URL successfully copied to clipboard</string>
     <string name="sb_url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
     <string name="sb_exif_transfer_data_unsuccessful">Transferring EXIF data was unsuccessful</string>
-    <string name="sb_exif_transfer_data_successful">Transferring EXIF data was successful</string>
+    <string name="sb_exif_transfer_data_successful">Transferring EXIF data was successful, uploading file</string>
     <string name="sb_image_successfully_exif_edited">Image\'s EXIF successfully edited</string>
     <string name="sb_edit_exif_cancelled">EXIF edit successfully cancelled</string>
     <string name="sb_image_successfully_rescaled">Image successfully rescaled</string>
@@ -116,6 +116,7 @@
 
     <!-- Strings related to Settings -->
     <!-- Settings File Name -->
+    <string name="preferences_exif_key">net.wetfish.wetfish.PREFERENCE_EXIF_KEY</string>
     <string name="pref_file_name">net.wetfish.wetfish.PREFERENCE_FILE_KEY</string>
 
     <!-- General settings -->

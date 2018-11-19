@@ -301,23 +301,23 @@ public class FileUtils {
     }
 
     /**
-     * Create a scaled bitmap of the given image, reducing resolution by the scaleRatio while preserving
-     * the image's native aspect ratio.
+     * Create a near duplicate bitmap of the given originalBitmap, preserving the originalBitmap as
+     * best as possible to be put into the bitmapFile
      *
-     * @param downscaledBitmapFile the downscaled bitmap image populating an image
+     * @param newBitmap the downscaled bitmap image populating an image
      * @return downscaled image or regular image if downscaling has failed
      */
-    public static boolean createOriginalScaledImageFile(Bitmap originalBitmap, File downscaledBitmapFile) {
+    public static boolean createOriginalScaledImageFile(Bitmap originalBitmap, File newBitmap) {
         try {
             // Byte Array Output Stream
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-            // Compress to the desired format, JPEG, at full quality
+            // Compress to the desired format, JPEG, at near full quality onto the byteArrayOutputStream
             boolean successfulCopy = originalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
 
             if (successfulCopy) {
-                // File Output Stream for the downscaledBitmapFile
-                FileOutputStream fileOutputStream = new FileOutputStream(downscaledBitmapFile);
+                // File Output Stream for the newBitmap
+                FileOutputStream fileOutputStream = new FileOutputStream(newBitmap);
                 fileOutputStream.write(byteArrayOutputStream.toByteArray());
 
                 // Close File Output Stream when finished
@@ -444,6 +444,27 @@ public class FileUtils {
     }
 
     /**
+     * Method to check if a file exists
+     *
+     * @param filePath System file path for the file on local storage
+     */
+    public static boolean checkIfFileExists (String filePath) {
+        // Create a file object and see if the given file exists
+        if (filePath != null  && !(filePath.isEmpty())) {
+            File file = new File(filePath);
+            if (file.exists()) {
+                // If the file exists return true after closing the file
+                return true;
+            } else {
+                // If the file doesn't exist return false after closing the file
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Acquires the current video's length and returns it as a string
      *
      * @param fileUri
@@ -476,25 +497,5 @@ public class FileUtils {
             // Should the time be null reflect that in the return string
             return context.getString(R.string.tv_video_length_unobtained);
         }
-    }
-
-    /**
-     *
-     */
-    public static boolean checkIfFileExists (String filePath) {
-        // Create a file object and see if the given file exists
-        if (filePath != null  && !(filePath.isEmpty())) {
-            File file = new File(filePath);
-            if (file.exists()) {
-                // If the file exists return true after closing the file
-                return true;
-            } else {
-                // If the file doesn't exist return false after closing the file
-                return false;
-            }
-        } else {
-            return false;
-        }
-
     }
 }

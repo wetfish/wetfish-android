@@ -1,6 +1,7 @@
 package net.wetfish.wetfish.utils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.media.ExifInterface;
 import android.util.Log;
@@ -149,6 +150,56 @@ public class ExifUtils {
         }
 
         return null;
+    }
+
+    public static boolean createEditedExifList(ArrayList<Object> editedFileExifDataList, Uri baseFile, Uri newFile, Context context) {
+        // Logging Tag
+        final String LOG_TAG = ExifUtils.class.getSimpleName();
+
+        SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.preferences_exif_key), Context.MODE_PRIVATE);
+
+        FileExifData fileExifData;
+
+        boolean successfulExifEdit;
+
+        try {
+            // Create an ExifInterface object to interact with the original file's exif data.
+            ExifInterface originalFileExif = new ExifInterface(baseFile.toString());
+
+            // Create an ExifInterface object to transfer the original file's exif data.
+            ExifInterface newFileExif = new ExifInterface(newFile.toString());
+
+            for (int i = 0; i < editedFileExifDataList.size(); i++) {
+                if (editedFileExifDataList.get(i) instanceof FileExifData) {
+                    // Gather the @FileExifData object
+                    fileExifData = (FileExifData) editedFileExifDataList.get(i);
+
+                    // Gather the tag for logging
+                    String exifAttributeValue = originalFileExif.getAttribute(fileExifData.getExifDataTag());
+
+                    // Use the @FileExifData object so we can add the value to the new file's EXIF if user settings permit.
+                    if (!sharedPref.getBoolean(fileExifData.getExifDataTag(), false)) {
+                        // True is a checked value, which means the user selected the exif to not be added
+                        // If the preference is true this means it was selected to be excluded from the EXIF data
+                        newFileExif.setAttribute(fileExifData.getExifDataTag(), originalFileExif.getAttribute(fileExifData.getExifDataTag()));
+                        Log.d(LOG_TAG, "Edited Exif Data Transferred: " + fileExifData.getExifDataTag() + " " + exifAttributeValue + " :" + i);
+                    } else {
+                        newFileExif.setAttribute(fileExifData.getExifDataTag(), null);
+                        Log.d(LOG_TAG, "Edited Exif Data Not Transferred: " + fileExifData.getExifDataTag() + " " + exifAttributeValue + " :" + i);
+                    }
+                }
+            }
+            // Save the attributes to the new file
+            newFileExif.saveAttributes();
+
+            successfulExifEdit = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            successfulExifEdit = false;
+        }
+
+        return successfulExifEdit;
     }
 
     public static boolean transferEditedExifData(ArrayList<Object> editedFileExifDataList, Uri baseFile, Uri newFile) {

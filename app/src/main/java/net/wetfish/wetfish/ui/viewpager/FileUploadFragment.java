@@ -49,6 +49,7 @@ import net.wetfish.wetfish.retrofit.RetrofitClient;
 import net.wetfish.wetfish.ui.GalleryActivity;
 import net.wetfish.wetfish.ui.GalleryCollectionActivity;
 import net.wetfish.wetfish.ui.GalleryUploadActivity;
+import net.wetfish.wetfish.utils.ExifUtils;
 import net.wetfish.wetfish.utils.FileUtils;
 import net.wetfish.wetfish.utils.UIUtils;
 
@@ -68,8 +69,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-
-import static net.wetfish.wetfish.utils.ExifUtils.transferEditedExifData;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -124,9 +123,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private Uri mOriginalFileAbsolutePath;
     // Temporary file path variable for downscaled images. Allows EXIF data to be transferred to @mEditedFileAbsolutePath
     private Uri mRescaledImageAbsolutePath;
-    //TODO: @mEditedFileAbsolutePath will likely not be used until image editing is implemented
     // Final file path variable for all image edits.
     private Uri mEditedFileAbsolutePath;
+    // Final file path variable for all temp files
+    private Uri mEditedFileAbsolutePathTemp;
     // Final file path variable for uploading @mEditedFileAbsolutePath if it exists or @mOriginalFileAbsolutePath otherwise
     private Uri mUploadFileAbsolutePath;
     private String mFileType;
@@ -157,6 +157,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     /* Fragment Interaction Interfaces */
     private UploadFragmentUriUpdate mSendUri;
+    private boolean mDuplicateImageCreated;
 
     public FileUploadFragment() {
         // Required empty public constructor
@@ -378,77 +379,65 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                         mCallThreadUpload.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                //TODO: Implementation of EXIF editing method
-
-                                //TODO: Probably remove the cancel option during upload now because
-                                //TODO: because of the exif change
 
                                 // Thread can no longer be cancelled
                                 mCancelableCallThreadUpload = false;
 
-                                // Edit the EXIF data of the image based on the user's preferences, be it the edited or original image
-                                if (mRescaledImageAbsolutePath != null && !mRescaledImageAbsolutePath.toString().isEmpty()) {
-                                    // Initialize our boolean
-                                    mSuccessfulExifEdit = false;
+                                try {
+                                    // Placeholder for a check on successful exif transfer
+                                    boolean exifTransferSuccessful;
 
-                                    // If @mRescaledImageAbsolutePath exists and isn't empty, transfer the EXIF data to the file
-                                    if (exifCreateImageFile()) {
-                                        // Populate the edited image with the new EXIF data
-                                        if (updateEditedFileExif()) {
+                                    // Edit the EXIF data of the image based on the user's preferences, be it the edited or original image
+                                    if (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty()) {
+                                        // If an edited image already exists, write the desired EXIF data to the image
+                                        exifTransferSuccessful = ExifUtils.createEditedExifList(
+                                                ExifUtils.gatherExifData(mOriginalFileAbsolutePath, getContext()),
+                                                mOriginalFileAbsolutePath, mEditedFileAbsolutePath, getContext());
+                                    } else {
+                                        // If an edited image doesn't exist, create one
+                                        exifCreateEditedImageFile();
+
+                                        // Write the desired EXIF data to the image
+                                        exifTransferSuccessful = ExifUtils.createEditedExifList(
+                                                ExifUtils.gatherExifData(mOriginalFileAbsolutePath, getContext()),
+                                                mOriginalFileAbsolutePath, mEditedFileAbsolutePath, getContext());
+                                    }
+
+                                    if (exifTransferSuccessful) {
                                             Log.d(LOG_TAG, "Run If if");
                                             // Edited Exif transfer success
                                             mSuccessfulExifEdit = true;
-                                        }
-                                    } else {
-                                        Log.d(LOG_TAG, "Run if if else");
-                                        // Edited EXIF transfer failed
-                                        mSuccessfulExifEdit = false;
-                                    }
 
-                                } else {
-                                    // If a rescaled image doesn't currently exist, utilize the original
-
-                                    // Initialize our boolean
-                                    mSuccessfulExifEdit = false;
-
-                                    // If @mRescaledImageAbsolutePath doesn't exist, create an image file and transfer the EXIF data to the file
-                                    if (exifCreateImageFile()) {
-                                        Log.d(LOG_TAG, "Run if Else if");
-                                        // If the image was successfully created, initialize the file's edited EXIF data
-                                        if (initializeEditedFileExif()) {
-                                            // Edited EXIF initialization success
-                                            mSuccessfulExifEdit = true;
+                                            // Add photo to a content provider
+                                            sendMediaBroadcast(mEditedFileAbsolutePath.toString());
                                         } else {
-                                            // Edited EXIF initialization failed
+                                            // Edited Exif transfer failure
                                             mSuccessfulExifEdit = false;
-                                        }
-                                    } else {
-                                        Log.d(LOG_TAG, "Run Else if else");
 
-                                        // Update boolean for @endCallThreadEditExif
-                                        mSuccessfulExifEdit = false;
+                                            // TODO: Later on delete files created solely for EXIF transfer and just upload the original
+                                            // This will need to take into consideration  downscaling/image editing.
+                                        }
+
+                                } finally {
+                                    // If the exif edit was successful, upload the image, if not, let the user know and offer the option to upload anyways.
+                                    if (mSuccessfulExifEdit) {
+                                        // If EXIF has been successfully edited, upload the file
+                                        uploadFile();
+
+                                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                                                R.string.sb_exif_transfer_data_successful, Snackbar.LENGTH_SHORT).show();
+                                    } else {
+                                        // TODO: Make this a thing where you can decide to upload whatever anyways yup
+                                        // TODO: Just turn @mSuccessfulExifEdit false on all accounts.
+
+                                        //TODO: 1Here we can find a way to stop the threads and offer the option to upload
+                                        //TODO: 2the file without edited EXIF.
+                                        // Provide a snackbar to inform the user
+
+                                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
+                                                R.string.sb_exif_transfer_data_unsuccessful, Snackbar.LENGTH_LONG).show();
                                     }
                                 }
-
-
-                                //TODO: 1Here we can find a way to stop the threads and offer the option to upload
-                                //TODO: 2the file without edited EXIF.
-                                // Provide a snackbar to inform the user
-                                if (mSuccessfulExifEdit) {
-                                    // If EXIF has been successfully edited, upload the file
-//                                    uploadFile();
-
-                                    Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                                            R.string.sb_exif_transfer_data_successful, Snackbar.LENGTH_SHORT).show();
-                                } else {
-                                    // TODO: Make this a thing where you can decide to upload whatever anyways yup
-                                    // TODO: Just turn @mSuccessfulExifEdit false on all accounts.
-                                    Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                                            R.string.sb_exif_transfer_data_unsuccessful, Snackbar.LENGTH_LONG).show();
-                                }
-
-                                //Do something after 3000ms
-                                uploadFile();
                             }
                         }, 3000 /* 3 second delay */);
 
@@ -1662,22 +1651,79 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
     }
 
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+    /** Methods for the EXIF portion of the handler thread **/
+    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+    /**
+     * Creates a file at the given location with a specified unique name
+     *
+     * @return returns the generated file created at the desired location
+     * @throws IOException
+     */
+    private File createFile() throws IOException {
+        // Create a unique image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HH-mm-ss").format(new Date());
+        String imageFileName = getString(R.string.image_file_start) + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        storageDir.mkdir();
+        File image = File.createTempFile(
+                imageFileName,
+                getString(R.string.image_file_extension),
+                storageDir
+        );
+
+        // File path
+        mEditedFileAbsolutePathTemp = Uri.parse(image.getAbsolutePath());
+
+        return image;
+    }
+
+    /**
+     * Deletes the temporary edited file being utilized
+     *
+     * @return true if the file was successfully deleted, otherwise return false upon failure
+     */
+    private boolean deleteTempEditedFile() {
+        // Delete Previous File
+        File file = new File(mEditedFileAbsolutePathTemp.toString());
+
+        String canonicalPath;
+
+        try {
+            canonicalPath = file.getCanonicalPath();
+        } catch (IOException e) {
+            canonicalPath = file.getAbsolutePath();
+        }
+        final Uri uri = MediaStore.Files.getContentUri("external");
+        final int result = getContext().getContentResolver().delete(uri,
+                MediaStore.Files.FileColumns.DATA + "=?", new String[]{canonicalPath});
+        if (result == 0) {
+            final String absolutePath = file.getAbsolutePath();
+            if (!absolutePath.equals(canonicalPath)) {
+                getContext().getContentResolver().delete(uri,
+                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{mEditedFileAbsolutePathTemp.toString()});
+            }
+
+            // Successfully deleted the file, make it null
+            mEditedFileAbsolutePathTemp = null;
+            return true;
+        }
+
+        // Failed to delete the file
+        return false;
+    }
+
     /**
      * Utilizes @createFile to generate an image file that's a copy of @mFileAbsolutePath save
      * for the exif values
      *
      * @return a true if the image was successfully copied, otherwise return false
      */
-    private boolean exifCreateImageFile() {
-        // Create a bitmap of the most recent file
-        Bitmap bitmap;
-        if (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty()) {
-            // If an edited image exists, use the edited as a base
-            bitmap = BitmapFactory.decodeFile(mEditedImageAbsolutePath.toString());
-        } else {
-            // If no edited image exists, use the original as a base
-            bitmap = BitmapFactory.decodeFile(mFileAbsolutePath.toString());
-        }
+    private boolean exifCreateEditedImageFile() {
+        // Create a bitmap of the original file
+        Bitmap bitmap = BitmapFactory.decodeFile(mOriginalFileAbsolutePath.toString());
+
 
         // Create the file that the result will populate
         File imageFile = null;
@@ -1691,126 +1737,57 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         }
 
         if (imageFile != null) {
+            // Utilize the bitmap collected above, being a bitmap of the original file unless an edited file exists
             mDuplicateImageCreated = FileUtils.createOriginalScaledImageFile(bitmap, imageFile);
 
             // Check to see if the duplicate image has been created
             if (mDuplicateImageCreated) {
                 // Verify that the image is actually rescaled appropriately
-                if (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty()) {
-                    // If an edited image exists, use the edited
-                    mDuplicateImageCreated = FileUtils.checkSuccessfulBitmapDuplication(mEditedImageAbsolutePath,
-                            mEditedImageAbsolutePathTemp);
-                } else {
-                    // If no edited image exists, use the original
-                    mDuplicateImageCreated = FileUtils.checkSuccessfulBitmapDuplication(mFileAbsolutePath,
-                            mEditedImageAbsolutePathTemp);
-                }
+                    mDuplicateImageCreated = FileUtils.checkSuccessfulBitmapDuplication(mOriginalFileAbsolutePath,
+                            mEditedFileAbsolutePathTemp);
 
-
+                // Verify that the bitmap was appropriately rescaled
                 if (mDuplicateImageCreated) {
+
+                    mEditedFileAbsolutePath = mEditedFileAbsolutePathTemp;
+                    mEditedFileAbsolutePathTemp = null;
+
                     return true;
                 } else {
+                    Log.d(LOG_TAG, "Image Creation Failed");
                     Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                             R.string.sb_image_unsuccessfully_created, Snackbar.LENGTH_LONG).show();
 
                     // Delete the failed file
                     deleteTempEditedFile();
 
-                    // Make the edited image path point to nothing
-                    mEditedImageAbsolutePathTemp = null;
-
                     return false;
                 }
             } else {
+                Log.d(LOG_TAG, "Image Creation Failed");
                 Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                         R.string.sb_image_unsuccessfully_created, Snackbar.LENGTH_LONG).show();
 
                 // Delete the failed file
                 deleteTempEditedFile();
 
-                // Make the edited image path point to nothing
-                mEditedImageAbsolutePathTemp = null;
-
                 return false;
             }
         } else {
+            Log.d(LOG_TAG, "Image Creation Failed");
             Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
                     R.string.sb_image_unsuccessfully_created, Snackbar.LENGTH_LONG).show();
 
             // Delete the failed file
             deleteTempEditedFile();
 
-            // Make the edited image path point to nothing
-            mEditedImageAbsolutePathTemp = null;
-
-            return false;
-        }
-    }
-
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-    /** Methods for the EXIF portion of the handler thread **/
-    /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
-
-    /**
-     * Method to update @mEditedImageAbsolutePath's EXIF
-     *
-     * @return
-     */
-    public boolean updateEditedFileExif() {
-        Log.d(LOG_TAG, "This is new EXIF data population");
-        if (transferEditedExifData(mExifDataAdapter.getEditedExifDataTransferList(), mEditedImageAbsolutePath, mEditedImageAbsolutePathTemp)) {
-            Log.d(LOG_TAG, "Boom check shit" + mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
-
-            // EXIF  transfer successful, delete the base edited file
-            if (!deleteEditedFile()) {
-                Log.e(LOG_TAG, "Edited file deletion failed");
-            }
-
-            // Make the temp file the new base edited file
-            mEditedImageAbsolutePath = mEditedImageAbsolutePathTemp;
-
-            // Update successful
-            return true;
-        } else {
-            // EXIF transfer failed, destroy the temp file
-            if (!deleteTempEditedFile()) {
-                Log.e(LOG_TAG, "Temp Edited file deletion failed");
-            }
-
-            // Update failed
             return false;
         }
     }
 
     /**
-     * Method to initialize @mEditedImageAbsolutePath's EXIF
-     *
-     * @return
+     * Method to initialize @mEditedFile
      */
-    public boolean initializeEditedFileExif() {
-        Log.d(LOG_TAG, "This is new EXIF data population");
-        if (transferEditedExifData(mExifDataAdapter.getEditedExifDataTransferList(), mFileAbsolutePath, mEditedImageAbsolutePathTemp)) {
-            Log.d(LOG_TAG, "Boom check shit" + mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
-            Log.d(LOG_TAG, "Boom check shit" + mEditedImageAbsolutePath.toString() + " " + mEditedImageAbsolutePathTemp.toString());
-
-            // EXIF creation successful, make the t mep file the new base edited file
-            mEditedImageAbsolutePath = mEditedImageAbsolutePathTemp;
-
-            // Reset the temp file
-            mEditedImageAbsolutePathTemp = null;
-
-            // Initialization was successful
-            return true;
-        } else {
-            // EXIF transfer failed, destroy the temp file
-            if (!deleteTempEditedFile()) {
-                Log.e(LOG_TAG, "Temp Edited file deletion failed");
-            }
-
-            // Initialization failed
-            return false;
-        }
-    }
 
     public interface UploadFragmentUriUpdate {
         void uploadTransferEditedFileData(EditedFileData editedFileData);
