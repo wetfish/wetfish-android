@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -23,6 +24,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -135,7 +137,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private String responseDeleteURL;
     private boolean mImageEdited = false;
     private boolean mSuccessfulExifEdit;
-    private boolean mEditedImageCreated = false;
+    private boolean mEditedFileCreated = false;
     private boolean mRescaledImageCreated = false;
     private boolean mRescaledImageDownscaled = false;
     private boolean mDatabaseAdditionSuccessful = false;
@@ -286,7 +288,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             @Override
             public void run() {
 
-                if (mEditedImageCreated || (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty())) {
+                if (mEditedFileCreated || (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty())) {
                     // If @mEditedFileAbsolutePath has been created or provided by another fragment, use it
                     determineFileViewContent(mEditedFileAbsolutePath);
 
@@ -383,59 +385,123 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 // Thread can no longer be cancelled
                                 mCancelableCallThreadUpload = false;
 
-                                try {
-                                    // Placeholder for a check on successful exif transfer
-                                    boolean exifTransferSuccessful;
+                                // Placeholder for a check on successful exif transfer
+                                boolean exifTransferSuccessful = false;
 
+                                // Placeholder for a check on whether or
+
+                                try {
                                     // Edit the EXIF data of the image based on the user's preferences, be it the edited or original image
                                     if (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty()) {
-                                        // If an edited image already exists, write the desired EXIF data to the image
-                                        exifTransferSuccessful = ExifUtils.createEditedExifList(
-                                                ExifUtils.gatherExifData(mOriginalFileAbsolutePath, getContext()),
-                                                mOriginalFileAbsolutePath, mEditedFileAbsolutePath, getContext());
-                                    } else {
-                                        // If an edited image doesn't exist, create one
-                                        exifCreateEditedImageFile();
-
-                                        // Write the desired EXIF data to the image
-                                        exifTransferSuccessful = ExifUtils.createEditedExifList(
-                                                ExifUtils.gatherExifData(mOriginalFileAbsolutePath, getContext()),
-                                                mOriginalFileAbsolutePath, mEditedFileAbsolutePath, getContext());
-                                    }
-
-                                    if (exifTransferSuccessful) {
-                                            Log.d(LOG_TAG, "Run If if");
-                                            // Edited Exif transfer success
-                                            mSuccessfulExifEdit = true;
-
-                                            // Add photo to a content provider
-                                            sendMediaBroadcast(mEditedFileAbsolutePath.toString());
-                                        } else {
-                                            // Edited Exif transfer failure
-                                            mSuccessfulExifEdit = false;
-
-                                            // TODO: Later on delete files created solely for EXIF transfer and just upload the original
-                                            // This will need to take into consideration  downscaling/image editing.
+                                        // Check to see if file supports EXIF data
+                                        if (mFileType.matches("(?i).jpeg|.jpg(?-i)")) {
+                                            // If an edited image already exists, write the desired EXIF data to the image
+                                            exifTransferSuccessful = ExifUtils.createEditedExifList(
+                                                    ExifUtils.gatherExifData(mOriginalFileAbsolutePath, getContext()),
+                                                    mOriginalFileAbsolutePath, mEditedFileAbsolutePath, getContext());
                                         }
 
-                                } finally {
-                                    // If the exif edit was successful, upload the image, if not, let the user know and offer the option to upload anyways.
-                                    if (mSuccessfulExifEdit) {
-                                        // If EXIF has been successfully edited, upload the file
-                                        uploadFile();
-
-                                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                                                R.string.sb_exif_transfer_data_successful, Snackbar.LENGTH_SHORT).show();
+                                        // Edited file exists
+                                        mEditedFileCreated = true;
                                     } else {
-                                        // TODO: Make this a thing where you can decide to upload whatever anyways yup
-                                        // TODO: Just turn @mSuccessfulExifEdit false on all accounts.
+                                        // Check to see the file type
+                                        if (mFileType.equals(IMAGE_FILE)) {
+                                            // If it's an image that has EXIF data
+                                            if (mFileType.matches("(?i).jpeg|.jpg(?-i)")) {
+                                                // Attempt to create an edited file that can house the edited EXIF data
+                                                if (exifCreateEditedImageFile()) {
+                                                    // If successful, represent this in our boolean
+                                                    mEditedFileCreated = true;
 
-                                        //TODO: 1Here we can find a way to stop the threads and offer the option to upload
-                                        //TODO: 2the file without edited EXIF.
-                                        // Provide a snackbar to inform the user
+                                                    // Write the desired EXIF data to the image
+                                                    exifTransferSuccessful = ExifUtils.createEditedExifList(
+                                                            ExifUtils.gatherExifData(mOriginalFileAbsolutePath, getContext()),
+                                                            mOriginalFileAbsolutePath, mEditedFileAbsolutePath, getContext());
+                                                } else {
+                                                    // Unsuccessful, image creation failed
+                                                    mEditedFileCreated = false;
+                                                }
+                                            } else {
+                                                // No need to generate a new image since EXIF isn't being transferred
+                                                mEditedFileCreated = false;
+                                            }
+                                        } else {
+                                            // No need to generate a new image since the file isn't an image
+                                            mEditedFileCreated = false;
+                                        }
+                                    }
+                                    exifTransferSuccessful = false;
+                                } finally {
+                                    if (exifTransferSuccessful || mFileType.equals(VIDEO_FILE)) {
+                                        Log.d(LOG_TAG, "Run If if");
 
-                                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content),
-                                                R.string.sb_exif_transfer_data_unsuccessful, Snackbar.LENGTH_LONG).show();
+                                        // Add photo to a content provider
+                                        sendMediaBroadcast(mEditedFileAbsolutePath.toString());
+
+                                        // Upload the photo
+                                        uploadFile();
+                                    } else {
+                                        // TODO: Later on delete files created solely for EXIF transfer and just upload the original
+                                        // This will need to take into consideration  downscaling/image editing.
+
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.DialogThemeAppVersionSummary);
+
+                                        builder.setMessage(R.string.ad_message_exif_transfer_failed)
+                                                .setTitle(R.string.ad_title_return_home)
+                                                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        // Add photo to a content provider
+                                                        sendMediaBroadcast(mEditedFileAbsolutePath.toString());
+
+                                                        // User decided to return to the home screen
+                                                        uploadFile();
+                                                    }
+                                                })
+                                                .setNegativeButton(R.string.ad_cancel, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        // Reset the UI and end the handler thread
+
+                                                        // Enable Viewpager swiping
+                                                        mViewpager.setViewpagerSwitching(false);
+
+
+                                                        // Get a reference to the mTabLayout's children views to enable tabs
+                                                        ViewGroup viewGroup = (ViewGroup) mTabLayout.getChildAt(0);
+
+                                                        // Determine the amount of tabs present
+                                                        int tabsCount = viewGroup.getChildCount();
+
+                                                        // Iterate through the tabs and enable them
+                                                        for (int i = 0; i < tabsCount; i++) {
+                                                            // Get the child view at position i
+                                                            ViewGroup viewGroupTag = (ViewGroup) viewGroup.getChildAt(i);
+
+                                                            // Enable the tab
+                                                            viewGroupTag.setEnabled(true);
+                                                        }
+
+
+                                                        // Reset the FAB and hide the upload progress bar
+                                                        mFabProgressCircleUpload.hide();
+                                                        mFabUploadFile.setImageResource(R.drawable.ic_upload_file_white_24dp);
+                                                        if (mMimeType.equals(IMAGE_FILE)) {
+                                                            mSpinner.setEnabled(true);
+                                                        }
+
+                                                        // Pass the user a success notification of cancellation
+                                                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                                                                .show();
+
+                                                        // Remove callback and return thread back to normal
+                                                        mCallThreadUpload.removeCallbacksAndMessages(null);
+                                                        mCallThreadUpload = null;
+                                                    }
+                                                });
+                                        AlertDialog dialog = builder.create();
+                                        dialog.show();
+
                                     }
                                 }
                             }
@@ -553,7 +619,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Check to see if mEditedFileData has an edited file Uri
         if (mEditedFileData != null && mEditedFileData.getEditedFileUri() != null && !mEditedFileData.getEditedFileUri().toString().isEmpty()) {
             mEditedFileAbsolutePath = mEditedFileData.getEditedFileUri();
-            mEditedImageCreated = true;
+            mEditedFileCreated = true;
         }
 
         // Setup mFileView's image and onClickListener with the correct file Uri
@@ -561,7 +627,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mCallThreadDetermineImage.post(new Runnable() {
             @Override
             public void run() {
-                if (mEditedImageCreated || (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty())) {
+                if (mEditedFileCreated || (mEditedFileAbsolutePath != null && !mEditedFileAbsolutePath.toString().isEmpty())) {
                     Log.d(LOG_TAG, "Edited Image Triggered");
 
                     // If @mEditedFileAbsolutePath has been created or provided by another fragment, use it.
@@ -595,7 +661,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             if (mRescaledImageCreated) {
                 deleteRescaledFile();
             }
-            if (mEditedImageCreated) {
+            if (mEditedFileCreated) {
                 deleteEditedFile();
             }
 
@@ -722,7 +788,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             case ORIGINAL_SIZE_SELECTION:
                 // Only if the user has EXIF changes to save when selecting original resolution refer back to original image
                 // Check to see if a file has been generated before this
-                if (mEditedImageCreated) {
+                if (mEditedFileCreated) {
                     // Show the progress bar
                     mFileProcessingBar.setVisibility(View.VISIBLE);
 
@@ -906,7 +972,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      * Sets up the given file's stats
      */
     private void setupFileStats() {
-        if (mEditedImageCreated) {
+        if (mEditedFileCreated) {
             mFileViewSize.setText(FileUtils.getFileSize(mEditedFileAbsolutePath, getContext()));
             mFileViewResolution.setText(FileUtils.getImageResolution(mEditedFileAbsolutePath, getContext()));
         } else {
@@ -974,7 +1040,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             }
 
             // Successfully deleted the file
-            mEditedImageCreated = false;
+            mEditedFileCreated = false;
             return true;
         }
 
@@ -1134,13 +1200,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 //
                 if (mRescaledImageDownscaled) {
                     // if an edited image exists delete it
-                    if (mEditedImageCreated && !mEditedFileAbsolutePath.toString().isEmpty()) {
+                    if (mEditedFileCreated && !mEditedFileAbsolutePath.toString().isEmpty()) {
                         deleteEditedFile();
                     }
 
                     // Point resources to their appropriate variables
                     mEditedFileAbsolutePath = mRescaledImageAbsolutePath;
-                    mEditedImageCreated = true;
+                    mEditedFileCreated = true;
 
                     // Setup the EditedFileInfo object
                     mEditedFileData.setRescaledImageQuality(SELECTIONRATIO[rescaleRatioSelected]);
@@ -1290,10 +1356,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Create REST Interface
         RESTInterface restInterface = retrofit.create(RESTInterface.class);
 
-        Log.d(LOG_TAG, "mEditedImageCreated?: " + mEditedImageCreated + " " + mEditedFileAbsolutePath.toString());
+        Log.d(LOG_TAG, "mEditedFileCreated?: " + mEditedFileCreated + " " + mEditedFileAbsolutePath.toString());
 
         // Provide the correct image to Wetfish depending on the images currently available
-        if (mEditedImageCreated) {
+        if (mEditedFileCreated) {
 
             // Should a rescaled image be present
             // Populate the file with the correct data to later pass to the  RequestBody instance
@@ -1324,7 +1390,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                         //  Edited image path
                         String editedFilePath;
-                        if (mEditedImageCreated) {
+                        if (mEditedFileCreated) {
                             editedFilePath = mEditedFileAbsolutePath.toString();
                         } else {
                             editedFilePath = "";
@@ -1743,8 +1809,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             // Check to see if the duplicate image has been created
             if (mDuplicateImageCreated) {
                 // Verify that the image is actually rescaled appropriately
-                    mDuplicateImageCreated = FileUtils.checkSuccessfulBitmapDuplication(mOriginalFileAbsolutePath,
-                            mEditedFileAbsolutePathTemp);
+                mDuplicateImageCreated = FileUtils.checkSuccessfulBitmapDuplication(mOriginalFileAbsolutePath,
+                        mEditedFileAbsolutePathTemp);
 
                 // Verify that the bitmap was appropriately rescaled
                 if (mDuplicateImageCreated) {

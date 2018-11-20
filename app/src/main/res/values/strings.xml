@@ -62,6 +62,7 @@
     <string name="sb_no_image_available_on_local_storage">Image file not available on local storage</string>
     <string name="sb_no_video_available_on_local_storage">Video file available on local storage</string>
     <string name="sb_cloud_upload_cancelled">Upload Cancelled</string>
+    <string name="ad_message_exif_transfer_failed">Edited EXIF data was not appropriately transferred. Upload anyways?</string>
 
     <!-- Database Strings -->
     <string name="not_implemented">N/A</string>
