@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -45,19 +44,16 @@ public class EditExifFragment extends Fragment implements
     private RecyclerView mRecyclerView;
     private ExifDataAdapter mExifDataAdapter;
     private View mRootLayout;
-    private CustomLockingViewPager mViewpager;
-    private TabLayout mTabLayout;
 
     /* Data */
     private Uri mFileAbsolutePath;
     private EditedFileData mEditedFileData;
     private ArrayList<Object> mExifDataArrayList;
-    private boolean mDuplicateImageCreated;
 
+    // TODO: Potentially remove
     /* Fragment Interaction Interfaces */
     private EditExifFragmentUriUpdate mSendUri;
 
-    // TODO: Potentially remove
     /* Fragment interaction methods */
     public void receiveUploadFragmentData(EditedFileData editedFileUri) {
         mEditedFileData = editedFileUri;
@@ -106,33 +102,13 @@ public class EditExifFragment extends Fragment implements
 
         // Views
         mRecyclerView = mRootLayout.findViewById(R.id.rv_exif_data);
-        mViewpager = getActivity().findViewById(R.id.vp_gallery_detail);
-        mTabLayout = getActivity().findViewById(R.id.tl_gallery_detail);
 
         // Create an adapter
         mExifDataAdapter = new ExifDataAdapter(getContext(), this);
 
-        // TODO: Review this and see if it is useful or necessary.
-//                                    mEditedFileData.setEditedFileUri(mEditedImageAbsolutePath);
-//                                    mEditedFileData.setExifChanged(true);
-                                    // If successfully initialized, send the file Uri to the other fragments and update @mExifDataAdapter
-//                                    mSendUri.editExifTransferEditedFileData(mEditedFileData);
-//                                    ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
-//                                            .getFragment(GalleryUploadActivity.VIEWPAGER_UPLOAD_FRAGMENT).onResume();
-//
-//                                    mSendUri.editExifTransferEditedFileData(mEditedFileData);
-//                                    ((GalleryUploadActivity) getActivity()).mSectionsPagerAdapter
-//                                            .getFragment(GalleryUploadActivity.VIEWPAGER_EDIT_FILE_FRAGMENT).onResume();
-
-        // Setup layout for the Recycler View
-//        TODO: Possibly set up a grid
-//        mGridLayoutManager = new GridLayoutManager(this, 3);
-//        mRecyclerView.setLayoutManager(mGridLayoutManager);
-
         return mRootLayout;
     }
 
-    // TODO: Make sure to make the exif always come from the original image
     /**
      * Called immediately after {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}
      * has returned, but before any saved state has been restored in to the view.
