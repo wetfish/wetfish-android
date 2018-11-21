@@ -50,9 +50,6 @@ public class EditExifFragment extends Fragment implements
 
     /* Data */
     private Uri mFileAbsolutePath;
-    private Uri mEditedImageAbsolutePath;
-    private Uri mEditedImageAbsolutePathTemp;
-    private double mEditedImageQuality;
     private EditedFileData mEditedFileData;
     private ArrayList<Object> mExifDataArrayList;
     private boolean mDuplicateImageCreated;
@@ -60,11 +57,10 @@ public class EditExifFragment extends Fragment implements
     /* Fragment Interaction Interfaces */
     private EditExifFragmentUriUpdate mSendUri;
 
+    // TODO: Potentially remove
     /* Fragment interaction methods */
     public void receiveUploadFragmentData(EditedFileData editedFileUri) {
         mEditedFileData = editedFileUri;
-        mEditedImageAbsolutePath = editedFileUri.getEditedFileUri();
-        mEditedImageQuality = editedFileUri.getRescaledImageQuality();
     }
 
     /**
@@ -94,7 +90,6 @@ public class EditExifFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mEditedImageAbsolutePath = Uri.parse(getArguments().getString(ARG_EDITED_FILE_URI));
             mFileAbsolutePath = Uri.parse(getArguments().getString(ARG_ORIGINAL_FILE_URI));
         }
 
@@ -117,6 +112,7 @@ public class EditExifFragment extends Fragment implements
         // Create an adapter
         mExifDataAdapter = new ExifDataAdapter(getContext(), this);
 
+        // TODO: Review this and see if it is useful or necessary.
 //                                    mEditedFileData.setEditedFileUri(mEditedImageAbsolutePath);
 //                                    mEditedFileData.setExifChanged(true);
                                     // If successfully initialized, send the file Uri to the other fragments and update @mExifDataAdapter
@@ -151,12 +147,8 @@ public class EditExifFragment extends Fragment implements
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Gather the most recent image's EXIF data
-        if (mEditedImageAbsolutePath != null && !mEditedImageAbsolutePath.toString().isEmpty()) {
-            mExifDataArrayList = gatherExifData(mEditedImageAbsolutePath, getContext());
-        } else {
-            mExifDataArrayList = gatherExifData(mFileAbsolutePath, getContext());
-        }
+        // Gather the original file's exif data
+        mExifDataArrayList = gatherExifData(mFileAbsolutePath, getContext());
 
         // Populate the adapter with our harvested image data
         mExifDataAdapter.swapExifData(mExifDataArrayList);
