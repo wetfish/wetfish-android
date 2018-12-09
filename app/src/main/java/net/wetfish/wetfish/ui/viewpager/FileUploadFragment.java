@@ -136,11 +136,12 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private String responseViewURL;
     private String responseDeleteURL;
     private boolean mImageEdited = false;
-    private boolean mSuccessfulExifEdit;
+    private boolean mCallCanceled = false;
     private boolean mEditedFileCreated = false;
     private boolean mRescaledImageCreated = false;
     private boolean mRescaledImageDownscaled = false;
     private boolean mDatabaseAdditionSuccessful = false;
+    private boolean mImageCreationOccurring = false;
     private boolean mCancelableCallThreadUpload;
     private int uploadID;
     private int mCurrentSpinnerSelection = 0;
@@ -330,6 +331,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Setup listener for progress bar
         mFabProgressCircleUpload.attachListener(this);
 
+        //TODO: Check out why the snackbars aren't popping up??
+
         // Fab to upload file to Wetfish server
         mFabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
         mFabUploadFile.setOnClickListener(new View.OnClickListener() {
@@ -376,19 +379,20 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                             mSpinner.setEnabled(false);
                         }
 
+                        // Thread cancelled during image creation?
+                        mImageCreationOccurring = false;
+
                         // Create separate thread to do network processing
                         mCallThreadUpload = new Handler();
                         mCallThreadUpload.postDelayed(new Runnable() {
                             @Override
                             public void run() {
 
-                                // Thread can no longer be cancelled
-                                mCancelableCallThreadUpload = false;
-
                                 // Placeholder for a check on successful exif transfer
                                 boolean exifTransferSuccessful = false;
 
-                                // Placeholder for a check on whether or
+                                // Placeholder for a check on whether the file is ready for upload or not
+                                boolean fileUploadReady = false;
 
                                 try {
                                     // Edit the EXIF data of the image based on the user's preferences, be it the edited or original image
@@ -399,19 +403,19 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                             exifTransferSuccessful = ExifUtils.createEditedExifList(
                                                     ExifUtils.gatherExifData(mOriginalFileAbsolutePath, getContext()),
                                                     mOriginalFileAbsolutePath, mEditedFileAbsolutePath, getContext());
+                                        } else {
+                                            // File is a pre-created edited file with no EXIF data
+                                            fileUploadReady = true;
                                         }
-
-                                        // Edited file exists
-                                        mEditedFileCreated = true;
                                     } else {
                                         // Check to see the file type
-                                        if (mFileType.equals(IMAGE_FILE)) {
+                                        if (mMimeType.equals(IMAGE_FILE)) {
                                             // If it's an image that has EXIF data
-                                            if (mFileType.matches("(?i).jpeg|.jpg(?-i)")) {
+                                            if (mFileType.matches("(?i).jpeg|.jpg|(?-i)")) {
                                                 // Attempt to create an edited file that can house the edited EXIF data
                                                 if (exifCreateEditedImageFile()) {
-                                                    // If successful, represent this in our boolean
-                                                    mEditedFileCreated = true;
+                                                    // Image is no longer being created on the handler thread
+                                                    mImageCreationOccurring = false;
 
                                                     // Write the desired EXIF data to the image
                                                     exifTransferSuccessful = ExifUtils.createEditedExifList(
@@ -419,24 +423,39 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                                             mOriginalFileAbsolutePath, mEditedFileAbsolutePath, getContext());
                                                 } else {
                                                     // Unsuccessful, image creation failed
+                                                    Log.d(LOG_TAG, "Unsuccessful, image creation failed");
+                                                    fileUploadReady = false;
+
+                                                    // Image is no longer being created on the handler thread
+                                                    mImageCreationOccurring = false;
+
+
                                                     mEditedFileCreated = false;
                                                 }
                                             } else {
                                                 // No need to generate a new image since EXIF isn't being transferred
+                                                Log.d(LOG_TAG, "No need to generate a new image since EXIF isn't being transferred");
+                                                fileUploadReady = true;
+
                                                 mEditedFileCreated = false;
                                             }
                                         } else {
                                             // No need to generate a new image since the file isn't an image
+                                            Log.d(LOG_TAG, "No need to generate a new image since the file isn't an image" +
+                                                    "\n" + mFileType);
+                                            fileUploadReady = true;
+
                                             mEditedFileCreated = false;
                                         }
                                     }
-                                    exifTransferSuccessful = false;
                                 } finally {
-                                    if (exifTransferSuccessful || mFileType.equals(VIDEO_FILE)) {
+                                    if (exifTransferSuccessful || mFileType.equals(VIDEO_FILE) || mEditedFileCreated || fileUploadReady) {
                                         Log.d(LOG_TAG, "Run If if");
 
-                                        // Add photo to a content provider
-                                        sendMediaBroadcast(mEditedFileAbsolutePath.toString());
+                                        // Add the edited photo to the content provider if it exists
+                                        if (mEditedFileCreated && mMimeType.equals(IMAGE_FILE)) {
+                                            sendMediaBroadcast(mEditedFileAbsolutePath.toString());
+                                        }
 
                                         // Upload the photo
                                         uploadFile();
@@ -454,6 +473,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                                         // Add photo to a content provider
                                                         sendMediaBroadcast(mEditedFileAbsolutePath.toString());
 
+                                                        // Try and remove the UserComment since something went wrong with the EXIF Transfer
+                                                        ExifUtils.removeWetfishTagFromEXIF(mEditedFileAbsolutePath, getContext());
+
                                                         // User decided to return to the home screen
                                                         uploadFile();
                                                     }
@@ -465,7 +487,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                                                         // Enable Viewpager swiping
                                                         mViewpager.setViewpagerSwitching(false);
-
 
                                                         // Get a reference to the mTabLayout's children views to enable tabs
                                                         ViewGroup viewGroup = (ViewGroup) mTabLayout.getChildAt(0);
@@ -481,7 +502,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                                             // Enable the tab
                                                             viewGroupTag.setEnabled(true);
                                                         }
-
 
                                                         // Reset the FAB and hide the upload progress bar
                                                         mFabProgressCircleUpload.hide();
@@ -501,7 +521,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                                 });
                                         AlertDialog dialog = builder.create();
                                         dialog.show();
-
                                     }
                                 }
                             }
@@ -509,10 +528,17 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                     } else {
                         if (mCallThreadUpload != null) {
-
                             // If mCall has been instantiated, cancel it
                             if (mCall != null) {
+                                // Notate that the call was cancelled for the appropriate snackbar message
+                                mCallCanceled = true;
+
+                                // Cancel mCall
                                 mCall.cancel();
+                            } else {
+                                // Pass the user a success notification of cancellation
+                                Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                                        .show();
                             }
 
                             // Enable Viewpager swiping
@@ -534,7 +560,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 viewGroupTag.setEnabled(true);
                             }
 
-
                             // Reset the FAB and hide the upload progress bar
                             mFabProgressCircleUpload.hide();
                             mFabUploadFile.setImageResource(R.drawable.ic_upload_file_white_24dp);
@@ -542,13 +567,18 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 mSpinner.setEnabled(true);
                             }
 
-                            // Pass the user a success notification of cancellation
-                            Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
-                                    .show();
+                            if (mImageCreationOccurring) {
+                                // Remove callback and return thread back to normal
+                                mCallThreadUpload.removeCallbacksAndMessages(null);
+                                mCallThreadUpload = null;
 
-                            // Remove callback and return thread back to normal
-                            mCallThreadUpload.removeCallbacksAndMessages(null);
-                            mCallThreadUpload = null;
+                                // Delete the file that is currently being created
+                                deleteEditedFile();
+                            } else {
+                                // Remove callback and return thread back to normal
+                                mCallThreadUpload.removeCallbacksAndMessages(null);
+                                mCallThreadUpload = null;
+                            }
                         }
                     }
                 }
@@ -686,6 +716,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Create artificial backstack to populate the intent
         Intent backStackIntent = new Intent(getContext(), GalleryActivity.class);
         Intent[] intents = {backStackIntent, fileDetails};
+
+        // Reset the threading being able to be cancelled
+        mCancelableCallThreadUpload = false;
 
         // Clear the backstack to prevent erroneous behaviour
         fileDetails.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -1041,6 +1074,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
             // Successfully deleted the file
             mEditedFileCreated = false;
+            mEditedFileAbsolutePath = null;
             return true;
         }
 
@@ -1428,7 +1462,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     mDatabaseAdditionSuccessful = true;
 
                                     // Update media
-                                    sendMediaBroadcast(editedFilePath);
+                                    if (mMimeType.equals(IMAGE_FILE)) {
+                                        sendMediaBroadcast(editedFilePath);
+                                    }
+
                                 } else {
                                     mDatabaseAdditionSuccessful = false;
                                 }
@@ -1464,7 +1501,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     mDatabaseAdditionSuccessful = true;
 
                                     // Update media
-                                    sendMediaBroadcast(editedFilePath);
+                                    if (mMimeType.equals(IMAGE_FILE)) {
+                                        sendMediaBroadcast(editedFilePath);
+                                    }
+
                                 } else {
                                     mDatabaseAdditionSuccessful = false;
                                 }
@@ -1501,7 +1541,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 mDatabaseAdditionSuccessful = true;
 
                                 // Update media
-                                sendMediaBroadcast(editedFilePath);
+                                if (mMimeType.equals(IMAGE_FILE)) {
+                                    sendMediaBroadcast(editedFilePath);
+                                }
+
                             } else {
                                 mDatabaseAdditionSuccessful = false;
                             }
@@ -1525,8 +1568,19 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                     mFabProgressCircleUpload.hide();
                     mSpinner.setClickable(true);
 
-                    UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-                            "File Upload Failed!", Snackbar.LENGTH_LONG);
+                    if (mCallCanceled) {
+                        // Pass the user a success notification of cancellation
+                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                                .show();
+
+                        // Reset mCallCanceled
+                        mCallCanceled = false;
+                    } else {
+                        //
+                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+                                "File Upload Failed!", Snackbar.LENGTH_LONG);
+                    }
+
                     Log.d(LOG_TAG, "onFailure Response: " + t);
                 }
             });
@@ -1595,7 +1649,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     mDatabaseAdditionSuccessful = true;
 
                                     // Update media
-                                    sendMediaBroadcast(editedFilePath);
+                                    if (mMimeType.equals(IMAGE_FILE)) {
+                                        sendMediaBroadcast(editedFilePath);
+                                    }
+
                                 } else {
                                     mDatabaseAdditionSuccessful = false;
                                 }
@@ -1631,7 +1688,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     mDatabaseAdditionSuccessful = true;
 
                                     // Update media
-                                    sendMediaBroadcast(editedFilePath);
+                                    if (mMimeType.equals(IMAGE_FILE)) {
+                                        sendMediaBroadcast(editedFilePath);
+                                    }
+
                                 } else {
                                     mDatabaseAdditionSuccessful = false;
                                 }
@@ -1668,7 +1728,10 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                 mDatabaseAdditionSuccessful = true;
 
                                 // Update media
-                                sendMediaBroadcast(editedFilePath);
+                                if (mMimeType.equals(IMAGE_FILE)) {
+                                    sendMediaBroadcast(editedFilePath);
+                                }
+
                             } else {
                                 mDatabaseAdditionSuccessful = false;
                             }
@@ -1690,8 +1753,20 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
                     mFabUploadFile.setClickable(true);
                     mFabProgressCircleUpload.hide();
-                    UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-                            "File Upload Failed!", Snackbar.LENGTH_LONG);
+
+                    if (mCallCanceled) {
+                        // Pass the user a success notification of cancellation
+                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                                .show();
+
+                        // Reset mCallCanceled
+                        mCallCanceled = false;
+                    } else {
+                        //
+                        UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
+                                "File Upload Failed!", Snackbar.LENGTH_LONG);
+                    }
+
                     Log.d(LOG_TAG, "onFailure Response: " + t);
                 }
             });
@@ -1787,12 +1862,17 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
      * @return a true if the image was successfully copied, otherwise return false
      */
     private boolean exifCreateEditedImageFile() {
+        // Image creation is occurring
+        mImageCreationOccurring = true;
+
         // Create a bitmap of the original file
         Bitmap bitmap = BitmapFactory.decodeFile(mOriginalFileAbsolutePath.toString());
 
-
         // Create the file that the result will populate
         File imageFile = null;
+
+        // Edited image not created
+        mEditedFileCreated = false;
 
         try {
             // Create the file name that we'd like to use and populate
@@ -1817,6 +1897,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                     mEditedFileAbsolutePath = mEditedFileAbsolutePathTemp;
                     mEditedFileAbsolutePathTemp = null;
+
+                    // Edited image created
+                    mEditedFileCreated = true;
 
                     return true;
                 } else {
