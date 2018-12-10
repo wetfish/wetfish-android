@@ -524,7 +524,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                     }
                                 }
                             }
-                        }, 3000 /* 3 second delay */);
+                        }, 2000 /* 2 second delay */);
 
                     } else {
                         if (mCallThreadUpload != null) {
