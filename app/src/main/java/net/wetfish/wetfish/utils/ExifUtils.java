@@ -2,6 +2,7 @@ package net.wetfish.wetfish.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.media.ExifInterface;
 import android.util.Log;
@@ -156,6 +157,13 @@ public class ExifUtils {
         // Logging Tag
         final String LOG_TAG = ExifUtils.class.getSimpleName();
 
+        // Tag for the UserComment portion. This will be written to so Wetfish servers can recognize this image
+        final String USER_COMMENT_KEY = "UserComment";
+
+        Log.d(LOG_TAG, "Here's the tag for  the log: " + context.getPackageName());
+
+        // Gather the version name from the application
+
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.preferences_exif_key), Context.MODE_PRIVATE);
 
         FileExifData fileExifData;
@@ -163,6 +171,8 @@ public class ExifUtils {
         boolean successfulExifEdit;
 
         try {
+            String versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+
             // Create an ExifInterface object to interact with the original file's exif data.
             ExifInterface originalFileExif = new ExifInterface(baseFile.toString());
 
@@ -189,11 +199,24 @@ public class ExifUtils {
                     }
                 }
             }
+
+            // Write the UserComment
+            newFileExif.setAttribute(USER_COMMENT_KEY, context.getString(R.string.exif_data_transfer_user_comment, versionName));
+            Log.d(LOG_TAG, "From the Image: " + newFileExif.getAttribute(USER_COMMENT_KEY));
+
             // Save the attributes to the new file
             newFileExif.saveAttributes();
 
+            // Log for checking the comment
+            Log.d(LOG_TAG, "versionName" + versionName + "\nHere's the Whole Dealio: " + context.getString(R.string.exif_data_transfer_user_comment, versionName));
+
+
             successfulExifEdit = true;
         } catch (IOException e) {
+            e.printStackTrace();
+
+            successfulExifEdit = false;
+        } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
 
             successfulExifEdit = false;
@@ -202,36 +225,38 @@ public class ExifUtils {
         return successfulExifEdit;
     }
 
-    public static boolean transferEditedExifData(ArrayList<Object> editedFileExifDataList, Uri baseFile, Uri newFile) {
+    public static boolean removeWetfishTagFromEXIF(Uri newFile, Context context) {
         // Logging Tag
         final String LOG_TAG = ExifUtils.class.getSimpleName();
 
-        FileExifData fileExifData;
+        final String USER_COMMENT_KEY = "UserComment";
 
         boolean successfulExifEdit;
 
-        try {
-            // Create an ExifInterface object to interact with the original file's exif data.
-            ExifInterface originalFileExif = new ExifInterface(baseFile.toString());
+        String versionName = null;
 
-            // Create an ExifInterface object to transfer the original file's exif data.
+        try {
+
+            versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+
+            // Create an ExifInterface object to interact with the original file's exif data.
             ExifInterface newFileExif = new ExifInterface(newFile.toString());
 
-            for (int i = 0; i < editedFileExifDataList.size(); i++) {
-                if (editedFileExifDataList.get(i) instanceof FileExifData) {
-                    // Gather the @FileExifData object so we can add the value to the new file's EXIF
-                    fileExifData = (FileExifData) editedFileExifDataList.get(i);
-                    newFileExif.setAttribute(fileExifData.getExifDataTag(), originalFileExif.getAttribute(fileExifData.getExifDataTag()));
+            // Remove the Wetfish version tag from the User Comments EXIF
+            newFileExif.setAttribute(USER_COMMENT_KEY, null);
 
-                    String exifAttributeValue = originalFileExif.getAttribute(fileExifData.getExifDataTag());
-                    Log.d(LOG_TAG, "Transfer Edited Exif Data: " + fileExifData.getExifDataTag() + " " + exifAttributeValue + " :" + i);
-                }
-            }
             // Save the attributes to the new file
             newFileExif.saveAttributes();
 
+            // Log for checking the comment
+            Log.d(LOG_TAG, "versionName" + versionName + "\nHere's the Whole Dealio: " + newFileExif.getAttribute(USER_COMMENT_KEY));
+
             successfulExifEdit = true;
         } catch (IOException e) {
+            e.printStackTrace();
+
+            successfulExifEdit = false;
+        }  catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
 
             successfulExifEdit = false;
