@@ -44,8 +44,6 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public boolean isClickable = true;
     // List of EXIF data objects
     private ArrayList<Object> mExifDataList = new ArrayList<>();
-    // Duplicate list of EXIF data objects to transfer changes via EXIF
-    private ArrayList<Object> mEditedExifDataList = new ArrayList<>();
     // List of selected objects to retain selection info
     private SparseBooleanArray checkboxStateArray = new SparseBooleanArray();
     // Number of changed fields. Checker for FAB
