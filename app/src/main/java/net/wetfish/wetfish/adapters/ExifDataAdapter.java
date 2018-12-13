@@ -52,8 +52,6 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private int checkboxesSelectedAmount = 0;
     // Activity context
     private Context mContext;
-    // Determines if @mEditedExifDataList needs to be instantiated
-    private boolean mEditedExifDataListInstantiated = false;
     // Shared Preferences
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor sharedPrefEditor;
@@ -213,43 +211,6 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    /**
-     * This method is called once the FAB button is pressed to finalize the desired EXIF edits.
-     * When this is called the adapter refreshes the editedExifDataList and creates a new
-     * checkboxStateArray to represent new data.
-     * <p>
-     * Once this is done it runs swapExifData to easily handle the refresh of new data
-     */
-    public void renewEditedExifDataList() {
-        Log.d(LOG_TAG, "Renewed!");
-        checkboxStateArray.clear();
-        mEditedExifDataList.clear();
-        mExifDataList.clear();
-        mEditedExifDataListInstantiated = false;
-        checkboxesSelectedAmount = 0;
-        notifyDataSetChanged();
-    }
-
-    public boolean getIsClickable() {
-        return isClickable;
-    }
-
-    public void setClickable(boolean clickable) {
-        isClickable = clickable;
-    }
-
-    public int getCheckboxesSelectedAmount() {
-        return checkboxesSelectedAmount;
-    }
-
-    public ArrayList<Object> getEditedExifDataTransferList() {
-        return mEditedExifDataList;
-    }
-
-    public boolean isEditedExifDataListInstantiated() {
-        return mEditedExifDataListInstantiated;
-    }
-
     // ExifDataAdapterOnClickHandler interface
     public interface ExifDataAdapterOnClickHandler {
         void onListItemClick(int file);
@@ -299,9 +260,6 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 mExifDataTag.setText(exifData.getExifDataTag());
                 mExifDataValue.setText(exifData.getExifDataValue());
 
-                // Check to see if an editedExifDataList has been instantiated
-                if (!mEditedExifDataListInstantiated) {
-                    // Create a copy EXIF FileExifData list if it doesn't exist
                     for (int i = 0; i < mExifDataList.size(); i++) {
                         Log.d(LOG_TAG, "LOG_TAG: " + i);
                         if (mExifDataList.get(i) instanceof FileExifData) {
@@ -309,36 +267,12 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                             FileExifData fileExifData = (FileExifData) mExifDataList.get(i);
 
                             // Check to see if this tag is in preferences
-                            if (sharedPref.getBoolean(fileExifData.getExifDataTag(), false)){
+                            if (sharedPref.getBoolean(fileExifData.getExifDataTag(), false)) {
                                 // If it is, set the checkbox as checked
                                 checkboxStateArray.put(i, true);
-
-                                Log.d(LOG_TAG, "Check this out: " + fileExifData.getExifDataTagLayout());
-                                // Remove @FileExifData objects to the list
-                                mEditedExifDataList.add(fileExifData);
-                                mEditedExifDataList.set(position, null);
-                            } else {
-                                Log.d(LOG_TAG, "Check this out: " + fileExifData.getExifDataTagLayout());
-                                // Add @FileExifData objects to the list
-                                mEditedExifDataList.add(fileExifData);
                             }
-
-                        } else if (mExifDataList.get(i) instanceof FileExifDataHeader) {
-                            // Add a @FileExifDataHeader placeholder object to the list
-//                                        mEditedExifDataList.add(new FileExifDataHeader((FileExifDataHeader) mExifDataList.get(i)));
-                            Log.d(LOG_TAG, "Check this out: Placeholder");
-                            mEditedExifDataList.add("Place Holder");
-                        } else {
-                            // Add a @FileExifDataBlank placeholder object to the list
-//                                        mEditedExifDataList.add(new FileExifDataBlank((FileExifDataBlank) mExifDataList.get(i)));
-                            Log.d(LOG_TAG, "Check this out: Placeholder");
-                            mEditedExifDataList.add("Place Holder");
                         }
                     }
-
-                    // Verify that the ArrayList now exists and needn't be created again
-                    mEditedExifDataListInstantiated = true;
-                }
 
                 // Setup the state of the mExifDataCheckbox
 
@@ -370,7 +304,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                 checkboxesSelectedAmount++;
 
                                 // Remove the value at the given position
-                                mEditedExifDataList.set(position, null);
+//                                mEditedExifDataList.set(position, null);
 
                                 // Update this within the preferences
                                 FileExifData fileExifData = (FileExifData) mExifDataList.get(position);
@@ -394,7 +328,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                     Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: " + isChecked);
                                     FileExifData fileExifData = (FileExifData) mExifDataList.get(position);
 
-                                    mEditedExifDataList.set(position, fileExifData);
+//                                    mEditedExifDataList.set(position, fileExifData);
 
                                     // Update the tag that fileExifData represents within preferences to true
                                     sharedPrefEditor.putBoolean(fileExifData.getExifDataTag(), false);
