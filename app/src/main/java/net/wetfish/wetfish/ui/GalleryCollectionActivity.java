@@ -360,7 +360,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     mRootView.findViewById(R.id.include_fragment_gallery_collection_object_video).setVisibility(View.GONE);
 
                     // Views
-                    mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
+                    mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail_image);
                     mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
                     mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
                     mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
@@ -392,12 +392,13 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     mRootView.findViewById(R.id.include_fragment_gallery_collection_object_image).setVisibility(View.GONE);
 
                     // Views
-                    mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
+                    mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail_video);
                     mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
                     mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
                     mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
                     mFileViewSize = mIncludeLayout.findViewById(R.id.tv_video_size);
                     mFileViewLength = mIncludeLayout.findViewById(R.id.tv_video_length);
+                    mFileViewPresentOnSystem = mIncludeLayout.findViewById(R.id.tv_video_not_on_local_file_system);
 
                     // Setup view data
                     if (mEditedFilePresent) {
