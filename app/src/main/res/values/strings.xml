@@ -148,23 +148,15 @@
     <string name="pref_appVersionSummary_key">pref_appVersionSummary_key</string>
     <string name="pref_appVersionSummary_title">Version Summary</string>
     <string name="pref_appVersionSummary">
-    <b>Gallery Activity</b>\n
-    - Card View Spacing now takes more space \n\n
-
-    <b>Gallery Collection Activity</b>\n
-    - Fix crashing when various files aren\'t present while moving through items\n
-    - PNG pictures of appropriate file states\n
-    - File clicking will now redirect the user to Wetfish if not on the file system\n
-    - File clicking will now appropriately open up the correct image\n\n
+    <b>EXIF UPDATE</b>\n
 
     <b>Upload Page</b>\n
-    - An alert dialog will now pop up when moving back screens\n
-    - Video Uploading now has one tab\n
-    - View alignment fixed\n
-    - Loading Tab on devices greater than v24\n\n
+    - Change upload delay from three seconds to two seconds. \n
+    - Change how the EXIF tab works, allowing users to select EXIF settings to remove during the upload process and save these selections as persistent settings automatically upon change. \n
+    - Apply the current Wetfish version to the User Comment portion of the EXIF for Wetfish server’s new policy. \n
+    - Make the upload process produce an AlertDialog should EXIF editing fail during the process. \n
+    - Make the upload process cancelable throughout the entire process. \n
 
-    <b>Misc.</b>\n
-    - Fix for crashes on bitmap rescaling\n
     </string>
     <string name="pref_appVersionSummary_prompt">Click here for Wetfish version details</string>
     <string name="dialog_acknowledged">Okay</string>
