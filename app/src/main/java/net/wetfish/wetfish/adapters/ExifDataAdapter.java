@@ -1,6 +1,7 @@
 package net.wetfish.wetfish.adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -43,20 +44,23 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public boolean isClickable = true;
     // List of EXIF data objects
     private ArrayList<Object> mExifDataList = new ArrayList<>();
-    // Duplicate list of EXIF data objects to transfer changes via EXIF
-    private ArrayList<Object> mEditedExifDataList = new ArrayList<>();
     // List of selected objects to retain selection info
     private SparseBooleanArray checkboxStateArray = new SparseBooleanArray();
     // Number of changed fields. Checker for FAB
     private int checkboxesSelectedAmount = 0;
     // Activity context
     private Context mContext;
-    // Determines if @mEditedExifDataList needs to be instantiated
-    private boolean mEditedExifDataListInstantiated = false;
+    // Shared Preferences
+    private SharedPreferences sharedPref;
+    private SharedPreferences.Editor sharedPrefEditor;
 
     public ExifDataAdapter(Context mContext, ExifDataAdapterOnClickHandler mClickHandler) {
         this.mClickHandler = mClickHandler;
         this.mContext = mContext;
+
+        // Get the preferences file for exif preferences
+        sharedPref = mContext.getSharedPreferences(mContext.getString(R.string.preferences_exif_key), Context.MODE_PRIVATE);
+        sharedPrefEditor = sharedPref.edit();
     }
 
     /**
@@ -205,43 +209,6 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    /**
-     * This method is called once the FAB button is pressed to finalize the desired EXIF edits.
-     * When this is called the adapter refreshes the editedExifDataList and creates a new
-     * checkboxStateArray to represent new data.
-     * <p>
-     * Once this is done it runs swapExifData to easily handle the refresh of new data
-     */
-    public void renewEditedExifDataList() {
-        Log.d(LOG_TAG, "Renewed!");
-        checkboxStateArray.clear();
-        mEditedExifDataList.clear();
-        mExifDataList.clear();
-        mEditedExifDataListInstantiated = false;
-        checkboxesSelectedAmount = 0;
-        notifyDataSetChanged();
-    }
-
-    public boolean getIsClickable() {
-        return isClickable;
-    }
-
-    public void setClickable(boolean clickable) {
-        isClickable = clickable;
-    }
-
-    public int getCheckboxesSelectedAmount() {
-        return checkboxesSelectedAmount;
-    }
-
-    public ArrayList<Object> getEditedExifDataTransferList() {
-        return mEditedExifDataList;
-    }
-
-    public boolean isEditedExifDataListInstantiated() {
-        return mEditedExifDataListInstantiated;
-    }
-
     // ExifDataAdapterOnClickHandler interface
     public interface ExifDataAdapterOnClickHandler {
         void onListItemClick(int file);
@@ -291,6 +258,20 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 mExifDataTag.setText(exifData.getExifDataTag());
                 mExifDataValue.setText(exifData.getExifDataValue());
 
+                    for (int i = 0; i < mExifDataList.size(); i++) {
+                        Log.d(LOG_TAG, "LOG_TAG: " + i);
+                        if (mExifDataList.get(i) instanceof FileExifData) {
+                            // Gather the fileExifData object
+                            FileExifData fileExifData = (FileExifData) mExifDataList.get(i);
+
+                            // Check to see if this tag is in preferences
+                            if (sharedPref.getBoolean(fileExifData.getExifDataTag(), false)) {
+                                // If it is, set the checkbox as checked
+                                checkboxStateArray.put(i, true);
+                            }
+                        }
+                    }
+
                 // Setup the state of the mExifDataCheckbox
 
                 // Check the state of the SparseBooleanArray
@@ -312,7 +293,7 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         // Check if the individual ExifDataViewHolder views are clickable
                         if (isClickable) {
                             if (isChecked) {
-                                Log.d(LOG_TAG, "Yo check it MR. Here's that isCHECKED TRIGERRRRRRR" + position);
+                                Log.d(LOG_TAG, "Checkbox has been checked" + position);
                                 Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: " + isChecked);
 
                                 mUserTriggered = true;
@@ -320,40 +301,18 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                 // Increment the amount of selected Checkboxes
                                 checkboxesSelectedAmount++;
 
-                                // Check to see if an editedExifDaraList has been instantiated
-                                if (!mEditedExifDataListInstantiated) {
-                                    // Create a copy EXIF FileExifData list if it doesn't exist
-                                    for (int i = 0; i < mExifDataList.size(); i++) {
-                                        Log.d(LOG_TAG, "LOG_TAG: " + i);
-                                        if (mExifDataList.get(i) instanceof FileExifData) {
-                                            FileExifData fileExifData = (FileExifData) mExifDataList.get(i);
-
-                                            Log.d(LOG_TAG, "Check this out: " + fileExifData.getExifDataTagLayout());
-                                            // Add @FileExifData objects to the list
-//                                        mEditedExifDataList.add(fileExifData);
-                                            mEditedExifDataList.add(fileExifData);
-                                        } else if (mExifDataList.get(i) instanceof FileExifDataHeader) {
-                                            // Add a @FileExifDataHeader placeholder object to the list
-//                                        mEditedExifDataList.add(new FileExifDataHeader((FileExifDataHeader) mExifDataList.get(i)));
-                                            Log.d(LOG_TAG, "Check this out: Placeholder");
-                                            mEditedExifDataList.add("Place Holder");
-                                        } else {
-                                            // Add a @FileExifDataBlank placeholder object to the list
-//                                        mEditedExifDataList.add(new FileExifDataBlank((FileExifDataBlank) mExifDataList.get(i)));
-                                            Log.d(LOG_TAG, "Check this out: Placeholder");
-                                            mEditedExifDataList.add("Place Holder");
-                                        }
-                                    }
-
-                                    // Verify that the ArrayList now exists and needn't be created again
-                                    mEditedExifDataListInstantiated = true;
-
-                                    // Verify that this has been checked
-
-                                }
-//
                                 // Remove the value at the given position
-                                mEditedExifDataList.set(position, null);
+//                                mEditedExifDataList.set(position, null);
+
+                                // Update this within the preferences
+                                FileExifData fileExifData = (FileExifData) mExifDataList.get(position);
+
+                                // Update the tag that fileExifData represents within preferences to true
+                                sharedPrefEditor.putBoolean(fileExifData.getExifDataTag(), true);
+                                sharedPrefEditor.apply();
+
+                                //TODO: Remove, Temp  check
+                                Log.d(LOG_TAG, "Shared Preference for: " + fileExifData.getExifDataTag() + " " + sharedPref.getBoolean(fileExifData.getExifDataTag(), false));
 
                                 // Set a true value within the position to store the checked state
                                 checkboxStateArray.put(position, true);
@@ -363,11 +322,18 @@ public class ExifDataAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                                     // Decrement the amount of selected Checkboxes
                                     checkboxesSelectedAmount--;
 
-                                    Log.d(LOG_TAG, "Yo check it MR. Here's that else isChecked TRIGERRRRRRR");
+                                    Log.d(LOG_TAG, "Checkbox hasn't been checked: " + position);
                                     Log.d(LOG_TAG, "Checkbox & Position: " + position + "Is checked?: " + isChecked);
                                     FileExifData fileExifData = (FileExifData) mExifDataList.get(position);
 
-                                    mEditedExifDataList.set(position, fileExifData);
+//                                    mEditedExifDataList.set(position, fileExifData);
+
+                                    // Update the tag that fileExifData represents within preferences to true
+                                    sharedPrefEditor.putBoolean(fileExifData.getExifDataTag(), false);
+                                    sharedPrefEditor.apply();
+
+                                    //TODO: Remove, Temp  check
+                                    Log.d(LOG_TAG, "Shared Preference for: " + fileExifData.getExifDataTag() + " " + sharedPref.getBoolean(fileExifData.getExifDataTag(), false));
 
                                     // Set a false value within the position to store the unchecked state
                                     checkboxStateArray.put(position, false);

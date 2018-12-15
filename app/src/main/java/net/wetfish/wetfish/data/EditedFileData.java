@@ -3,8 +3,11 @@ package net.wetfish.wetfish.data;
 import android.net.Uri;
 
 /**
+ * //TODO: Potentially Delete
  * Class to transfer the uri of the given file and the type of file
- * <p>
+ * Instead of being deleted after EXIF changes it will be kept until the completion of image editing
+ * in the event it requires more data to be transferred, although this is unlikely
+ *
  * Created by ${Michael} on 8/20/2018.
  */
 public class EditedFileData {

@@ -360,7 +360,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     mRootView.findViewById(R.id.include_fragment_gallery_collection_object_video).setVisibility(View.GONE);
 
                     // Views
-                    mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
+                    mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail_image);
                     mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
                     mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
                     mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
@@ -392,12 +392,13 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     mRootView.findViewById(R.id.include_fragment_gallery_collection_object_image).setVisibility(View.GONE);
 
                     // Views
-                    mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail);
+                    mFileView = mIncludeLayout.findViewById(R.id.iv_gallery_item_detail_video);
                     mFileTitleTextView = mIncludeLayout.findViewById(R.id.tv_title);
                     mFileTagsTextView = mIncludeLayout.findViewById(R.id.tv_tags);
                     mFileDescriptionTextView = mIncludeLayout.findViewById(R.id.tv_description);
                     mFileViewSize = mIncludeLayout.findViewById(R.id.tv_video_size);
                     mFileViewLength = mIncludeLayout.findViewById(R.id.tv_video_length);
+                    mFileViewPresentOnSystem = mIncludeLayout.findViewById(R.id.tv_video_not_on_local_file_system);
 
                     // Setup view data
                     if (mEditedFilePresent) {
@@ -690,10 +691,10 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
                     // Check to see if the clipboard data link equals the database stored link
                     if (clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
-                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
+                        Snackbar.make(mIncludeLayout, R.string.sb_url_clipboard_success,
                                 Snackbar.LENGTH_SHORT).show();
                     } else {
-                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_failure,
+                        Snackbar.make(mIncludeLayout, R.string.sb_url_clipboard_failure,
                                 Snackbar.LENGTH_SHORT).show();
                     }
 
@@ -723,6 +724,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     }
                 });
 
+                //TODO: This is placeholder code that'll be implemented properly when Wetfish offers a delete URL
                 mCopyFileDeleteURLFAB.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -734,7 +736,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishDeletionLink()));
 
                         if (clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
-                            Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
+                            Snackbar.make(mIncludeLayout, R.string.sb_url_clipboard_success,
                                     Snackbar.LENGTH_LONG);
                         }
                     }
