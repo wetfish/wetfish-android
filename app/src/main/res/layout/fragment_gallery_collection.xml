@@ -1,30 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/gallery_detail_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
     tools:context="net.wetfish.wetfish.ui.GalleryCollectionActivity">
 
-    <!-- This will be shown for images and hidden for videos-->
-    <include
-        android:id="@+id/include_fragment_gallery_collection_object_image"
-        layout="@layout/fragment_gallery_collection_object_image" />
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-    <!-- This will be shown for videos and hidden for images-->
-    <include
-        android:id="@+id/include_fragment_gallery_collection_object_video"
-        layout="@layout/fragment_gallery_collection_object_video" />
+        <!-- This will be shown for images and hidden for videos-->
+        <include
+            android:id="@+id/include_fragment_gallery_collection_object_image"
+            layout="@layout/fragment_gallery_collection_object_image" />
+
+        <!-- This will be shown for videos and hidden for images-->
+        <include
+            android:id="@+id/include_fragment_gallery_collection_object_video"
+            layout="@layout/fragment_gallery_collection_object_video" />
+
+    </android.support.constraint.ConstraintLayout>
 
     <com.github.clans.fab.FloatingActionMenu
         android:id="@+id/fam_gallery_detail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/fab_margin"
         android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginBottom="@dimen/fab_margin"
+        app:layout_behavior="net.wetfish.wetfish.ui.behaviors.FAMShrinkBehavior"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         fab:menu_animationDelayPerItem="55"
@@ -108,7 +115,7 @@
             fab:fab_label="@string/fab_copy_deletion_link"
             fab:fab_size="mini" />
 
-
     </com.github.clans.fab.FloatingActionMenu>
 
-</android.support.constraint.ConstraintLayout>
+</android.support.design.widget.CoordinatorLayout>
+

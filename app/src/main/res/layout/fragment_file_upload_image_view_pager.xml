@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/gallery_detail_content"
     android:layout_width="match_parent"
@@ -173,7 +174,7 @@
         android:layout_height="88dp"
         android:layout_gravity="bottom|end"
         android:clickable="false"
-        app:layout_behavior="net.wetfish.wetfish.ui.behaviors.FABShrinkBehaviorRelativeLayout"
+        app:layout_behavior="net.wetfish.wetfish.ui.behaviors.RelativeLayoutShrinkBehavior"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -191,17 +192,15 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <android.support.design.widget.FloatingActionButton
+            <com.github.clans.fab.FloatingActionButton
                 android:id="@+id/fab_upload_file"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_upload_file_white_24dp"
-                app:backgroundTint="@color/accent"
-                app:fabSize="normal"
-                app:layout_anchor="@+id/scroll_view"
-                app:layout_anchorGravity="bottom|right|end"
-                app:rippleColor="@color/accent_light"
-                app:tint="@color/accent_dark" />
+                fab:fab_colorNormal="@color/accent"
+                fab:fab_colorPressed="@color/accent_dark"
+                fab:fab_colorRipple="@color/accent_light"
+                fab:fab_size="normal" />
 
         </com.github.jorgecastilloprz.FABProgressCircle>
 

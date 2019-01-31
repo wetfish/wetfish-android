@@ -19,7 +19,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -42,6 +41,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
+import com.github.clans.fab.FloatingActionButton;
 import com.github.jorgecastilloprz.FABProgressCircle;
 import com.github.jorgecastilloprz.listeners.FABProgressListener;
 
@@ -72,8 +72,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-
-//import com.github.clans.fab.FloatingActionButton;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -226,6 +224,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Inflate the layout for this fragment
                 mRootLayout = inflater.inflate(R.layout.fragment_file_upload_image_view_pager, container, false);
 
+                //TODO: Remove later
                 Button mButton = mRootLayout.findViewById(R.id.button);
                 mButton.setOnClickListener(new View.OnClickListener() {
                     /**
@@ -268,6 +267,21 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             case VIDEO_FILE: // This layout is for video files
                 //TODO: This will support a separate root layout for videos specifically
                 mRootLayout = inflater.inflate(R.layout.fragment_file_upload_video_view_pager, container, false);
+
+                //TODO: Remove later
+                Button mButton2 = mRootLayout.findViewById(R.id.button);
+                mButton2.setOnClickListener(new View.OnClickListener() {
+                    /**
+                     * Called when a view has been clicked.
+                     *
+                     * @param v The view that was clicked.
+                     */
+                    @Override
+                    public void onClick(View v) {
+                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
+                });
 
                 // Reference to file upload layout content
                 fileUploadContent = mRootLayout.findViewById(R.id.cl_file_upload_content_container);

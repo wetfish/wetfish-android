@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -23,6 +23,12 @@
             android:clickable="true"
             android:focusable="true"
             android:focusableInTouchMode="true">
+
+            <Button
+                android:id="@+id/button"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:gravity="center" />
 
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/cl_file_upload_content_container"
@@ -150,6 +156,7 @@
         android:layout_height="88dp"
         android:layout_gravity="bottom|end"
         android:clickable="false"
+        app:layout_behavior="net.wetfish.wetfish.ui.behaviors.RelativeLayoutShrinkBehavior"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -193,4 +200,4 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-</android.support.constraint.ConstraintLayout>
+</android.support.design.widget.CoordinatorLayout>
