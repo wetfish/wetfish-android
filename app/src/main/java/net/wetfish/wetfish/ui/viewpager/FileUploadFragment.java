@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -31,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -40,7 +42,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
-import com.github.clans.fab.FloatingActionButton;
 import com.github.jorgecastilloprz.FABProgressCircle;
 import com.github.jorgecastilloprz.listeners.FABProgressListener;
 
@@ -71,6 +72,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+//import com.github.clans.fab.FloatingActionButton;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -215,11 +218,27 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         mViewpager = getActivity().findViewById(R.id.vp_gallery_detail);
         mTabLayout = getActivity().findViewById(R.id.tl_gallery_detail);
 
+
+
         // Inflate the proper layout depending on the mime type
         switch (mMimeType) {
             case IMAGE_FILE: // This layout is for image files
                 // Inflate the layout for this fragment
                 mRootLayout = inflater.inflate(R.layout.fragment_file_upload_image_view_pager, container, false);
+
+                Button mButton = mRootLayout.findViewById(R.id.button);
+                mButton.setOnClickListener(new View.OnClickListener() {
+                    /**
+                     * Called when a view has been clicked.
+                     *
+                     * @param v The view that was clicked.
+                     */
+                    @Override
+                    public void onClick(View v) {
+                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
+                                .show();
+                    }
+                });
 
                 // Reference to file upload layout content
                 fileUploadContent = mRootLayout.findViewById(R.id.cl_file_upload_content_container);
@@ -488,7 +507,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                                         // Enable Viewpager swiping
                                                         mViewpager.setViewpagerSwitching(false);
 
-                                                        // Get a reference to the mTabLayout's children views to enable tabs
+                                                        // Get a reference to the mTabLayout's children views t------------o enable tabs
                                                         ViewGroup viewGroup = (ViewGroup) mTabLayout.getChildAt(0);
 
                                                         // Determine the amount of tabs present
