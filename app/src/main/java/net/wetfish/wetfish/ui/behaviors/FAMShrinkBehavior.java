@@ -3,6 +3,7 @@ package net.wetfish.wetfish.ui.behaviors;
 import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.Snackbar.SnackbarLayout;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
@@ -30,13 +31,13 @@ public class FAMShrinkBehavior extends CoordinatorLayout.Behavior<FloatingAction
         mContext = context;
 
         //TODO: Change the animation to fit the middle of the view, and also make a new animation for it
-        mScaleDown = AnimationUtils.loadAnimation(mContext, R.anim.rl_scale_down);
-        mScaleUp = AnimationUtils.loadAnimation(mContext, R.anim.rl_scale_up);
+        mScaleDown = AnimationUtils.loadAnimation(mContext, R.anim.fam_scale_down);
+        mScaleUp = AnimationUtils.loadAnimation(mContext, R.anim.fam_scale_up);
     }
 
     @Override
     public boolean layoutDependsOn(CoordinatorLayout parent, FloatingActionMenu child, View dependency) {
-        return dependency instanceof Snackbar.SnackbarLayout;
+        return dependency instanceof SnackbarLayout;
     }
 
     @Override
@@ -51,12 +52,12 @@ public class FAMShrinkBehavior extends CoordinatorLayout.Behavior<FloatingAction
     }
 
     private float getFabTranslationYForSnackbar(CoordinatorLayout parent,
-                                                FloatingActionMenu fab) {
+                                                FloatingActionMenu fam) {
         float minOffset = 0;
-        final List<View> dependencies = parent.getDependencies(fab);
+        final List<View> dependencies = parent.getDependencies(fam);
         for (int i = 0, z = dependencies.size(); i < z; i++) {
             final View view = dependencies.get(i);
-            if (view instanceof Snackbar.SnackbarLayout && parent.doViewsOverlap(fab, view)) {
+            if (view instanceof Snackbar.SnackbarLayout && parent.doViewsOverlap(fam, view)) {
                 minOffset = Math.min(minOffset,
                         ViewCompat.getTranslationY(view) - view.getHeight());
             }
@@ -64,7 +65,6 @@ public class FAMShrinkBehavior extends CoordinatorLayout.Behavior<FloatingAction
 
         return minOffset;
     }
-
 
     @Override
     public boolean onStartNestedScroll(final CoordinatorLayout coordinatorLayout, final FloatingActionMenu child,
