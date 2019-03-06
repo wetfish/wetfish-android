@@ -132,6 +132,9 @@ public class GalleryActivity extends AppCompatActivity implements
         mFilesAdapter = new FilesAdapter(this, this);
         mRecyclerView.setAdapter(mFilesAdapter);
 
+        // Setup recycler view to have inertial scroll.
+        mRecyclerView.setNestedScrollingEnabled(false);
+
         // FAM
         mFAM = findViewById(R.id.fam_gallery);
 
@@ -147,6 +150,9 @@ public class GalleryActivity extends AppCompatActivity implements
         mTakePictureFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM
+                mFAM.close(true);
+
                 // Ask for storage permission if @ or above Android version 23
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (ContextCompat.checkSelfPermission(getBaseContext(),
@@ -155,18 +161,14 @@ public class GalleryActivity extends AppCompatActivity implements
                             || ContextCompat.checkSelfPermission(getBaseContext(),
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
-
-                        // Close FAM
-                        mFAM.close(true);
-
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
-
                     } else {
                         // Storage permissions granted!
                         captureImageToUpload();
                     }
                 } else {
+                    // Storage permissions already granted!
                     captureImageToUpload();
                 }
             }
@@ -175,6 +177,9 @@ public class GalleryActivity extends AppCompatActivity implements
         mTakeVideoFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM
+                mFAM.close(true);
+
                 // Ask for storage permission if @ or above Android version 23
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (ContextCompat.checkSelfPermission(getBaseContext(),
@@ -183,13 +188,8 @@ public class GalleryActivity extends AppCompatActivity implements
                             || ContextCompat.checkSelfPermission(getBaseContext(),
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
-
-                        // Close FAM
-                        mFAM.close(true);
-
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
-
                     } else {
                         // Storage permissions granted!
                         captureVideoToUpload();
@@ -203,6 +203,9 @@ public class GalleryActivity extends AppCompatActivity implements
         mSelectImageFileFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM
+                mFAM.close(true);
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (ContextCompat.checkSelfPermission(getBaseContext(),
                             Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -210,20 +213,14 @@ public class GalleryActivity extends AppCompatActivity implements
                             || ContextCompat.checkSelfPermission(getBaseContext(),
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
-
-                        // Close FAM
-                        mFAM.close(true);
-
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
-
-
-
                     } else {
                         // Storage permissions granted!
                         selectImageFileToUpload();
                     }
                 } else {
+                    // Storage permissions already granted!
                     selectImageFileToUpload();
                 }
             }
@@ -233,6 +230,9 @@ public class GalleryActivity extends AppCompatActivity implements
         mSelectVideoFileFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Close FAM
+                mFAM.close(true);
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (ContextCompat.checkSelfPermission(getBaseContext(),
                             Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -240,13 +240,8 @@ public class GalleryActivity extends AppCompatActivity implements
                             || ContextCompat.checkSelfPermission(getBaseContext(),
                             Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             != PackageManager.PERMISSION_GRANTED) {
-
-                        // Close FAM
-                        mFAM.close(true);
-
                         // Permissions have not been granted, inform the user and ask again
                         requestStoragePermission();
-
                     } else {
                         // Storage permissions granted!
                         selectVideoFileToUpload();
@@ -267,7 +262,6 @@ public class GalleryActivity extends AppCompatActivity implements
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void requestStoragePermission() {
         if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-
             // If the user has previously denied granting the permission, offer the rationale
             Snackbar.make(findViewById(R.id.gallery_container), R.string.sb_permission_storage_rationale,
                     Snackbar.LENGTH_INDEFINITE)
@@ -510,13 +504,6 @@ public class GalleryActivity extends AppCompatActivity implements
     @Override
     protected void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
-
-        // Close FAM
-        mFAM.close(true);
-
-        // Close FAM.
-//        mFAM.close(true);
-
         // Determine the result of the activity.
         if (resultCode == RESULT_OK) {
             switch (reqCode) {
@@ -564,7 +551,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
             }
         } else {
-            Snackbar.make(findViewById(android.R.id.content), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
+            Snackbar.make(findViewById(R.id.gallery_container), R.string.sb_no_file_selected, Snackbar.LENGTH_LONG).show();
 
             Log.d(LOG_TAG, "Result Code Returned: " + resultCode);
         }

@@ -43,4 +43,9 @@ public class CustomLockingViewPager extends ViewPager {
         mIsSwitchingEnabled = swipeable;
     }
 
+    @Override
+    public void setSelected(boolean selected) {
+        super.setSelected(selected);
+    }
+
 }

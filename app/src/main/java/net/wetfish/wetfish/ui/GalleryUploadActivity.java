@@ -253,13 +253,18 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            Object obj = super.instantiateItem(container, position);
-            if (obj instanceof Fragment) {
-                Fragment fragment = (Fragment) obj;
-                String tag = fragment.getTag();
-                mFragmentTags.put(position, tag);
+
+            //TODO: Remove when adding the edit page
+            if (position != 2) {
+                Object obj = super.instantiateItem(container, position);
+                if (obj instanceof Fragment) {
+                    Fragment fragment = (Fragment) obj;
+                    String tag = fragment.getTag();
+                    mFragmentTags.put(position, tag);
+                }
+                return obj;
             }
-            return obj;
+            return null;
         }
 
         public Fragment getFragment(int position) {
@@ -283,9 +288,9 @@ public class GalleryUploadActivity extends AppCompatActivity implements
                     return FileUploadFragment.newInstance(mEditedFileUri, mFileUri);
                 case 1:
                     return EditExifFragment.newInstance(mEditedFileUri, mFileUri);
-                case 2:
-                    //TODO: Implement File editing
-                    return EditFileFragment.newInstance("Cat", "Cat");
+//                case 2:
+//                     //TODO: Implement File editing
+//                    return EditFileFragment.newInstance("Cat", "Cat");
             }
             Log.d(LOG_TAG, "Something went wrong");
             return null;
@@ -296,8 +301,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             // Show 3 total pages.
             return PAGE_COUNT;
         }
-
-
 
         /**
          * This method may be called by the ViewPager to obtain a title string

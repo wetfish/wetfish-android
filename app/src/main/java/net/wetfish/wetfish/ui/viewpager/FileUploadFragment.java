@@ -263,25 +263,13 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                 // Setup onItemSelectedListener
                 mSpinner.setOnItemSelectedListener(this);
 
+                // Remove unused tabs for now
+                removeTabsForImageFiles();
+
                 break;
             case VIDEO_FILE: // This layout is for video files
                 //TODO: This will support a separate root layout for videos specifically
                 mRootLayout = inflater.inflate(R.layout.fragment_file_upload_video_view_pager, container, false);
-
-                //TODO: Remove later
-                Button mButton2 = mRootLayout.findViewById(R.id.button);
-                mButton2.setOnClickListener(new View.OnClickListener() {
-                    /**
-                     * Called when a view has been clicked.
-                     *
-                     * @param v The view that was clicked.
-                     */
-                    @Override
-                    public void onClick(View v) {
-                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
-                                .show();
-                    }
-                });
 
                 // Reference to file upload layout content
                 fileUploadContent = mRootLayout.findViewById(R.id.cl_file_upload_content_container);
@@ -1822,7 +1810,16 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
         mTabLayout.setTabMode(TabLayout.MODE_FIXED);
         mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+        mViewpager.setViewpagerSwitching(false);
 
+    }
+
+    private void removeTabsForImageFiles() {
+        TabLayout.Tab editTab = mTabLayout.getTabAt(2);
+
+        if (editTab != null) {
+            mTabLayout.removeTab(editTab);
+        }
     }
 
     /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
