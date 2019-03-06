@@ -31,7 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -223,21 +222,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             case IMAGE_FILE: // This layout is for image files
                 // Inflate the layout for this fragment
                 mRootLayout = inflater.inflate(R.layout.fragment_file_upload_image_view_pager, container, false);
-
-                //TODO: Remove later
-                Button mButton = mRootLayout.findViewById(R.id.button);
-                mButton.setOnClickListener(new View.OnClickListener() {
-                    /**
-                     * Called when a view has been clicked.
-                     *
-                     * @param v The view that was clicked.
-                     */
-                    @Override
-                    public void onClick(View v) {
-                        Snackbar.make(mRootLayout.findViewById(R.id.gallery_detail_content), getContext().getString(R.string.sb_cloud_upload_cancelled), Snackbar.LENGTH_SHORT)
-                                .show();
-                    }
-                });
 
                 // Reference to file upload layout content
                 fileUploadContent = mRootLayout.findViewById(R.id.cl_file_upload_content_container);

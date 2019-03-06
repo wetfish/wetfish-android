@@ -43,22 +43,6 @@ public class FAMShrinkBehavior extends CoordinatorLayout.Behavior<RelativeLayout
         return false;
     }
 
-    //TODO: May revisit for fancier animations
-//    private float getFabTranslationYForSnackbar(CoordinatorLayout parent,
-//                                                RelativeLayout fam) {
-//        float minOffset = 0;
-//        final List<View> dependencies = parent.getDependencies(fam);
-//        for (int i = 0, z = dependencies.size(); i < z; i++) {
-//            final View view = dependencies.get(i);
-//            if (view instanceof Snackbar.SnackbarLayout && parent.doViewsOverlap(fam, view)) {
-//                minOffset = Math.min(minOffset,
-//                        ViewCompat.getTranslationY(view) - view.getHeight());
-//            }
-//        }
-//
-//        return minOffset;
-//    }
-
     @Override
     public boolean onStartNestedScroll(final CoordinatorLayout coordinatorLayout, final RelativeLayout child,
                                        final View directTargetChild, final View target, final int nestedScrollAxes) {

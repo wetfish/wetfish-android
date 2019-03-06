@@ -24,12 +24,6 @@
             android:focusable="true"
             android:focusableInTouchMode="true">
 
-            <Button
-                android:id="@+id/button"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:gravity="center" />
-
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/cl_file_upload_content_container"
                 android:layout_width="match_parent"
@@ -150,7 +144,7 @@
         </android.support.constraint.ConstraintLayout>
     </android.support.v4.widget.NestedScrollView>
 
-    <!-- FAB & FAB Animation -->
+    <!-- FAB -->
     <RelativeLayout
         android:layout_width="88dp"
         android:layout_height="88dp"

@@ -691,10 +691,10 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
                     // Check to see if the clipboard data link equals the database stored link
                     if (clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
-                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
+                        Snackbar.make(mIncludeLayout, getString(R.string.sb_url_clipboard_success),
                                 Snackbar.LENGTH_SHORT).show();
                     } else {
-                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_failure,
+                        Snackbar.make(mIncludeLayout, getString(R.string.sb_url_clipboard_failure),
                                 Snackbar.LENGTH_SHORT).show();
                     }
 

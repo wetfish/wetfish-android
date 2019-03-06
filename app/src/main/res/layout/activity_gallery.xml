@@ -49,10 +49,11 @@
         android:id="@+id/include_layout_gallery"
         layout="@layout/content_gallery" />
 
+    <!-- FAM & FAB -->
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/what_is_this_shit"
         android:layout_gravity="bottom|end"
         android:clickable="false"
         app:layout_behavior="net.wetfish.wetfish.ui.behaviors.FAMShrinkBehavior"
@@ -174,7 +175,6 @@
         </com.github.clans.fab.FloatingActionMenu>
 
     </RelativeLayout>
-
 
 
 </android.support.design.widget.CoordinatorLayout>
