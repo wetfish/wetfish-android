@@ -16,6 +16,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -27,6 +28,8 @@ import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
 
 import net.wetfish.wetfish.BuildConfig;
 import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.data.FileContentProvider;
+import net.wetfish.wetfish.data.FileDbHelper;
 
 import java.util.List;
 
@@ -42,6 +45,20 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+
+
+    //TODO: Upgrade to Android X later
+//    @Override
+//    public boolean onPreferenceTreeClick (PreferenceScreen preferenceScreen,
+//                                          Preference preference)
+//    {
+//        String key = preference.getKey();
+//        if(key.equals("someKey")){
+//            // do your work
+//            return true;
+//        }
+//        return false;
+//    }
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -258,6 +275,23 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+
+            // Setup open source references settings summary and button
+            findPreference(getString(R.string.pref_appExportDatabase_key)).setSummary(getString(R.string.pref_appExportDatabase_prompt));
+            findPreference(getString(R.string.pref_appExportDatabase_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // Export the current Wetfish database
+
+                    if (FileContentProvider.exportDB(getActivity())) {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom!", Snackbar.LENGTH_LONG).show();
+                    } else {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom Bad!", Snackbar.LENGTH_LONG).show();
+                    }
+
+                    return true;
+                }
+            });
         }
 
         @Override
