@@ -18,13 +18,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,6 +36,8 @@ import com.bumptech.glide.request.RequestOptions;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.jorgecastilloprz.FABProgressCircle;
 import com.github.jorgecastilloprz.listeners.FABProgressListener;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.EditedFileData;
@@ -63,6 +58,11 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -71,6 +71,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -1136,7 +1137,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             if (!(desiredAbsoluteFilePath.toString().isEmpty())) {
                 // File was found, setup view data & check to see if the view is representable by glide
                 if (FileUtils.representableByGlide(FileUtils.getFileExtensionFromUri(getContext(), desiredAbsoluteFilePath))) {
-                    Glide.with(this)
+                    Glide.with(getContext())
                             .load(FileProvider.getUriForFile(getContext(),
                                     getString(R.string.file_provider_authority),
                                     new File(desiredAbsoluteFilePath.toString())))

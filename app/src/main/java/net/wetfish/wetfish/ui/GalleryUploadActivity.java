@@ -7,20 +7,14 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.EditedFileData;
@@ -34,6 +28,14 @@ import net.wetfish.wetfish.utils.UIUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 
 public class GalleryUploadActivity extends AppCompatActivity implements
         FileUploadFragment.UploadFragmentUriUpdate,

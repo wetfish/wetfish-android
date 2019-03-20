@@ -16,9 +16,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -29,6 +26,10 @@ import net.wetfish.wetfish.BuildConfig;
 import net.wetfish.wetfish.R;
 
 import java.util.List;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.NavUtils;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On

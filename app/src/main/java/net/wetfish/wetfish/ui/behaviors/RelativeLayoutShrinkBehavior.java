@@ -1,17 +1,18 @@
 package net.wetfish.wetfish.ui.behaviors;
 
 import android.content.Context;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.RelativeLayout;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import net.wetfish.wetfish.R;
 
-import static android.support.design.widget.Snackbar.SnackbarLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.ViewCompat;
 
 //import com.github.clans.fab.FloatingActionButton;
 
@@ -41,7 +42,7 @@ public class RelativeLayoutShrinkBehavior extends CoordinatorLayout.Behavior<Rel
 
     @Override
     public boolean layoutDependsOn(CoordinatorLayout parent, RelativeLayout child, View dependency) {
-        return dependency instanceof SnackbarLayout;
+        return dependency instanceof Snackbar.SnackbarLayout;
     }
 
     @Override

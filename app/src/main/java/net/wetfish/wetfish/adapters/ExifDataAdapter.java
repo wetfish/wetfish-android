@@ -2,8 +2,6 @@ package net.wetfish.wetfish.adapters;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -21,6 +19,9 @@ import net.wetfish.wetfish.data.FileExifDataHeader;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static android.widget.CompoundButton.OnCheckedChangeListener;
 
