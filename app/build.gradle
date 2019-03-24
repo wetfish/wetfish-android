@@ -32,25 +32,27 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.gms:play-services-oss-licenses:16.0.2'
 
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('androidx.test.espresso:espresso-core:3.1.2-alpha01', {
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.2-alpha01', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'androidx.appcompat:appcompat:1.1.0-alpha03'
-    compile 'com.google.android.material:material:1.1.0-alpha04'
-    compile 'com.android.volley:volley:1.1.0'
-    compile 'com.squareup.retrofit2:retrofit:2.5.0'
-    compile 'com.github.bumptech.glide:glide:4.8.0'
-    compile 'com.squareup.retrofit2:retrofit:2.5.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.0.1'
-    compile 'androidx.cardview:cardview:1.0.0'
-    compile "androidx.exifinterface:exifinterface:1.0.0"
-    compile 'org.parceler:parceler-api:1.1.9'
-    compile 'com.github.clans:fab:1.6.2'
-    compile 'com.github.jorgecastilloprz:fabprogresscircle:1.01@aar'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
-    annotationProcessor 'org.parceler:parceler:1.1.9'
 
-    testCompile 'junit:junit:4.12'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha03'
+    implementation 'com.google.android.material:material:1.1.0-alpha04'
+    implementation 'com.android.volley:volley:1.1.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.12.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.exifinterface:exifinterface:1.0.0'
+    implementation 'org.parceler:parceler-api:1.1.12'
+    implementation 'com.github.clans:fab:1.6.4'
+    implementation 'com.github.jorgecastilloprz:fabprogresscircle:1.01@aar'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
+    annotationProcessor 'org.parceler:parceler:1.1.12'
+
+    testImplementation 'junit:junit:4.12'
 }
