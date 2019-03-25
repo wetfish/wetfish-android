@@ -29,7 +29,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.adapters.FilesAdapter;
-import net.wetfish.wetfish.ui.settings.SettingsActivity;
+import net.wetfish.wetfish.ui.settings.MySettingsActivity;
 import net.wetfish.wetfish.utils.FileUtils;
 
 import java.io.File;
@@ -298,7 +298,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            Intent settingsIntent = new Intent(this, MySettingsActivity.class);
             startActivity(settingsIntent);
             return true;
         }

@@ -125,6 +125,7 @@
 
     // Category - Sorting
     <string name="pref_key_sorting_settings">pref_key_sorting_settings</string>
+
     <string name="pref_category_title_sorting">Sorting</string>
 
     // Checkbox - Sorting by Most Recent
@@ -140,6 +141,7 @@
     <string name="pref_header_about">About</string>
 
     <string name="pref_key_app_information">pref_key_app_information</string>
+
     <string name="pref_category_app_information">App Information</string>
 
     <string name="pref_appVersion_key">pref_appVersion_key</string>
@@ -179,6 +181,7 @@
         <item>null</item>
         <item>null</item>
     </string-array>
+
     <string-array name="pref_sortingMethod_list_values">
         <item>null</item>
         <item>null</item>
@@ -186,8 +189,12 @@
     </string-array>
 
     <!-- Example settings for Data & Sync -->
-    // Implement this once relevant and updates from the server is relevant.
     <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string name="pref_header_data">Data</string>
+
+    <string name="pref_key_app_data_sync">pref_key_app_data_sync</string>
+
+    <string name="pref_category_app_data">App Data</string>
 
     <string name="pref_title_sync_frequency">Sync frequency</string>
     <string-array name="pref_sync_frequency_titles">
@@ -223,6 +230,10 @@
     <string-array name="multi_select_list_preference_default_value" />
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <string name="pref_appExportDatabase_key">pref_appExportDatabase_key</string>
+    <string name="pref_appExportDatabase_title">Export Uploads Database</string>
+    <string name="pref_appExportDatabase_prompt">Click here to export the Wetfish app database for all your uploads</string>
 
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>

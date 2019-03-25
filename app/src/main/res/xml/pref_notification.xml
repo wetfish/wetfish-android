@@ -1,4 +1,4 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:fragment="net.wetfish.wetfish.ui.settings.SettingsActivity$GeneralPreferenceFragment">
 
     <!-- A 'parent' preference, which enables/disables child preferences (below)
@@ -25,4 +25,4 @@
         android:key="notifications_new_message_vibrate"
         android:title="@string/pref_title_vibrate" />
 
-</PreferenceScreen>
+</androidx.preference.PreferenceScreen>
