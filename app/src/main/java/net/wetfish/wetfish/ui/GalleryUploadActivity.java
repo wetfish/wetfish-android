@@ -216,7 +216,8 @@ public class GalleryUploadActivity extends AppCompatActivity implements
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         /* Constants */
-        private static final int PAGE_COUNT = 3;
+        //TODO: Turn this to 3
+        private static final int PAGE_COUNT = 2;
 
         /* Data */
         //Data from intent
@@ -227,16 +228,27 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         private Map<Integer, String> mFragmentTags;
         // Fragment Manager
         private FragmentManager mFragmentManager;
+
+        //TODO: Recreate this when Edit File tab is going to be utilized
+        // Title and Image arrays for tabs
+//        private String tabTitles[] = new String[]{
+//                getString(R.string.tv_title_upload),
+//                getString(R.string.tv_title_edit_exif),
+//                getString(R.string.tv_title_edit_file)};
+//
+//        private int[] imageResId = {
+//                R.drawable.ic_upload_file_white_24dp,
+//                R.drawable.ic_exif_edit,
+//                R.drawable.ic_file_edit};
+
         // Title and Image arrays for tabs
         private String tabTitles[] = new String[]{
                 getString(R.string.tv_title_upload),
-                getString(R.string.tv_title_edit_exif),
-                getString(R.string.tv_title_edit_file)};
+                getString(R.string.tv_title_edit_exif)};
 
         private int[] imageResId = {
                 R.drawable.ic_upload_file_white_24dp,
-                R.drawable.ic_exif_edit,
-                R.drawable.ic_file_edit};
+                R.drawable.ic_exif_edit};
 
         // Default constructor
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -291,7 +303,7 @@ public class GalleryUploadActivity extends AppCompatActivity implements
                 case 1:
                     return EditExifFragment.newInstance(mEditedFileUri, mFileUri);
 //                case 2:
-//                     //TODO: Implement File editing
+//                     //TODO: Recreate this when Edit File tab is going to be utilized
 //                    return EditFileFragment.newInstance("Cat", "Cat");
             }
             Log.d(LOG_TAG, "Something went wrong");

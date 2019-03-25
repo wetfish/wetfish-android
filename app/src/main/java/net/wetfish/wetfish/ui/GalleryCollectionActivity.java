@@ -289,7 +289,6 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private boolean mOriginalFilePresent;
         // Boolean if the edited file exists
         private boolean mEditedFilePresent;
-        //
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
