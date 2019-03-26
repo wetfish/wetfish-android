@@ -219,30 +219,50 @@ public class FileContentProvider extends ContentProvider {
 
         try {
             // Acquire the file system paths
-            File internalStorageDirectory = Environment.getDownloadCacheDirectory();
+            File internalStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             File dataDirectory = Environment.getDataDirectory();
 
             // Create the paths regarding the various file locations
-            String currentDBPath = "/data/" + context.getApplicationInfo().packageName + "/databases/file.db";
-            String backupDBPath = "fileBackup.db";
+            String currentDBPath = "//data//" + context.getApplicationInfo().packageName + "//databases//file.db";
+            String backupDBPath = "//fileBackup.db";
+
             File currentDB = new File(dataDirectory, currentDBPath);
             backupDB = new File(internalStorageDirectory, backupDBPath);
 
-            Log.d("Shoooot", dataDirectory.toString() + currentDBPath);
+//            File currentDB = new File(currentDBPath);
+//            backupDB = new File(backupDBPath);
+
+
+            Log.d("exportDB", dataDirectory.toString() + currentDBPath  +
+                    "\n" + internalStorageDirectory.toString() + backupDBPath);
+
+            Log.d("Dammit", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    + "\n" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+                    + "\n" + Environment.getExternalStorageDirectory()
+                    + "\n" + Environment.getDownloadCacheDirectory()
+                    + "\n" + Environment.getDataDirectory());
 
             // Check to see if a database exists
             if (currentDB.exists()) {
-                Log.d("Shoooot2", "This DB Existsv c" + "\n" + backupDBPath);
+                Log.d("exportDB 1st If", "This DB Exists" + "\n" + currentDBPath);
+                backupDB.createNewFile();
+                if (backupDB.exists()) {
+                    Log.d("exportDB 2nd If", "This DB Exists" + "\n" + backupDBPath);
+                    FileChannel source = new FileInputStream(currentDB).getChannel();
+                    FileChannel destination = new FileOutputStream(backupDB).getChannel();
+                    destination.transferFrom(source, 0, source.size());
 
-                FileChannel source = new FileInputStream(currentDB).getChannel();
-                FileChannel destination = new FileOutputStream(backupDB).getChannel();
-                destination.transferFrom(source, 0, source.size());
+                    source.close();
 
-                source.close();
-                destination.close();
+//                destination.close();
 
-                // TODO: Add a function to check if the databases are exact copies.
-                return true;
+                    // TODO: Add a function to check if the databases are exact copies.
+                    return true;
+                } else {
+                    Log.d("exportDB 2nd If", "This DB Doesn't Exist" + "\n" + backupDBPath + "\n" +
+                            internalStorageDirectory + backupDBPath);
+                    return false;
+                }
             } else {
                 // Return false, probably return a better variable, number perhaps
                 // TODO:
@@ -254,6 +274,7 @@ public class FileContentProvider extends ContentProvider {
             // In case of failure delete the DB
             if (backupDB.exists() && backupDB != null) {
                 backupDB.delete();
+                Log.d("Shoot  Willis", "Boom Boom");
             }
 
             // exporting failed
@@ -264,6 +285,7 @@ public class FileContentProvider extends ContentProvider {
             // In case of failure delete the DB
             if (backupDB.exists() && backupDB != null) {
                 backupDB.delete();
+                Log.d("Shoot  Willis", "Boom Boom");
             }
 
             // exporting failed
