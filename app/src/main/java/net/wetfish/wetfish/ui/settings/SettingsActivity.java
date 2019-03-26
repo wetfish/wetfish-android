@@ -28,7 +28,6 @@ import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
 
 import net.wetfish.wetfish.BuildConfig;
 import net.wetfish.wetfish.R;
-import net.wetfish.wetfish.data.FileContentProvider;
 import net.wetfish.wetfish.data.FileDbHelper;
 
 import java.util.List;
@@ -276,14 +275,31 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
 
-            // Setup open source references settings summary and button
+            // Setup export database button
             findPreference(getString(R.string.pref_appExportDatabase_key)).setSummary(getString(R.string.pref_appExportDatabase_prompt));
             findPreference(getString(R.string.pref_appExportDatabase_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     // Export the current Wetfish database
 
-                    if (FileContentProvider.exportDB(getActivity())) {
+                    if (FileDbHelper.onExportDB(getActivity())) {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom!", Snackbar.LENGTH_LONG).show();
+                    } else {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom Bad!", Snackbar.LENGTH_LONG).show();
+                    }
+
+                    return true;
+                }
+            });
+
+            // Setup import database button
+            findPreference(getString(R.string.pref_appImportDatabase_key)).setSummary(getString(R.string.pref_appImportDatabase_prompt));
+            findPreference(getString(R.string.pref_appImportDatabase_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // Export the current Wetfish database
+
+                    if (FileDbHelper.onImportDB(getActivity())) {
                         Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom!", Snackbar.LENGTH_LONG).show();
                     } else {
                         Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom Bad!", Snackbar.LENGTH_LONG).show();

@@ -8,19 +8,10 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import net.wetfish.wetfish.data.FileContract.Files;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
 
 /**
  * Created by ${Michael} on 12/9/2017.
@@ -213,84 +204,5 @@ public class FileContentProvider extends ContentProvider {
         return 0;
     }
 
-    public static boolean exportDB(Context context) {
-
-        File backupDB = null;
-
-        try {
-            // Acquire the file system paths
-            File internalStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File dataDirectory = Environment.getDataDirectory();
-
-            // Create the paths regarding the various file locations
-            String currentDBPath = "//data//" + context.getApplicationInfo().packageName + "//databases//file.db";
-            String backupDBPath = "//fileBackup.db";
-
-            File currentDB = new File(dataDirectory, currentDBPath);
-            backupDB = new File(internalStorageDirectory, backupDBPath);
-
-//            File currentDB = new File(currentDBPath);
-//            backupDB = new File(backupDBPath);
-
-
-            Log.d("exportDB", dataDirectory.toString() + currentDBPath  +
-                    "\n" + internalStorageDirectory.toString() + backupDBPath);
-
-            Log.d("Dammit", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    + "\n" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-                    + "\n" + Environment.getExternalStorageDirectory()
-                    + "\n" + Environment.getDownloadCacheDirectory()
-                    + "\n" + Environment.getDataDirectory());
-
-            // Check to see if a database exists
-            if (currentDB.exists()) {
-                Log.d("exportDB 1st If", "This DB Exists" + "\n" + currentDBPath);
-                backupDB.createNewFile();
-                if (backupDB.exists()) {
-                    Log.d("exportDB 2nd If", "This DB Exists" + "\n" + backupDBPath);
-                    FileChannel source = new FileInputStream(currentDB).getChannel();
-                    FileChannel destination = new FileOutputStream(backupDB).getChannel();
-                    destination.transferFrom(source, 0, source.size());
-
-                    source.close();
-
-//                destination.close();
-
-                    // TODO: Add a function to check if the databases are exact copies.
-                    return true;
-                } else {
-                    Log.d("exportDB 2nd If", "This DB Doesn't Exist" + "\n" + backupDBPath + "\n" +
-                            internalStorageDirectory + backupDBPath);
-                    return false;
-                }
-            } else {
-                // Return false, probably return a better variable, number perhaps
-                // TODO:
-                return false;
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-
-            // In case of failure delete the DB
-            if (backupDB.exists() && backupDB != null) {
-                backupDB.delete();
-                Log.d("Shoot  Willis", "Boom Boom");
-            }
-
-            // exporting failed
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-
-            // In case of failure delete the DB
-            if (backupDB.exists() && backupDB != null) {
-                backupDB.delete();
-                Log.d("Shoot  Willis", "Boom Boom");
-            }
-
-            // exporting failed
-            return false;
-        }
-    }
 
 }

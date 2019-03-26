@@ -23,4 +23,9 @@
         android:key="@string/pref_appExportDatabase_key"
         android:title="@string/pref_appExportDatabase_title" />
 
+    <Preference
+        style="@style/TextViewBody"
+        android:key="@string/pref_appImportDatabase_key"
+        android:title="@string/pref_appImportDatabase_title" />
+
 </PreferenceScreen>

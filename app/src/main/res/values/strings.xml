@@ -229,6 +229,10 @@
     <string name="pref_appExportDatabase_title">Export Uploads Database</string>
     <string name="pref_appExportDatabase_prompt">Click here to export the Wetfish app database for all your uploads</string>
 
+    <string name="pref_appImportDatabase_key">pref_appImportDatabase_key</string>
+    <string name="pref_appImportDatabase_title">Import Uploads Database</string>
+    <string name="pref_appImportDatabase_prompt">Click here to import the Wetfish app database for all your uploads</string>
+
 
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
