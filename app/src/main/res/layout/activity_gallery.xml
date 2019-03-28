@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/gallery_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    app:layout_behavior="net.wetfish.wetfish.utils.TranslateFAMBehavior"
     tools:context="net.wetfish.wetfish.ui.GalleryActivity">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_height"
         android:fitsSystemWindows="true"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.design.widget.CollapsingToolbarLayout
+        <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/toolbar_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -29,36 +27,49 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                android:layout_marginBottom="8dp"
                 android:layout_marginLeft="32dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/tv_toolbar_subheader"
                 android:textColor="@color/accent"
                 android:textSize="14sp"
                 app:layout_collapseMode="parallax" />
 
-
-            <android.support.v7.widget.Toolbar
+            <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-        </android.support.design.widget.CollapsingToolbarLayout>
-    </android.support.design.widget.AppBarLayout>
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <include
         android:id="@+id/include_layout_gallery"
         layout="@layout/content_gallery" />
+
+    <!-- FAM & FAB -->
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom|end"
+        android:clickable="false"
+        app:layout_behavior="net.wetfish.wetfish.ui.behaviors.FAMShrinkBehavior"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <com.github.clans.fab.FloatingActionMenu
             android:id="@+id/fam_gallery"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="bottom|end"
-            fab:menu_animationDelayPerItem="55"
-            android:layout_marginBottom="16dp"
             android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            fab:menu_animationDelayPerItem="55"
             fab:menu_backgroundColor="@android:color/transparent"
             fab:menu_buttonSpacing="0dp"
             fab:menu_colorNormal="@color/accent"
@@ -96,8 +107,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
-                android:layout_marginBottom="@dimen/fab_margin"
                 android:layout_marginEnd="@dimen/fab_margin"
+                android:layout_marginBottom="@dimen/fab_margin"
                 android:src="@drawable/ic_add_file"
                 fab:fab_colorNormal="@color/accent"
                 fab:fab_colorPressed="@color/accent_dark"
@@ -110,8 +121,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
-                android:layout_marginBottom="@dimen/fab_margin"
                 android:layout_marginEnd="@dimen/fab_margin"
+                android:layout_marginBottom="@dimen/fab_margin"
                 android:src="@drawable/ic_add_file"
                 fab:fab_colorNormal="@color/accent"
                 fab:fab_colorPressed="@color/accent_dark"
@@ -124,8 +135,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
-                android:layout_marginBottom="@dimen/fab_margin"
                 android:layout_marginEnd="@dimen/fab_margin"
+                android:layout_marginBottom="@dimen/fab_margin"
                 android:src="@drawable/ic_add_file"
                 fab:fab_colorNormal="@color/accent"
                 fab:fab_colorPressed="@color/accent_dark"
@@ -138,8 +149,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
-                android:layout_marginBottom="@dimen/fab_margin"
                 android:layout_marginEnd="@dimen/fab_margin"
+                android:layout_marginBottom="@dimen/fab_margin"
                 android:src="@drawable/ic_add_file"
                 fab:fab_colorNormal="@color/accent"
                 fab:fab_colorPressed="@color/accent_dark"
@@ -148,20 +159,22 @@
                 fab:fab_size="mini" />
 
             <!--<com.github.clans.fab.FloatingActionButton-->
-                <!--android:id="@+id/fab_select_file"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_gravity="bottom|end"-->
-                <!--android:layout_marginBottom="@dimen/fab_margin"-->
-                <!--android:layout_marginEnd="@dimen/fab_margin"-->
-                <!--android:src="@drawable/ic_add_file"-->
-                <!--fab:fab_colorNormal="@color/accent"-->
-                <!--fab:fab_colorPressed="@color/accent_dark"-->
-                <!--fab:fab_colorRipple="@color/accent_light"-->
-                <!--fab:fab_label="@string/fab_select_file"-->
-                <!--fab:fab_size="mini" />-->
+            <!--android:id="@+id/fab_select_file"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="bottom|end"-->
+            <!--android:layout_marginBottom="@dimen/fab_margin"-->
+            <!--android:layout_marginEnd="@dimen/fab_margin"-->
+            <!--android:src="@drawable/ic_add_file"-->
+            <!--fab:fab_colorNormal="@color/accent"-->
+            <!--fab:fab_colorPressed="@color/accent_dark"-->
+            <!--fab:fab_colorRipple="@color/accent_light"-->
+            <!--fab:fab_label="@string/fab_select_file"-->
+            <!--fab:fab_size="mini" />-->
 
         </com.github.clans.fab.FloatingActionMenu>
 
+    </RelativeLayout>
 
-</android.support.design.widget.CoordinatorLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

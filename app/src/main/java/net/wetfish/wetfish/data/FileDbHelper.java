@@ -84,6 +84,5 @@ public class FileDbHelper extends SQLiteOpenHelper {
                     FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK + " TEXT";
             db.execSQL(upgradeQuery);
         }
-
     }
 }

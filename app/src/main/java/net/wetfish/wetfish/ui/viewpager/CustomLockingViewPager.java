@@ -1,9 +1,10 @@
 package net.wetfish.wetfish.ui.viewpager;
 
 import android.content.Context;
-import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+
+import androidx.viewpager.widget.ViewPager;
 
 /**
  * Created by ${Michael} on 9/12/2018.
@@ -41,6 +42,11 @@ public class CustomLockingViewPager extends ViewPager {
 
     public void setViewpagerSwitching(boolean swipeable) {
         mIsSwitchingEnabled = swipeable;
+    }
+
+    @Override
+    public void setSelected(boolean selected) {
+        super.setSelected(selected);
     }
 
 }

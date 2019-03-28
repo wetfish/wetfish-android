@@ -1,0 +1,29 @@
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- These settings headers are only used on tablets. -->
+    <Preference
+        style="@style/TextViewHeader"
+        app:fragment="net.wetfish.wetfish.ui.settings.MySettingsActivity$GeneralPreferenceFragment"
+        app:icon="@drawable/ic_info_white_24dp"
+        app:title="@string/pref_header_general" />
+
+    <!--<Preference-->
+        <!--style="@style/TextViewHeader"-->
+        <!--app:fragment="net.wetfish.wetfish.ui.settings.MySettingsActivityNotificationPreferenceFragment"-->
+        <!--app:icon="@drawable/ic_notifications_white_24dp"-->
+        <!--app:title="@string/pref_header_notifications" />-->
+
+    <Preference
+        style="@style/TextViewHeader"
+        app:fragment="net.wetfish.wetfish.ui.settings.MySettingsActivity$DataSyncPreferenceFragment"
+        app:icon="@drawable/ic_sync_white_24dp"
+        app:title="@string/pref_header_data" />
+
+    <Preference
+        style="@style/TextViewHeader"
+        app:fragment="net.wetfish.wetfish.ui.settings.MySettingsActivity$AboutPreferenceFragment"
+        app:icon="@drawable/ic_about_white_24dp"
+        app:title="@string/pref_header_about" />
+
+</androidx.preference.PreferenceScreen>

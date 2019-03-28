@@ -2,12 +2,14 @@ package net.wetfish.wetfish.utils;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import net.wetfish.wetfish.R;
+
+import androidx.core.content.ContextCompat;
 
 /**
  * Created by ${Michael} on 11/15/2017.

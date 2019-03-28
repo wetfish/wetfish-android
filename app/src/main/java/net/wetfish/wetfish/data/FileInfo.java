@@ -122,6 +122,4 @@ public class FileInfo {
     public boolean getFileInfoInitialized() {
         return fileInfoInitialized;
     }
-
-
 }
