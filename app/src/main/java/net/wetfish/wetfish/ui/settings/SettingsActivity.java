@@ -282,10 +282,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 public boolean onPreferenceClick(Preference preference) {
                     // Export the current Wetfish database
 
-                    if (FileDbHelper.onExportDB(getActivity())) {
-                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom!", Snackbar.LENGTH_LONG).show();
+                    String onExportDBResult = FileDbHelper.onExportDB(getActivity(), getActivity().findViewById(android.R.id.content));
+
+                    if (onExportDBResult != null) {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), onExportDBResult, Snackbar.LENGTH_LONG).show();
                     } else {
-                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom Bad!", Snackbar.LENGTH_LONG).show();
+                        //Do nothing, the snackbar will be created asynchronously within the AlertDialog
                     }
 
                     return true;
@@ -299,10 +301,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 public boolean onPreferenceClick(Preference preference) {
                     // Export the current Wetfish database
 
-                    if (FileDbHelper.onImportDB(getActivity())) {
-                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom!", Snackbar.LENGTH_LONG).show();
+                    String onImportDBResult = FileDbHelper.onImportDB(getActivity(), getActivity().findViewById(android.R.id.content));
+
+                    if (onImportDBResult != null) {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), onImportDBResult, Snackbar.LENGTH_LONG).show();
                     } else {
-                        Snackbar.make(getActivity().findViewById(android.R.id.content), "Boom Bad!", Snackbar.LENGTH_LONG).show();
+                        //Do nothing, the snackbar will be created asynchronously within the AlertDialog
                     }
 
                     return true;
@@ -343,7 +347,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     // Create dialog builder
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogThemeAppVersionSummary);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
 
                     // Create layout inflater

@@ -1,10 +1,16 @@
 package net.wetfish.wetfish.data;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
+
+import net.wetfish.wetfish.R;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +51,6 @@ public class FileDbHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-
     /**
      * Called when the database is created for the first time. This is where the
      * creation of tables and the initial population of the tables should happen.
@@ -69,149 +74,6 @@ public class FileDbHelper extends SQLiteOpenHelper {
                         FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK + " TEXT);";
 
         db.execSQL(SQL_CREATE_FILES_TABLE);
-    }
-
-    public static boolean onExportDB(Context context) {
-        File backupDB = null;
-
-        try {
-            // Acquire the file system paths
-            File internalStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File dataDirectory = Environment.getDataDirectory();
-
-            // Create the paths regarding the various file locations
-            String currentDBPath = "//data//" + context.getApplicationInfo().packageName + "//databases//file.db";
-            String backupDBPath = "//fileBackup.db";
-
-            File currentDB = new File(dataDirectory, currentDBPath);
-            backupDB = new File(internalStorageDirectory, backupDBPath);
-
-//            File currentDB = new File(currentDBPath);
-//            backupDB = new File(backupDBPath);
-
-
-            Log.d("onExportDB", dataDirectory.toString() + currentDBPath  +
-                    "\n" + internalStorageDirectory.toString() + backupDBPath);
-
-            Log.d("Dammit", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    + "\n" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-                    + "\n" + Environment.getExternalStorageDirectory()
-                    + "\n" + Environment.getDownloadCacheDirectory()
-                    + "\n" + Environment.getDataDirectory());
-
-            // Check to see if a database exists
-            if (currentDB.exists()) {
-                Log.d("onExportDB 1st If", "This DB Exists" + "\n" + currentDBPath);
-                backupDB.createNewFile();
-                if (backupDB.exists()) {
-                    Log.d("onExportDB 2nd If", "This DB Exists" + "\n" + backupDBPath);
-                    FileChannel source = new FileInputStream(currentDB).getChannel();
-                    FileChannel destination = new FileOutputStream(backupDB).getChannel();
-                    destination.transferFrom(source, 0, source.size());
-
-                    source.close();
-
-//                destination.close();
-
-                    // TODO: Add a function to check if the databases are exact copies.
-                    return true;
-                } else {
-                    Log.d("onExportDB 2nd If", "This DB Doesn't Exist" + "\n" + backupDBPath + "\n" +
-                            internalStorageDirectory + backupDBPath);
-                    return false;
-                }
-            } else {
-                // Return false, probably return a better variable, number perhaps
-                // TODO: Refine Error Return
-                return false;
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-
-            // In case of failure delete the DB
-            if (backupDB.exists() && backupDB != null) {
-                backupDB.delete();
-                Log.d("Shoot  Willis", "Boom Boom");
-            }
-
-            // exporting failed
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-
-            // In case of failure delete the DB
-            if (backupDB.exists() && backupDB != null) {
-                backupDB.delete();
-                Log.d("Shoot  Willis", "Boom Boom");
-            }
-
-            // exporting failed
-            return false;
-        }
-    }
-
-
-    public static boolean onImportDB(Context context) {
-
-        try {
-            // Acquire the file system paths
-            File internalStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            File dataDirectory = Environment.getDataDirectory();
-
-            // Create the paths regarding the various file locations
-            String currentDBPath = "//data//" + context.getApplicationInfo().packageName + "//databases//file.db";
-            String backupDBPath = "//fileBackup.db";
-
-            File currentDB = new File(dataDirectory, currentDBPath);
-            File backupDB = new File(internalStorageDirectory, backupDBPath);
-
-//            File currentDB = new File(currentDBPath);
-//            backupDB = new File(backupDBPath);
-
-
-            Log.d("onExportDB", dataDirectory.toString() + currentDBPath  +
-                    "\n" + internalStorageDirectory.toString() + backupDBPath);
-
-            Log.d("Dammit", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    + "\n" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-                    + "\n" + Environment.getExternalStorageDirectory()
-                    + "\n" + Environment.getDownloadCacheDirectory()
-                    + "\n" + Environment.getDataDirectory());
-
-            // Check to see if a database exists
-            if (backupDB.exists()) {
-                Log.d("onExportDB 2nd If", "This DB Exists" + "\n" + backupDBPath);
-
-                if (currentDB.exists()) {
-                    Log.d("onExportDB 1st If", "This DB Exists" + "\n" + currentDBPath);
-
-                    FileChannel source = new FileInputStream(backupDB).getChannel();
-                    FileChannel destination = new FileOutputStream(currentDB).getChannel();
-                    destination.transferFrom(source, 0, source.size());
-
-                    source.close();
-
-                    // TODO: Add a function to check if the databases are exact copies.
-                    return true;
-                } else {
-                    Log.d("onExportDB 2nd If", "This DB Doesn't Exist" + "\n" + backupDBPath + "\n" +
-                            internalStorageDirectory + backupDBPath);
-                    return false;
-                }
-            } else {
-                // Return false, probably return a better variable, number perhaps
-                // TODO: Refine Error Return
-                return false;
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            // exporting failed
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-            // exporting failed
-            return false;
-        }
     }
 
     /**
@@ -239,4 +101,304 @@ public class FileDbHelper extends SQLiteOpenHelper {
         }
 
     }
+
+    /**
+     * Method to export the Wetfish DB to fileBackup.db
+     *
+     * @param context Calling activity's context
+     * @param rootView View reference of the calling activity to create Snackbars asynchronously with Alert Dialog
+     * @return
+     */
+    public static String onExportDB(final Context context, final View rootView) {
+
+        // Acquire the file system paths
+        File internalStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File dataDirectory = Environment.getDataDirectory();
+
+        // Create the paths regarding the various file locations
+        String currentDBPath = "//data//" + context.getApplicationInfo().packageName + "//databases//file.db";
+        String backupDBPath = "//fileBackup.db";
+
+        // Setup the files pointing to the proper locations
+        final File currentDB = new File(dataDirectory, currentDBPath);
+        final File backupDB = new File(internalStorageDirectory, backupDBPath);
+
+        // Check to see if a database exists
+        if (currentDB.exists()) {
+            Log.d("onExportDB 1st If", "This DB Exists" + "\n" + currentDBPath);
+
+            // Check to see if a backup DB exists, if a backup DB exists ask the user if  they want to overwrite it or not
+            if (backupDB.exists()) {
+                // Arrays to reference a variable in a final context and still edit the value
+                final String[] returnString = new String[1];
+
+                // Mark the string as null so we can avoid making a snackbar
+                returnString[0] = null;
+
+                // Setup the AlertDialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.DialogTheme);
+                builder.setMessage(R.string.ad_message_overwrite_last_export_warning)
+                        .setTitle(R.string.ad_title_overwrite_last_export_title)
+                        .setPositiveButton(R.string.ad_yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // User decided to create a new database export and overwrite the old one
+                                returnString[0] = exportDB(backupDB, currentDB, context);
+                                Snackbar.make(rootView, returnString[0], Snackbar.LENGTH_LONG).show();
+                            }
+                        })
+                        .setNegativeButton(R.string.ad_no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // User decided to not create a new database.
+                                returnString[0] = context.getString(R.string.sb_db_export_stopped);
+                                Snackbar.make(rootView, returnString[0], Snackbar.LENGTH_LONG).show();
+
+                            }
+                        });
+
+                // Create and show the AlertDialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+                //Return null here because the snackbar will be created inside the AlertDialog because of its asynchronous execution.
+                return null;
+            } else {
+                return exportDB(backupDB, currentDB, context);
+            }
+        } else {
+            // Inform the user no database exists to export
+            return context.getString(R.string.sb_db_export_nothing_to_export);
+        }
+    }
+
+    /**
+     * Method to import the fileBackup.db into Wetfish.
+     *
+     * @param context Calling activity's context
+     * @param rootView View reference of the calling activity to create Snackbars asynchronously with Alert Dialog
+     * @return
+     */
+    public static String onImportDB(final Context context, final View rootView) {
+        // Acquire the file system paths
+        File internalStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File dataDirectory = Environment.getDataDirectory();
+
+        // Create the paths regarding the various file locations
+        String currentDBPath = "//data//" + context.getApplicationInfo().packageName + "//databases//file.db";
+        String currentDBBackupPath = "//currentFileBackupUniqueWetfishDatabase.db";
+        String backupDBPath = "//fileBackup.db";
+
+        // Setup the files pointing to the proper locations
+        final File currentDB = new File(dataDirectory, currentDBPath);
+        final File currentDBBackup = new File(internalStorageDirectory, currentDBBackupPath);
+        final File backupDB = new File(internalStorageDirectory, backupDBPath);
+
+        // Arrays to reference a variable in a final context and still edit the value
+        final String[] returnString = new String[1];
+
+        // Mark the string as null so we can avoid making a snackbar
+        returnString[0] = null;
+
+        // Setup the AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.DialogTheme);
+        builder.setMessage(R.string.ad_message_import_last_export_warning)
+                .setTitle(R.string.ad_title_import_title)
+                .setPositiveButton(R.string.ad_yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // User decided to create a new database export and overwrite the old one
+
+                        // Check to see if an exported database exists
+                        if (backupDB.exists()) {
+                            // Import the database
+                            returnString[0] = importDB(backupDB, currentDB, currentDBBackup, context);
+                        } else {
+                            // Database wasn't found to import
+                            returnString[0] = context.getString(R.string.sb_db_import_not_found);
+                        }
+
+                        // Snackbar result
+                        if (returnString[0] != null) {
+                            Snackbar.make(rootView, returnString[0], Snackbar.LENGTH_LONG).show();
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.ad_no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // User decided to not create a new database.
+                        returnString[0] = context.getString(R.string.sb_db_import_stopped);
+
+                        // Snackbar result
+                        Snackbar.make(rootView, returnString[0], Snackbar.LENGTH_LONG).show();
+
+                    }
+                });
+
+        // Create and show the AlertDialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        //Return null here because the snackbar will be created inside the AlertDialog because of its asynchronous execution.
+        return null;
+    }
+
+    /**
+     * This method helps simplify onExportDB by moving the file exporting logic.
+     *
+     * @param backupDB  The file reference of the location of where to create or overwrite the fileBackup.db
+     * @param currentDB The file reference of the location of where the Wetfish app database resides
+     * @param context   The calling activity's context
+     * @return
+     */
+    private static String exportDB(File backupDB, File currentDB, Context context) {
+        try {
+            backupDB.createNewFile();
+
+            if (backupDB.exists()) {
+                // Create the File I/O streams necessary to transfer the data
+                FileChannel source = new FileInputStream(currentDB).getChannel();
+                FileChannel destination = new FileOutputStream(backupDB).getChannel();
+                destination.transferFrom(source, 0, source.size());
+
+                // Verify the data was properly transferred
+                if (source.size() == destination.size()) {
+                    source.close();
+                    return context.getString(R.string.sb_db_export_verification_success);
+                } else {
+                    source.close();
+                    return context.getString(R.string.sb_db_export_verification_failure);
+                }
+            } else {
+//            Log.d("onExportDB 2nd If", "This DB Doesn't Exist" + "\n" + backupDBPath + "\n" + internalStorageDirectory + backupDBPath);
+                return context.getString(R.string.sb_db_export_creation_failure);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+
+            // In case of failure delete the DB
+            if (backupDB.exists() && backupDB != null) {
+                backupDB.delete();
+            }
+
+            // exporting failed
+            return context.getString(R.string.sb_db_file_not_found_exception);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            // In case of failure delete the DB
+            if (backupDB.exists() && backupDB != null) {
+                backupDB.delete();
+            }
+
+            // exporting failed
+            return context.getString(R.string.sb_db_file_io_exception);
+        }
+    }
+
+    /**
+     * This method helps simplify onImportDB by moving the file importing logic.
+     *
+     * @param backupDB  The file reference of the location of where to find fileBackup.db
+     * @param currentDB The file reference of the location of where the Wetfish app database resides
+     * @param currentDBBackup The file reference of the location of where the Wetfish app database is temporarily stored in case of errors
+     * @param context   The calling activity's context
+     * @return
+     */
+    private static String importDB(File backupDB, File currentDB, File currentDBBackup, Context context) {
+        try {
+            if (!currentDB.exists()) {
+                // If a database doesn't currently exist create a new file for destination to populate
+                currentDB.createNewFile();
+                currentDBBackup = null;
+            } else {
+                // If a database does currently exist create a temporary file for it to restore if importing goes astray.
+                FileChannel currentDBSource = new FileInputStream(currentDB).getChannel();
+                FileChannel destination = new FileOutputStream(currentDBBackup).getChannel();
+                destination.transferFrom(currentDBSource, 0,  currentDBSource.size());
+
+                if (currentDBSource.size() == destination.size()) {
+                    // Close source
+                    currentDBSource.close();
+                } else {
+                    // Close source and delete the backup, backup method failed.
+                    currentDBSource.close();
+                    currentDBBackup.delete();
+                }
+            }
+
+            // Create the File I/O streams necessary to transfer the data
+            FileChannel source = new FileInputStream(backupDB).getChannel();
+            FileChannel destination = new FileOutputStream(currentDB).getChannel();
+            destination.transferFrom(source, 0, source.size());
+
+            // Verify the data was properly transferred
+            if (source.size() == destination.size()) {
+                // Close source and then delete the backup.
+                source.close();
+                currentDBBackup.delete();
+
+                // Inform the user of the import success
+                return context.getString(R.string.sb_db_import_verification_success);
+            } else {
+                // Close source
+                source.close();
+
+                // Try and revert from the backup copy if it exists. If all else fails, let the user know.
+                if (currentDBBackup != null) {
+                    // Transfer the data back from the temporary backup
+                    FileChannel preImportBackupSource = new FileInputStream(currentDBBackup).getChannel();
+                    destination.transferFrom(preImportBackupSource, 0,  preImportBackupSource.size());
+
+                    if (preImportBackupSource.size() == destination.size()) {
+                        // Close preImportBackupSource and delete the backup, backup method succeeded.
+                        preImportBackupSource.close();
+                        currentDBBackup.delete();
+
+                        // Inform the user of the import failure and successful revert
+                        return context.getString(R.string.sb_db_import_verification_failure);
+                    } else {
+                        // Close preImportBackupSource and delete the backup, backup method failed.
+                        preImportBackupSource.close();
+                        currentDBBackup.delete();
+
+                        // Inform the user of the import failure and unsuccessful revert.
+                        return context.getString(R.string.sb_db_import_verification_failure_plus);
+                    }
+                } else {
+                    // Since no database existed before delete the failed import and close source
+                    source.close();
+                    currentDB.delete();
+
+                    // Inform the user of the import failure.
+                     return context.getString(R.string.sb_db_import_verification_failure);
+                }
+
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+
+            // In case of failure delete the DB backup
+            if (currentDBBackup.exists() && currentDBBackup != null) {
+                currentDBBackup.delete();
+            }
+
+            // Inform the user of the import failure.
+            return context.getString(R.string.sb_db_file_not_found_exception);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            // In case of failure delete the DB backup
+            if (currentDBBackup.exists() && currentDBBackup != null) {
+                currentDBBackup.delete();
+            }
+
+            // Inform the user of the import failure.
+            return context.getString(R.string.sb_db_file_io_exception);
+        }
+    }
+
+
 }
