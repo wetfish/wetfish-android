@@ -7,20 +7,14 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.EditedFileData;
@@ -34,6 +28,14 @@ import net.wetfish.wetfish.utils.UIUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 
 public class GalleryUploadActivity extends AppCompatActivity implements
         FileUploadFragment.UploadFragmentUriUpdate,
@@ -214,7 +216,8 @@ public class GalleryUploadActivity extends AppCompatActivity implements
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         /* Constants */
-        private static final int PAGE_COUNT = 3;
+        //TODO: Turn this to 3
+        private static final int PAGE_COUNT = 2;
 
         /* Data */
         //Data from intent
@@ -225,16 +228,27 @@ public class GalleryUploadActivity extends AppCompatActivity implements
         private Map<Integer, String> mFragmentTags;
         // Fragment Manager
         private FragmentManager mFragmentManager;
+
+        //TODO: Recreate this when Edit File tab is going to be utilized
+        // Title and Image arrays for tabs
+//        private String tabTitles[] = new String[]{
+//                getString(R.string.tv_title_upload),
+//                getString(R.string.tv_title_edit_exif),
+//                getString(R.string.tv_title_edit_file)};
+//
+//        private int[] imageResId = {
+//                R.drawable.ic_upload_file_white_24dp,
+//                R.drawable.ic_exif_edit,
+//                R.drawable.ic_file_edit};
+
         // Title and Image arrays for tabs
         private String tabTitles[] = new String[]{
                 getString(R.string.tv_title_upload),
-                getString(R.string.tv_title_edit_exif),
-                getString(R.string.tv_title_edit_file)};
+                getString(R.string.tv_title_edit_exif)};
 
         private int[] imageResId = {
                 R.drawable.ic_upload_file_white_24dp,
-                R.drawable.ic_exif_edit,
-                R.drawable.ic_file_edit};
+                R.drawable.ic_exif_edit};
 
         // Default constructor
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -253,13 +267,18 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            Object obj = super.instantiateItem(container, position);
-            if (obj instanceof Fragment) {
-                Fragment fragment = (Fragment) obj;
-                String tag = fragment.getTag();
-                mFragmentTags.put(position, tag);
+
+            //TODO: Remove when adding the edit page
+            if (position != 2) {
+                Object obj = super.instantiateItem(container, position);
+                if (obj instanceof Fragment) {
+                    Fragment fragment = (Fragment) obj;
+                    String tag = fragment.getTag();
+                    mFragmentTags.put(position, tag);
+                }
+                return obj;
             }
-            return obj;
+            return null;
         }
 
         public Fragment getFragment(int position) {
@@ -283,9 +302,9 @@ public class GalleryUploadActivity extends AppCompatActivity implements
                     return FileUploadFragment.newInstance(mEditedFileUri, mFileUri);
                 case 1:
                     return EditExifFragment.newInstance(mEditedFileUri, mFileUri);
-                case 2:
-                    //TODO: Implement File editing
-                    return EditFileFragment.newInstance("Cat", "Cat");
+//                case 2:
+//                     //TODO: Recreate this when Edit File tab is going to be utilized
+//                    return EditFileFragment.newInstance("Cat", "Cat");
             }
             Log.d(LOG_TAG, "Something went wrong");
             return null;
@@ -296,8 +315,6 @@ public class GalleryUploadActivity extends AppCompatActivity implements
             // Show 3 total pages.
             return PAGE_COUNT;
         }
-
-
 
         /**
          * This method may be called by the ViewPager to obtain a title string

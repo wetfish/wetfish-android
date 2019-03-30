@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.support.media.ExifInterface;
 import android.util.Log;
 
 import net.wetfish.wetfish.R;
@@ -14,6 +13,8 @@ import net.wetfish.wetfish.data.FileExifDataHeader;
 
 import java.io.IOException;
 import java.util.ArrayList;
+
+import androidx.exifinterface.media.ExifInterface;
 
 /**
  * Created by ${Michael} on 5/24/2018.

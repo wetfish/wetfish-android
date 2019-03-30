@@ -99,9 +99,8 @@ public class FileDbHelper extends SQLiteOpenHelper {
                     FileColumns.COLUMN_FILE_EDITED_DEVICE_STORAGE_LINK + " TEXT";
             db.execSQL(upgradeQuery);
         }
-
     }
-
+  
     /**
      * Method to export the Wetfish DB to fileBackup.db
      *
@@ -399,6 +398,4 @@ public class FileDbHelper extends SQLiteOpenHelper {
             return context.getString(R.string.sb_db_file_io_exception);
         }
     }
-
-
 }

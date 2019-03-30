@@ -1,22 +1,22 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fragment="net.wetfish.wetfish.ui.settings.SettingsActivity$GeneralPreferenceFragment">
 
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
-    <ListPreference
-        android:defaultValue="180"
-        android:entries="@array/pref_sync_frequency_titles"
-        android:entryValues="@array/pref_sync_frequency_values"
-        android:key="sync_frequency"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:title="@string/pref_title_sync_frequency" />
+    <PreferenceCategory
+        style="@style/TextViewHeaderSettings"
+        android:key="@string/pref_key_app_data_sync"
+        android:title="@string/pref_category_app_data">
 
-    <!-- This preference simply launches an intent when selected. Use this UI sparingly, per
-         design guidelines. -->
-    <Preference android:title="@string/pref_title_system_sync_settings">
-        <intent android:action="android.settings.SYNC_SETTINGS" />
-    </Preference>
+        <!--<ListPreference-->
+            <!--android:defaultValue="180"-->
+            <!--android:entries="@array/pref_sync_frequency_titles"-->
+            <!--android:entryValues="@array/pref_sync_frequency_values"-->
+            <!--android:key="sync_frequency"-->
+            <!--android:negativeButtonText="@null"-->
+            <!--android:positiveButtonText="@null"-->
+            <!--android:title="@string/pref_title_sync_frequency" />-->
 
     <Preference
         style="@style/TextViewBody"
@@ -27,5 +27,13 @@
         style="@style/TextViewBody"
         android:key="@string/pref_appImportDatabase_key"
         android:title="@string/pref_appImportDatabase_title" />
+      
+        <!--&lt;!&ndash; This preference simply launches an intent when selected. Use this UI sparingly, per-->
+             <!--design guidelines. &ndash;&gt;-->
+        <!--<Preference android:title="@string/pref_title_system_sync_settings">-->
+            <!--<intent android:action="android.settings.SYNC_SETTINGS" />-->
+        <!--</Preference>-->
 
-</PreferenceScreen>
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

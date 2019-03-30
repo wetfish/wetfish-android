@@ -150,6 +150,7 @@
 
     // Category - Sorting
     <string name="pref_key_sorting_settings">pref_key_sorting_settings</string>
+
     <string name="pref_category_title_sorting">Sorting</string>
 
     // Checkbox - Sorting by Most Recent
@@ -166,6 +167,7 @@
     <string name="pref_header_about">About</string>
 
     <string name="pref_key_app_information">pref_key_app_information</string>
+
     <string name="pref_category_app_information">App Information</string>
 
     <string name="pref_appVersion_key">pref_appVersion_key</string>
@@ -174,23 +176,15 @@
     <string name="pref_appVersionSummary_key">pref_appVersionSummary_key</string>
     <string name="pref_appVersionSummary_title">Version Summary</string>
     <string name="pref_appVersionSummary">
-    <b>Gallery Activity</b>\n
-    - Card View Spacing now takes more space \n\n
-
-    <b>Gallery Collection Activity</b>\n
-    - Fix crashing when various files aren\'t present while moving through items\n
-    - PNG pictures of appropriate file states\n
-    - File clicking will now redirect the user to Wetfish if not on the file system\n
-    - File clicking will now appropriately open up the correct image\n\n
+    <b>EXIF UPDATE</b>\n
 
     <b>Upload Page</b>\n
-    - An alert dialog will now pop up when moving back screens\n
-    - Video Uploading now has one tab\n
-    - View alignment fixed\n
-    - Loading Tab on devices greater than v24\n\n
+    - Change upload delay from three seconds to two seconds. \n
+    - Change how the EXIF tab works, allowing users to select EXIF settings to remove during the upload process and save these selections as persistent settings automatically upon change. \n
+    - Apply the current Wetfish version to the User Comment portion of the EXIF for Wetfish server’s new policy. \n
+    - Make the upload process produce an AlertDialog should EXIF editing fail during the process. \n
+    - Make the upload process cancelable throughout the entire process. \n
 
-    <b>Misc.</b>\n
-    - Fix for crashes on bitmap rescaling\n
     </string>
     <string name="pref_appVersionSummary_prompt">Click here for Wetfish version details</string>
     <string name="dialog_acknowledged">OKAY</string>
@@ -205,6 +199,7 @@
         <item>null</item>
         <item>null</item>
     </string-array>
+
     <string-array name="pref_sortingMethod_list_values">
         <item>null</item>
         <item>null</item>
@@ -212,8 +207,12 @@
     </string-array>
 
     <!-- Data & Sync Settings -->
-    // Implement this once relevant and updates from the server is relevant.
     <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string name="pref_header_data">Data</string>
+
+    <string name="pref_key_app_data_sync">pref_key_app_data_sync</string>
+
+    <string name="pref_category_app_data">App Data</string>
 
     <string name="pref_title_sync_frequency">Sync frequency</string>
     <string-array name="pref_sync_frequency_titles">
@@ -257,7 +256,6 @@
     <string name="pref_appImportDatabase_key">pref_appImportDatabase_key</string>
     <string name="pref_appImportDatabase_title">Import Uploads Database</string>
     <string name="pref_appImportDatabase_prompt">Click here to import the Wetfish app database for all your uploads</string>
-
 
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>

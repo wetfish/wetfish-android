@@ -15,18 +15,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.FileProvider;
-import android.support.v4.content.Loader;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +27,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestOptions;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileContract.FileColumns;
@@ -47,6 +36,18 @@ import net.wetfish.wetfish.data.FileInfo;
 import net.wetfish.wetfish.utils.FileUtils;
 
 import java.io.File;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.viewpager.widget.ViewPager;
 
 /**
  * Created by ${Michael} on 4/2/2018.
@@ -288,7 +289,6 @@ public class GalleryCollectionActivity extends AppCompatActivity {
         private boolean mOriginalFilePresent;
         // Boolean if the edited file exists
         private boolean mEditedFilePresent;
-        //
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -318,7 +318,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             // Utilize FileInfo & setup interaction listeners for the views, FAM and FABs
 
             LoaderManager loaderManager = getLoaderManager();
-            Loader<Object> fileLoader = loaderManager.getLoader(FILES_DETAIL_LOADER);
+            androidx.loader.content.Loader<Object> fileLoader = loaderManager.getLoader(FILES_DETAIL_LOADER);
 
             if (!mFragmentCreated) {
                 // If loader doesn't exist
@@ -440,9 +440,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     if (mimeType.equals(getString(R.string.image_mime_type))) {
                         // Load the edited file from the local storage if possible, then move down the options
                         if (mEditedFilePresent) {
-                            Glide.with(this)
+                            Glide.with(getContext())
                                     .load(mEditedFileStorageLink)
-                                    .error(Glide.with(this)
+                                    .error(Glide.with(getContext())
                                             .load(mWetfishFileStorageLink)
                                             .apply(RequestOptions.fitCenterTransform()))
                                     .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_anywhere))
@@ -450,9 +450,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(mFileView);
                         } else {
-                            Glide.with(this)
+                            Glide.with(getContext())
                                     .load(mOriginalFileStorageLink)
-                                    .error(Glide.with(this)
+                                    .error(Glide.with(getContext())
                                             .load(mWetfishFileStorageLink)
                                             .apply(RequestOptions.fitCenterTransform()))
                                     .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_anywhere))
@@ -462,9 +462,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         }
                     } else {
                         // Video file loading for glide
-                        Glide.with(this)
+                        Glide.with(getContext())
                                 .load(mOriginalFileStorageLink)
-                                .error(Glide.with(this)
+                                .error(Glide.with(getContext())
                                         .load(mWetfishFileStorageLink)
 //                                        .apply(RequestOptions.diskCacheStrategyOf(DiskCacheStrategy.RESOURCE))
                                         .apply(RequestOptions.fitCenterTransform()))
@@ -475,8 +475,8 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     }
                 } else { // FileUtils.representableByGlide(mFileType) else
                     Log.d(LOG_TAG, "File is not representable by glide");
-                    // If the file is not representable by glide depict this to the user
-                    Glide.with(this)
+                    // If the file is not representable by glide depict getContext() to the user
+                    Glide.with(getContext())
                             .load(R.drawable.glide_not_representable)
                             .apply(RequestOptions.placeholderOf(new ColorDrawable(Color.DKGRAY)))
                             .apply(RequestOptions.fitCenterTransform())
@@ -490,9 +490,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         // Load the edited file from the local storage if possible, then move down the options
                         if (mEditedFilePresent) {
                             Log.d(LOG_TAG, "No network, edited file present");
-                            Glide.with(this)
+                            Glide.with(getContext())
                                     .load(mEditedFileStorageLink)
-                                    .error(Glide.with(this)
+                                    .error(Glide.with(getContext())
                                             .load(R.drawable.glide_file_not_found_no_network)
                                             .apply(RequestOptions.fitCenterTransform()))
                                     .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
@@ -500,9 +500,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                                     .transition(DrawableTransitionOptions.withCrossFade())
                                     .into(mFileView);
                         } else {
-                            Glide.with(this)
+                            Glide.with(getContext())
                                     .load(mOriginalFileStorageLink)
-                                    .error(Glide.with(this)
+                                    .error(Glide.with(getContext())
                                             .load(R.drawable.glide_file_not_found_no_network)
                                             .apply(RequestOptions.fitCenterTransform()))
                                     .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
@@ -513,9 +513,9 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     } else {
                         // Video File loading for glide
                         Log.d(LOG_TAG, "No network, edited file present");
-                        Glide.with(this)
+                        Glide.with(getContext())
                                 .load(mOriginalFileStorageLink)
-                                .error(Glide.with(this)
+                                .error(Glide.with(getContext())
                                         .load(R.drawable.glide_file_not_found_no_network)
                                         .apply(RequestOptions.fitCenterTransform()))
                                 .apply(RequestOptions.placeholderOf(R.drawable.glide_file_not_found_no_network))
@@ -525,8 +525,8 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     }
                 } else { // FileUtils.representableByGlide(mFileType) else
                     Log.d(LOG_TAG, "File is not representable by glide");
-                    // If the file is not representable by glide depict this to the user
-                    Glide.with(this)
+                    // If the file is not representable by glide depict getContext() to the user
+                    Glide.with(getContext())
                             .load(R.drawable.glide_not_representable)
                             .apply(RequestOptions.placeholderOf(R.drawable.glide_not_representable))
                             .apply(RequestOptions.fitCenterTransform())
@@ -691,10 +691,11 @@ public class GalleryCollectionActivity extends AppCompatActivity {
 
                     // Check to see if the clipboard data link equals the database stored link
                     if (clipboardClipData.equals(mFileInfo.getFileWetfishStorageLink())) {
-                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
+                        Snackbar.make(mIncludeLayout, getString(R.string.sb_url_clipboard_success),
                                 Snackbar.LENGTH_SHORT).show();
                     } else {
-                        Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_failure,
+                        Snackbar.make(mIncludeLayout, getString(R.string.sb_url_clipboard_failure),
+
                                 Snackbar.LENGTH_SHORT).show();
                     }
 
@@ -724,6 +725,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                     }
                 });
 
+                //TODO: This is placeholder code that'll be implemented properly when Wetfish offers a delete URL
                 mCopyFileDeleteURLFAB.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -735,7 +737,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
                         clipboard.setPrimaryClip(ClipData.newPlainText("Uploaded File Url", mFileInfo.getFileWetfishDeletionLink()));
 
                         if (clipboard.getPrimaryClip().equals(mFileInfo.getFileWetfishDeletionLink())) {
-                            Snackbar.make(mRootView.findViewById(android.R.id.content), R.string.sb_url_clipboard_success,
+                            Snackbar.make(mIncludeLayout, R.string.sb_url_clipboard_success,
                                     Snackbar.LENGTH_LONG);
                         }
                     }
@@ -755,7 +757,7 @@ public class GalleryCollectionActivity extends AppCompatActivity {
          * @return Return a new Loader instance that is ready to start loading.
          */
         @Override
-        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        public androidx.loader.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
             return new AsyncTaskLoader<Cursor>(getContext()) {
 
@@ -786,9 +788,12 @@ public class GalleryCollectionActivity extends AppCompatActivity {
             };
         }
 
+        /**
+         * @param loader The Loader that has finished.
+         * @param data   The data generated by the Loader.
+         */
         @Override
-        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
+        public void onLoadFinished(@NonNull androidx.loader.content.Loader<Cursor> loader, Cursor data) {
             // Check cursor integrity
             try {
                 if (data != null) {
@@ -811,10 +816,12 @@ public class GalleryCollectionActivity extends AppCompatActivity {
          * making its data unavailable.  The application should at this point
          * remove any references it has to the Loader's data.
          *
+         * <p>This will always be called from the process's main thread.
+         *
          * @param loader The Loader that is being reset.
          */
         @Override
-        public void onLoaderReset(Loader<Cursor> loader) {
+        public void onLoaderReset(@NonNull androidx.loader.content.Loader<Cursor> loader) {
 
         }
     }

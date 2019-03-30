@@ -1,10 +1,11 @@
 package net.wetfish.wetfish.ui.viewpager;
 
 import android.content.Context;
-import android.support.design.widget.TabLayout;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup;
+
+import com.google.android.material.tabs.TabLayout;
 
 /**
  * Created by ${Michael} on 10/16/2018.

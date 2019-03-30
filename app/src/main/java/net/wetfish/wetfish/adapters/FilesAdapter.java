@@ -4,8 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +18,9 @@ import com.bumptech.glide.request.RequestOptions;
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileContract;
 import net.wetfish.wetfish.utils.FileUtils;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by ${Michael} on 12/12/2017.
