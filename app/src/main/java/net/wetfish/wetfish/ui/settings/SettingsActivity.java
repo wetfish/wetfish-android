@@ -25,12 +25,13 @@ import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
 
 import net.wetfish.wetfish.BuildConfig;
 import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.data.FileDbHelper;
 
 import java.util.List;
 
 import androidx.appcompat.app.AlertDialog;
 
-//TODO: Delete upon feature completion
+//TODO: Merge into MySettingsActivity
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -44,6 +45,20 @@ import androidx.appcompat.app.AlertDialog;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends PreferenceActivity {
+
+
+    //TODO: Upgrade to Android X later
+//    @Override
+//    public boolean onPreferenceTreeClick (PreferenceScreen preferenceScreen,
+//                                          Preference preference)
+//    {
+//        String key = preference.getKey();
+//        if(key.equals("someKey")){
+//            // do your work
+//            return true;
+//        }
+//        return false;
+//    }
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -260,6 +275,44 @@ public class SettingsActivity extends PreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+
+            // Setup export database button
+            findPreference(getString(R.string.pref_appExportDatabase_key)).setSummary(getString(R.string.pref_appExportDatabase_prompt));
+            findPreference(getString(R.string.pref_appExportDatabase_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // Export the current Wetfish database
+
+                    String onExportDBResult = FileDbHelper.onExportDB(getActivity(), getActivity().findViewById(android.R.id.content));
+
+                    if (onExportDBResult != null) {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), onExportDBResult, Snackbar.LENGTH_LONG).show();
+                    } else {
+                        //Do nothing, the snackbar will be created asynchronously within the AlertDialog
+                    }
+
+                    return true;
+                }
+            });
+
+            // Setup import database button
+            findPreference(getString(R.string.pref_appImportDatabase_key)).setSummary(getString(R.string.pref_appImportDatabase_prompt));
+            findPreference(getString(R.string.pref_appImportDatabase_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // Export the current Wetfish database
+
+                    String onImportDBResult = FileDbHelper.onImportDB(getActivity(), getActivity().findViewById(android.R.id.content));
+
+                    if (onImportDBResult != null) {
+                        Snackbar.make(getActivity().findViewById(android.R.id.content), onImportDBResult, Snackbar.LENGTH_LONG).show();
+                    } else {
+                        //Do nothing, the snackbar will be created asynchronously within the AlertDialog
+                    }
+
+                    return true;
+                }
+            });
         }
 
         @Override
@@ -295,7 +348,7 @@ public class SettingsActivity extends PreferenceActivity {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     // Create dialog builder
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogThemeAppVersionSummary);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
 
                     // Create layout inflater

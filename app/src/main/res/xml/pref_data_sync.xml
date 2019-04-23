@@ -18,16 +18,21 @@
             <!--android:positiveButtonText="@null"-->
             <!--android:title="@string/pref_title_sync_frequency" />-->
 
+    <Preference
+        style="@style/TextViewBody"
+        android:key="@string/pref_appExportDatabase_key"
+        android:title="@string/pref_appExportDatabase_title" />
+
+    <Preference
+        style="@style/TextViewBody"
+        android:key="@string/pref_appImportDatabase_key"
+        android:title="@string/pref_appImportDatabase_title" />
+      
         <!--&lt;!&ndash; This preference simply launches an intent when selected. Use this UI sparingly, per-->
              <!--design guidelines. &ndash;&gt;-->
         <!--<Preference android:title="@string/pref_title_system_sync_settings">-->
             <!--<intent android:action="android.settings.SYNC_SETTINGS" />-->
         <!--</Preference>-->
-
-        <Preference
-            style="@style/TextViewBody"
-            android:key="@string/pref_appExportDatabase_key"
-            android:title="@string/pref_appExportDatabase_title" />
 
     </PreferenceCategory>
 

@@ -469,11 +469,11 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
                                         // TODO: Later on delete files created solely for EXIF transfer and just upload the original
                                         // This will need to take into consideration  downscaling/image editing.
 
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.DialogThemeAppVersionSummary);
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.DialogTheme);
 
                                         builder.setMessage(R.string.ad_message_exif_transfer_failed)
                                                 .setTitle(R.string.ad_title_return_home)
-                                                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                                .setPositiveButton(R.string.sb_ok, new DialogInterface.OnClickListener() {
                                                     @Override
                                                     public void onClick(DialogInterface dialog, int which) {
                                                         // Add photo to a content provider
@@ -1366,7 +1366,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
             // If the user has previously denied granting the permission, offer the rationale
             Snackbar.make(mRootLayout, R.string.sb_permission_storage_rationale,
                     Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.ok, new View.OnClickListener() {
+                    .setAction(R.string.sb_ok, new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
                             requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);

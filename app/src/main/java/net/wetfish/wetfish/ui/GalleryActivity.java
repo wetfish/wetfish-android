@@ -266,7 +266,7 @@ public class GalleryActivity extends AppCompatActivity implements
             // If the user has previously denied granting the permission, offer the rationale
             Snackbar.make(findViewById(R.id.gallery_container), R.string.sb_permission_storage_rationale,
                     Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.ok, new View.OnClickListener() {
+                    .setAction(R.string.sb_ok, new View.OnClickListener() {
                         @RequiresApi(api = Build.VERSION_CODES.M)
                         @Override
                         public void onClick(View view) {

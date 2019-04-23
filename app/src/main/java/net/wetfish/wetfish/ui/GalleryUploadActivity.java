@@ -111,11 +111,11 @@ public class GalleryUploadActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogThemeAppVersionSummary);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.DialogTheme);
 
         builder.setMessage(R.string.ad_message_return_home_warning)
                 .setTitle(R.string.ad_title_return_home)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.ad_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // User decided to return to the home screen
