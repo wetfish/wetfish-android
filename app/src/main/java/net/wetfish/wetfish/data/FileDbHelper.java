@@ -1,14 +1,15 @@
 package net.wetfish.wetfish.data;
 
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import net.wetfish.wetfish.R;
 
@@ -18,6 +19,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+
+import androidx.appcompat.app.AlertDialog;
 
 import static net.wetfish.wetfish.data.FileContract.FileColumns;
 import static net.wetfish.wetfish.data.FileContract.Files;

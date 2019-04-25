@@ -1,5 +1,6 @@
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:fragment="net.wetfish.wetfish.ui.settings.SettingsActivity$GeneralPreferenceFragment">
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- android:fragment="net.wetfish.wetfish.ui.settings.MySettingsActivity$NotificationPreferenceFragment" -->
 
     <!-- A 'parent' preference, which enables/disables child preferences (below)
          when checked/unchecked. -->

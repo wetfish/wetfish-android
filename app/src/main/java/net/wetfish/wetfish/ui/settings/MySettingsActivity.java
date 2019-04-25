@@ -1,80 +1,40 @@
 package net.wetfish.wetfish.ui.settings;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
-
-import net.wetfish.wetfish.BuildConfig;
-import net.wetfish.wetfish.R;
+import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
+import com.google.android.material.snackbar.Snackbar;
+
+import net.wetfish.wetfish.BuildConfig;
+import net.wetfish.wetfish.R;
+import net.wetfish.wetfish.data.FileDbHelper;
+
 public final class MySettingsActivity extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        this.setContentView(R.layout.activity_settings);
-        if (savedInstanceState == null) {
-            this.getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.settings, new MySettingsActivity.SettingsFragment()).commit();
-        } else {
-            this.setTitle(savedInstanceState.getCharSequence("settingsActivityTitle"));
-        }
-
-        this.getSupportFragmentManager().addOnBackStackChangedListener((new FragmentManager.OnBackStackChangedListener() {
-            public final void onBackStackChanged() {
-                FragmentManager fragmentManager = MySettingsActivity.this.getSupportFragmentManager();
-                if (fragmentManager.getBackStackEntryCount() == 0) {
-                    setTitle(R.string.title_activity_settings);
-                }
-
-            }
-        }));
-        ActionBar actionBar = this.getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-    }
-
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putCharSequence("settingsActivityTitle", this.getTitle());
-    }
-
-    public boolean onSupportNavigateUp() {
-        return this.getSupportFragmentManager().popBackStackImmediate() ? true : super.onSupportNavigateUp();
-    }
-
-    public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
-        Bundle args = pref.getExtras();
-        FragmentManager fragmentManager = this.getSupportFragmentManager();
-        Fragment fragment = fragmentManager.getFragmentFactory()
-                .instantiate(this.getClassLoader(), pref.getFragment(), args);
-        fragment.setArguments(args);
-        fragment.setTargetFragment((Fragment)caller, 0);
-        this.getSupportFragmentManager().beginTransaction().replace(R.id.settings, fragment).addToBackStack((String)null).commit();
-        this.setTitle(pref.getTitle());
-        return true;
-    }
-
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -126,6 +86,54 @@ public final class MySettingsActivity extends AppCompatActivity implements Prefe
         }
     };
 
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.setContentView(R.layout.activity_settings);
+        if (savedInstanceState == null) {
+            this.getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.settings, new MySettingsActivity.SettingsFragment()).commit();
+        } else {
+            this.setTitle(savedInstanceState.getCharSequence("settingsActivityTitle"));
+        }
+
+        this.getSupportFragmentManager().addOnBackStackChangedListener((new FragmentManager.OnBackStackChangedListener() {
+            public final void onBackStackChanged() {
+                FragmentManager fragmentManager = MySettingsActivity.this.getSupportFragmentManager();
+                if (fragmentManager.getBackStackEntryCount() == 0) {
+                    setTitle(R.string.title_activity_settings);
+                }
+
+            }
+        }));
+        ActionBar actionBar = this.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+    }
+
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putCharSequence("settingsActivityTitle", this.getTitle());
+    }
+
+    public boolean onSupportNavigateUp() {
+        return this.getSupportFragmentManager().popBackStackImmediate() ? true : super.onSupportNavigateUp();
+    }
+
+    public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
+        Bundle args = pref.getExtras();
+        FragmentManager fragmentManager = this.getSupportFragmentManager();
+        Fragment fragment = fragmentManager.getFragmentFactory()
+                .instantiate(this.getClassLoader(), pref.getFragment(), args);
+        fragment.setArguments(args);
+        fragment.setTargetFragment((Fragment) caller, 0);
+        this.getSupportFragmentManager().beginTransaction().replace(R.id.settings, fragment).addToBackStack((String) null).commit();
+        this.setTitle(pref.getTitle());
+        return true;
+    }
+
     @Override
     public SharedPreferences getSharedPreferences(String name, int mode) {
         return super.getSharedPreferences(name, mode);
@@ -152,8 +160,122 @@ public final class MySettingsActivity extends AppCompatActivity implements Prefe
 //    }
 
     public static final class DataSyncPreferenceFragment extends PreferenceFragmentCompat {
+
+        // Permission String array for @requestStoragePermission
+        private static final int REQUEST_STORAGE = 0;
+        private static final String[] PERMISSIONS_STORAGE = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
         public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
             this.setPreferencesFromResource((R.xml.pref_data_sync), rootKey);
+
+            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
+            // to their values. When their values change, their summaries are
+            // updated to reflect the new value, per the Android Design
+            // guidelines.
+//            bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+
+            // Setup export database button
+            findPreference(getString(R.string.pref_appExportDatabase_key)).setSummary(getString(R.string.pref_appExportDatabase_prompt));
+            findPreference(getString(R.string.pref_appExportDatabase_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // Ask for storage permission if @ or above Android version 23
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (ContextCompat.checkSelfPermission(getActivity(),
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED
+                                || ContextCompat.checkSelfPermission(getActivity(),
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            // Permissions have not been granted, inform the user and ask again
+                            requestStoragePermission();
+                        } else {
+                            // Storage permissions granted, export the current Wetfish database
+                            String onExportDBResult = FileDbHelper.onExportDB(getActivity(), getActivity().findViewById(android.R.id.content));
+
+                            if (onExportDBResult != null) {
+                                Snackbar.make(getActivity().findViewById(android.R.id.content), onExportDBResult, Snackbar.LENGTH_LONG).show();
+                            } else {
+                                //Do nothing, the snackbar will be created asynchronously within the AlertDialog
+                            }
+                        }
+                    } else {
+                        // Export the current Wetfish database, storage permissions are allowed
+                        String onExportDBResult = FileDbHelper.onExportDB(getActivity(), getActivity().findViewById(android.R.id.content));
+
+                        if (onExportDBResult != null) {
+                            Snackbar.make(getActivity().findViewById(android.R.id.content), onExportDBResult, Snackbar.LENGTH_LONG).show();
+                        } else {
+                            //Do nothing, the snackbar will be created asynchronously within the AlertDialog
+                        }
+                    }
+                    return true;
+                }
+            });
+
+            // Setup import database button
+            findPreference(getString(R.string.pref_appImportDatabase_key)).setSummary(getString(R.string.pref_appImportDatabase_prompt));
+            findPreference(getString(R.string.pref_appImportDatabase_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // Ask for storage permission if @ or above Android version 23
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (ContextCompat.checkSelfPermission(getActivity(),
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED
+                                || ContextCompat.checkSelfPermission(getActivity(),
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            // Permissions have not been granted, inform the user and ask again
+                            requestStoragePermission();
+                        } else {
+                            // Storage permissions granted, import the available Wetfish database
+                            String onImportDBResult = FileDbHelper.onImportDB(getActivity(), getActivity().findViewById(android.R.id.content));
+
+                            if (onImportDBResult != null) {
+                                Snackbar.make(getActivity().findViewById(android.R.id.content), onImportDBResult, Snackbar.LENGTH_LONG).show();
+                            } else {
+                                //Do nothing, the snackbar will be created asynchronously within the AlertDialog
+                            }
+                        }
+                    } else {
+                        // Import the available Wetfish database, storage permissions are allowed
+                        String onImportDBResult = FileDbHelper.onImportDB(getActivity(), getActivity().findViewById(android.R.id.content));
+
+                        if (onImportDBResult != null) {
+                            Snackbar.make(getActivity().findViewById(android.R.id.content), onImportDBResult, Snackbar.LENGTH_LONG).show();
+                        } else {
+                            //Do nothing, the snackbar will be created asynchronously within the AlertDialog
+                        }
+
+                    }
+
+                    return true;
+                }
+            });
+        }
+
+        // Method to request storage permissions
+        @RequiresApi(api = Build.VERSION_CODES.M)
+        private void requestStoragePermission() {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                // If the user has previously denied granting the permission, offer the rationale
+                Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.sb_permission_storage_rationale_export_import,
+                        Snackbar.LENGTH_INDEFINITE)
+                        .setAction(R.string.sb_ok, new View.OnClickListener() {
+                            @RequiresApi(api = Build.VERSION_CODES.M)
+                            @Override
+                            public void onClick(View view) {
+                                requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
+                            }
+                        }).show();
+            } else {
+                // No explanation needed, request permission
+                {
+                    requestPermissions(PERMISSIONS_STORAGE, REQUEST_STORAGE);
+                }
+            }
         }
     }
 
@@ -177,11 +299,11 @@ public final class MySettingsActivity extends AppCompatActivity implements Prefe
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     // Create dialog builder
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogThemeAppVersionSummary);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
 
                     // Create layout inflater
-                    LayoutInflater inflater =getActivity().getLayoutInflater();
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
 
                     // Inflate the dialog's custom layout
                     builder.setView(inflater.inflate(R.layout.dialog_custom_version_information, null))

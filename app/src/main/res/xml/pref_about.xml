@@ -1,7 +1,7 @@
-
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:fragment="net.wetfish.wetfish.ui.settings.SettingsActivity$GeneralPreferenceFragment">
+    android:fragment="net.wetfish.wetfish.ui.settings.MySettingsActivity$AboutPreferenceFragment">
+
     <PreferenceCategory
         style="@style/TextViewHeaderSettings"
         android:key="@string/pref_key_app_information"
@@ -23,5 +23,7 @@
             style="@style/TextViewBody"
             android:key="@string/pref_appOpenSourceLibraries_key"
             android:title="@string/pref_appOpenSourceLibraries_title" />
+
     </PreferenceCategory>
+
 </androidx.preference.PreferenceScreen>
