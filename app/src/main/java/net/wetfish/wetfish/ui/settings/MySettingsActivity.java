@@ -12,11 +12,6 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
-
-import net.wetfish.wetfish.BuildConfig;
-import net.wetfish.wetfish.R;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -25,6 +20,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
+
+import net.wetfish.wetfish.BuildConfig;
+import net.wetfish.wetfish.R;
 
 public final class MySettingsActivity extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -177,7 +177,7 @@ public final class MySettingsActivity extends AppCompatActivity implements Prefe
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     // Create dialog builder
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogThemeAppVersionSummary);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.DialogTheme);
 
 
                     // Create layout inflater
