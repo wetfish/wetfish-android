@@ -21,15 +21,16 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
+import com.google.android.material.snackbar.Snackbar;
 
 import net.wetfish.wetfish.BuildConfig;
 import net.wetfish.wetfish.R;
 import net.wetfish.wetfish.data.FileDbHelper;
 
 import java.util.List;
-
-import androidx.appcompat.app.AlertDialog;
 
 //TODO: Merge into MySettingsActivity
 
