@@ -40,6 +40,7 @@
     <!-- Snackbar Strings -->
     <string name="sb_ok">OKAY</string>
     <string name="sb_permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
+    <string name="sb_permission_storage_rationale_export_import">Storage permission needed to be able to export and import the Wetfish DB.</string>
     <string name="permission_not_granted_storage">Uploading to Wetfish requires Storage permissions.</string>
     <string name="sb_url_clipboard_success">URL successfully copied to clipboard</string>
     <string name="sb_url_clipboard_failure">URL unsuccessfully copied to clipboard</string>
