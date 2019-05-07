@@ -12,6 +12,7 @@ import org.acra.ReportField;
 import org.acra.data.CrashReportData;
 import org.acra.sender.ReportSender;
 import org.acra.sender.ReportSenderException;
+import org.acra.sender.SenderService;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,8 +43,9 @@ public class LocalCrashSender implements ReportSender {
         // you need with each pair of ReportField key / String value
 
         String finalReport = createCrashReport(report);
-//        String tempFile = context.getFilesDir().getPath() + "/" + FILE_NAME;
 
+        //TODO: Figure out why filesDir isn't pointing to the correct directory
+//      String tempFile = context.getFilesDir().getPath() + "/" + FILE_NAME;
         String tempFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/" + FILE_NAME;
 
         try
