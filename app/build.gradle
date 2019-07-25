@@ -31,15 +31,16 @@ repositories {
 }
 
 dependencies {
+    def acraVersion = '5.4.0'
+    implementation "ch.acra:acra-http:$acraVersion"
+    implementation "ch.acra:acra-core:$acraVersion"
+    implementation "ch.acra:acra-toast:$acraVersion"
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.2-alpha01', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    def acraVersion = '5.1.3'
-    implementation "ch.acra:acra-http:$acraVersion"
-    implementation "ch.acra:acra-core:$acraVersion"
-    implementation "ch.acra:acra-toast:$acraVersion"
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha5'
     implementation 'androidx.vectordrawable:vectordrawable:1.1.0-alpha01'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'

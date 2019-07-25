@@ -12,7 +12,6 @@ import org.acra.ReportField;
 import org.acra.data.CrashReportData;
 import org.acra.sender.ReportSender;
 import org.acra.sender.ReportSenderException;
-import org.acra.sender.SenderService;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,7 +30,6 @@ public class LocalCrashSender implements ReportSender {
     /**
      * Send crash report data.
      * <p>
-     * Method will be called from the {@link SenderService}.
      *
      * @param context      Android Context in which to send the crash report.
      * @param report Stores key/value pairs for each report field.
