@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/gallery_detail_content"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="10000dp"
     android:focusableInTouchMode="true"
     tools:context="net.wetfish.wetfish.ui.viewpager.FileUploadFragment">
 

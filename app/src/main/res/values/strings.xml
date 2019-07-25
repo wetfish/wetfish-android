@@ -35,8 +35,6 @@
     <string name="fab_select_video_file">Select Video File</string>
     <string name="cb_exif_remove_data">Remove Data</string>
 
-
-
     <!-- Snackbar Strings -->
     <string name="sb_ok">OKAY</string>
     <string name="sb_permission_storage_rationale">Storage permission needed to upload file to Wetfish.</string>
@@ -174,21 +172,24 @@
     <string name="pref_appVersion_key">pref_appVersion_key</string>
     <string name="pref_appVersion_title">Wetfish Version</string>
 
-    <string name="pref_appVersionSummary_key">pref_appVersionSummary_key</string>
-    <string name="pref_appVersionSummary_title">Version Summary</string>
-    <string name="pref_appVersionSummary">
-    <b>EXIF UPDATE</b>\n
+<string name="pref_appVersionSummary_key">pref_appVersionSummary_key</string>
+<string name="pref_appVersionSummary_title">Version Summary</string>
+<string name="pref_appVersionSummary">
+    <b>Beta Release</b>\n
+    - Application now released to beta!\n
+    - Shifted app to AndroidX\n
 
-    <b>Upload Page</b>\n
-    - Change upload delay from three seconds to two seconds. \n
-    - Change how the EXIF tab works, allowing users to select EXIF settings to remove during the upload process and save these selections as persistent settings automatically upon change. \n
-    - Apply the current Wetfish version to the User Comment portion of the EXIF for Wetfish server’s new policy. \n
-    - Make the upload process produce an AlertDialog should EXIF editing fail during the process. \n
-    - Make the upload process cancelable throughout the entire process. \n
+    <b>Preferences</b>\n
+    - New Permissions from AndroidX implemented\n
 
-    </string>
-    <string name="pref_appVersionSummary_prompt">Click here for Wetfish version details</string>
-    <string name="dialog_acknowledged">OKAY</string>
+    <b>Crash Logging</b>\n
+    - Crash log saved to downloads directory if the app crashes\n
+
+    <b>Database Backup</b>\n
+    - Added a database backup feature to export/import database\n
+</string>
+<string name="pref_appVersionSummary_prompt">Click here for Wetfish version details</string>
+<string name="dialog_acknowledged">OKAY</string>
 
     <string name="pref_appOpenSourceLibraries_key">pref_appOpenSourceLibraries_key</string>
     <string name="pref_appOpenSourceLibraries_title">Open Source Libraries</string>
@@ -285,4 +286,3 @@
     <string name="exif_data_transfer_user_comment">wetfish-android v[%1$s]</string>
 
 </resources>
-

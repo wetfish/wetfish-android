@@ -24,11 +24,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
@@ -58,11 +65,6 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
-import androidx.fragment.app.Fragment;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -121,6 +123,9 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     private CustomTabLayout mTabLayout;
     private CustomLockingViewPager mViewpager;
 
+    private EditText mFileTestUsername;
+    private EditText mFileTestPassword;
+
     /* Data */
     // Temporary original file path variable
     private Uri mOriginalFileAbsolutePath;
@@ -162,6 +167,7 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
     /* Fragment Interaction Interfaces */
     private UploadFragmentUriUpdate mSendUri;
     private boolean mDuplicateImageCreated;
+    private Button mFileLogin;
 
     public FileUploadFragment() {
         // Required empty public constructor
@@ -215,7 +221,6 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Viewpager views
         mViewpager = getActivity().findViewById(R.id.vp_gallery_detail);
         mTabLayout = getActivity().findViewById(R.id.tl_gallery_detail);
-
 
 
         // Inflate the proper layout depending on the mime type
@@ -342,9 +347,8 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         // Fab to upload file to Wetfish server
         mFabUploadFile = mRootLayout.findViewById(R.id.fab_upload_file);
         mFabUploadFile.setOnClickListener(new View.OnClickListener() {
-            @Override
+            // Verify that the permissions necessary to complete this action have been granted
             public void onClick(View view) {
-                // Verify that the permissions necessary to complete this action have been granted
                 if (ContextCompat.checkSelfPermission(getContext(),
                         Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED
@@ -1378,6 +1382,42 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
         }
     }
 
+    private void login() {
+
+        // Create Retrofit Instance
+        Retrofit retrofit = RetrofitClient.getClient("https://volunteer.wetfish.net/");
+
+        // Create REST Interface
+        RESTInterface restInterface = retrofit.create(RESTInterface.class);
+
+        String username = mFileTestUsername.getText().toString();
+        String password = mFileTestPassword.getText().toString();
+
+        mCall = restInterface.login(username, password);
+
+//        mCall = restInterface.postFile(body);
+
+        // Execute call request
+        mCall.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                String onResponseString = null;
+                try {
+                    onResponseString = response.body().string();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Log.d(LOG_TAG, "onResponse: " + onResponseString);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d(LOG_TAG, "onResponse: FAILURE");
+            }
+        });
+
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -1625,89 +1665,14 @@ public class FileUploadFragment extends Fragment implements FABProgressListener,
 
                         // If response body is not empty get returned URL
                         if (!(onResponseString.isEmpty())) {
-                            Pattern pattern = Pattern.compile("url=(.*?)'>");
+                            Pattern pattern = Pattern.compile("type=\"hidden\"value=(.*?)\">");
                             Matcher matcher = pattern.matcher(onResponseString);
                             if (matcher.find()) {
                                 // Obtain the link given in response to the image
                                 responseViewURL = getString(R.string.wetfish_base_url) + matcher.group(1);
 
-                                responseDeleteURL = getContext().getString(R.string.not_implemented);
-
-                                // Add to database
-                                uploadID = FileUtils.insertFileData(getContext(),
-                                        mFileEditTitleView.getText().toString(),
-                                        mFileEditTagsView.getText().toString(),
-                                        mFileEditDescriptionView.getText().toString(),
-                                        Calendar.getInstance().getTimeInMillis(),
-                                        fileExtension,
-                                        filePath,
-                                        responseViewURL,
-                                        responseDeleteURL,
-                                        editedFilePath);
-
-                                Log.d(LOG_TAG, "\nFilePath: " + filePath + "\nEditedFilePath: " + editedFilePath);
-
-                                /**
-                                 *  Check to see if upload was successful to determine if the edited image
-                                 * should be kept or deleted
-                                 */
-                                if (uploadID >= 0) {
-                                    mDatabaseAdditionSuccessful = true;
-
-                                    // Update media
-                                    if (mMimeType.equals(IMAGE_FILE)) {
-                                        sendMediaBroadcast(editedFilePath);
-                                    }
-
-                                } else {
-                                    mDatabaseAdditionSuccessful = false;
-                                }
-
-                                Log.d(LOG_TAG, "onResponse: " + responseViewURL);
-                                Log.d(LOG_TAG, "id: " + uploadID);
-
-//                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-//                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircleUpload.beginFinalAnimation();
                             } else {
-                                responseViewURL = getString(R.string.wetfish_base_uploader_url);
 
-                                responseDeleteURL = getContext().getString(R.string.not_implemented);
-
-                                // Add to database
-                                uploadID = FileUtils.insertFileData(getContext(),
-                                        mFileEditTitleView.getText().toString(),
-                                        mFileEditTagsView.getText().toString(),
-                                        mFileEditDescriptionView.getText().toString(),
-                                        Calendar.getInstance().getTimeInMillis(),
-                                        fileExtension,
-                                        filePath,
-                                        responseViewURL,
-                                        responseDeleteURL,
-                                        editedFilePath);
-
-                            /*
-                               Check to see if upload was successful to determine if the edited image
-                              should be kept or deleted
-                             */
-                                if (uploadID >= 0) {
-                                    mDatabaseAdditionSuccessful = true;
-
-                                    // Update media
-                                    if (mMimeType.equals(IMAGE_FILE)) {
-                                        sendMediaBroadcast(editedFilePath);
-                                    }
-
-                                } else {
-                                    mDatabaseAdditionSuccessful = false;
-                                }
-
-                                Log.d(LOG_TAG, "onResponse: " + responseViewURL);
-                                Log.d(LOG_TAG, "id: " + uploadID);
-
-//                            UIUtils.generateSnackbar(getActivity(), getActivity().findViewById(android.R.id.content),
-//                                    "File Uploaded!", Snackbar.LENGTH_LONG);
-                                mFabProgressCircleUpload.beginFinalAnimation();
                             }
                         } else {
                             responseViewURL = getString(R.string.wetfish_base_uploader_url);

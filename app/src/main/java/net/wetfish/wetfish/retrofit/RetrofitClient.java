@@ -15,13 +15,19 @@ public class RetrofitClient {
 
     private static Retrofit retrofit = null;
 
+
+        private String BASE_URL = "https://volunteer.wetfish.net/";
+
     // Create Retrofit Instance
     public static Retrofit getClient(String baseUrl) {
+
+        String BASE_URL = "https://volunteer.wetfish.net/";
+
         if (retrofit == null) {
             OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
             httpClient.addInterceptor(new JsonInterceptor());
             retrofit = new Retrofit.Builder()
-                    .baseUrl(baseUrl)
+                    .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(httpClient.build())
                     .build();
